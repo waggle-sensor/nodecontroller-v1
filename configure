@@ -18,7 +18,17 @@ if [ `pwd` != "/usr/lib/waggle/nodecontroller" ] ; then
   ln -sf `pwd` /usr/lib/waggle/nodecontroller
 fi
 
+if [ ${BEEHIVE_HOST}x == "x" ] ; then
+  # Get the IP for the server you want to connect to
+  read -p "Enter the URL or IP address of the beehive cloud server you want to use: " BEEHIVE_HOST
+fi
 
+if [ ${BEEHIVE_HOST}x == "x" ] ; then
+  echo "error: BEEHIVE_HOST is empty"
+  exit 1
+fi
+
+echo ${BEEHIVE_HOST} > /etc/waggle/server_ip
 
 #install all dependencies for node
 #dpkg -i nc-wag-os/packages/debian/*.deb
@@ -53,9 +63,7 @@ mkdir -p /var/dc/incoming_msgs
 #make directory to store comms log files
 mkdir -p /var/log/comms
 
-# Get the IP for the server you want to connect to
-read -p "Enter the IP address of the cloud server you want to use: " server_ip
-echo $server_ip > /etc/waggle/server_ip
+
 
 #set processes to start at boot
 
