@@ -18,18 +18,6 @@ if [ `pwd` != "/usr/lib/waggle/nodecontroller" ] ; then
   ln -sf `pwd` /usr/lib/waggle/nodecontroller
 fi
 
-if [ ${BEEHIVE_HOST}x == "x" ] ; then
-  # Get the IP for the server you want to connect to
-  read -p "Enter the URL or IP address of the beehive cloud server you want to use: " BEEHIVE_HOST
-fi
-
-if [ ${BEEHIVE_HOST}x == "x" ] ; then
-  echo "error: BEEHIVE_HOST is empty"
-  exit 1
-fi
-
-echo ${BEEHIVE_HOST} > /etc/waggle/server_ip
-
 #install all dependencies for node
 #dpkg -i nc-wag-os/packages/debian/*.deb
 cd nc-wag-os/packages/python/
@@ -43,6 +31,19 @@ echo NodeController > /etc/hostname
 
 #set waggle parameters
 mkdir -p /etc/waggle/
+
+if [ ${BEEHIVE_HOST}x == "x" ] ; then
+  # Get the IP for the server you want to connect to
+  read -p "Enter the URL or IP address of the beehive cloud server you want to use: " BEEHIVE_HOST
+fi
+
+if [ ${BEEHIVE_HOST}x == "x" ] ; then
+  echo "error: BEEHIVE_HOST is empty"
+  exit 1
+fi
+
+echo ${BEEHIVE_HOST} > /etc/waggle/server_ip
+
 host_name=$RANDOM #has to changed so that the requirement for node ID in the packet header is met
 echo " " > /etc/waggle/queuename
 echo "$host_name" > /etc/waggle/hostname # The node's waggle hostname
