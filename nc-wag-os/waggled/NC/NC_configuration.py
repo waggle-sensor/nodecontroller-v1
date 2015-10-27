@@ -1,5 +1,5 @@
 import sys
-sys.path.append('../../../../devtools/protocol_common/')
+sys.path.append('../../../protocol/')
 from utilities.packetmaker import *
 
 """

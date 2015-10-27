@@ -2,7 +2,7 @@
 
 import socket, os, os.path, time, sys
 from multiprocessing import Process, Queue
-sys.path.append('../../../../devtools/protocol_common/')
+sys.path.append('../../../protocol/')
 from protocol.PacketHandler import *
 sys.path.append('../NC/')
 from NC_configuration import *

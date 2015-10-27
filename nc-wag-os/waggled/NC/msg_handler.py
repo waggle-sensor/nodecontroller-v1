@@ -1,9 +1,9 @@
 # msg_handler.py
 
 import os, os.path, sys
-sys.path.append('../../../../devtools/protocol_common/')
+sys.path.append('../../../protocol/')
 from protocol.PacketHandler import *
-sys.path.append('../../../../devtools/protocol_common/')
+sys.path.append('../../../protocol/')
 from utilities import packetmaker
 sys.path.append('../Communications/')
 from internal_communicator import send
