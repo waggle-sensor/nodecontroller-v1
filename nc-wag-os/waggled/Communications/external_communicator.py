@@ -45,6 +45,7 @@ class pika_push(Process):
         comm = external_communicator()
         params = comm.params
         sys.stdout.write('Pika push started...\n')
+        sys.stdout.flush()
         while True:
             try: 
                 #connecting to cloud
@@ -54,10 +55,12 @@ class pika_push(Process):
                 #Declaring the queue
                 channel.queue_declare(queue=QUEUENAME)
                 sys.stdout.write('Pika push connected to cloud.\n')
+                sys.stdout.flush()
                 send_registrations() #sends registration for each node and node controller configuration file
                 connected = True #might not be neccessary 
             except: 
-                print 'Pika_push currently unable to connect to cloud... ('+CLOUD_ADDR+')'  
+                print 'Pika_push currently unable to connect to cloud... ('+CLOUD_ADDR+')'
+                sys.stdout.flush()
                 comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
                 time.sleep(5)
                 connected = False #might not be neccessary
@@ -75,6 +78,7 @@ class pika_push(Process):
                 except pika.exceptions.ConnectionClosed:
                     sys.stderr.write("Pika push connection closed. Waiting and trying again " + str(datetime.datetime.now()) + '\n')
                     print "Pika push connection closed. Waiting and trying again "
+                    sys.stdout.flush()
                     comm.cloud_connected.value = 0
                     time.sleep(5)
                     break #need to break this loop to reconnect
