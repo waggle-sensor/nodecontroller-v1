@@ -15,8 +15,8 @@ user=""
 
 name=`basename $0`
 pid_file="/var/run/$name.pid"
-stdout_log="/var/log/$name.log"
-stderr_log="/var/log/$name.err"
+stdout_log="/var/log/waggle/communicator/$name.log"
+stderr_log="/var/log/waggle/communicator/$name.err"
 
 get_pid() {
     cat "$pid_file"
