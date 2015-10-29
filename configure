@@ -6,6 +6,8 @@ set -x
 #This is configures an odroid to be a node controller
 export waggled_dir="$(pwd)/nc-wag-os/waggled"
 
+# for log files
+mkdir -p /var/log/waggle/communicator/
 
 # Create symlink if repository is not already at the expected location
 if [ `pwd` != "/usr/lib/waggle/nodecontroller" ] ; then

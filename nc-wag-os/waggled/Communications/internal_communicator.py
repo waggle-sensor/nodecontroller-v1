@@ -76,8 +76,8 @@ class internal_client_push(Process):
     def run(self):
         #set log files
         #TODO This logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-        stdout='/var/log/comms/internal_client_push.log'
-        stderr='/var/log/comms/internal_client_push.err'
+        stdout='/var/log/waggle/communicator/internal_client_push.log'
+        stderr='/var/log/waggle/communicator/internal_client_push.err'
         
         comm = internal_communicator()
         sys.stdout.write('Internal client push started...\n')
@@ -119,8 +119,8 @@ class internal_client_pull(Process):
     def run(self):
         #set log files
         #TODO This logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-        stdout='/var/log/comms/internal_client_pull.log'
-        stderr='/var/log/comms/internal_client_pull.err'
+        stdout='/var/log/waggle/communicator/internal_client_pull.log'
+        stderr='/var/log/waggle/communicator/internal_client_pull.err'
         
         comm = internal_communicator()
         sys.stdout.write('Internal client pull started...\n')
@@ -172,8 +172,8 @@ class push_server(Process):
     def run(self):
         #set log files
         #TODO This logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-        stdout='/var/log/comms/push_server.log'
-        stderr='/var/log/comms/push_server.err'
+        stdout='/var/log/waggle/communicator/push_server.log'
+        stderr='/var/log/waggle/communicator/push_server.err'
         
         comm = internal_communicator()
         HOST = NCIP 
@@ -212,8 +212,8 @@ class pull_server(Process):
     def run(self):
         #set log files
         #TODO The logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-        stdout='/var/log/comms/pull_server.log'
-        stderr='/var/log/comms/pull_server.err'
+        stdout='/var/log/waggle/communicator/pull_server.log'
+        stderr='/var/log/waggle/communicator/pull_server.err'
         
         comm = internal_communicator()
         HOST = NCIP
