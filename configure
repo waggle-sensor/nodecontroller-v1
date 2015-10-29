@@ -115,12 +115,9 @@ ln -sf  ${waggled_dir}/heartbeat_start.sh /etc/init.d/
 #cp ${waggled_dir}/99-usb-serial.rules /etc/udev/rules.d
 ln -sf  ${waggled_dir}/99-usb-serial.rules /etc/udev/rules.d/
 
-#find and set IP address if possible
-cd ${waggled_dir}/
-python NC_scanner.py
-
 #cd ${waggled_dir}/WagMan
 #chmod +x heartbeat_setup.sh
-echo "Odroid is now going to reboot."
+echo "System will reboot now for the settinsg to take effect."
+sleep 10
 #reboot
 
