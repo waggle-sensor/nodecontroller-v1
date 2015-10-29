@@ -2,9 +2,8 @@
 
 set -e
 set -x
-
+#set -v 
 #This is configures an odroid to be a node controller
-
 export waggled_dir="$(pwd)/nc-wag-os/waggled"
 
 
@@ -18,16 +17,13 @@ if [ `pwd` != "/usr/lib/waggle/nodecontroller" ] ; then
   ln -sf `pwd` /usr/lib/waggle/nodecontroller
 fi
 
-#install all dependencies for node
-#dpkg -i nc-wag-os/packages/debian/*.deb
+#install pika package from the git repo.
 cd nc-wag-os/packages/python/
 #change to offline install
 pip install -e pika-0.9.14
 pip install pyserial
 cd ../../../
 
-#Sets the odroid's hostname to NodeController so GuestNodes can easily find it
-echo NodeController > /etc/hostname 
 
 #set waggle parameters
 mkdir -p /etc/waggle/
@@ -38,19 +34,25 @@ if [ ${BEEHIVE_HOST}x == "x" ] ; then
 fi
 
 if [ ${BEEHIVE_HOST}x == "x" ] ; then
-  echo "error: BEEHIVE_HOST is empty"
-  exit 1
+  export BEEHIVE_HOST='127.0.0.1'
 fi
 
+#We have to move away from manual input, and take it as an argument, with the 
+#default beehive server IP set to localhost. Also, we need a way to let the 
+#user know that a wrong server was chosen.
+echo "The beehive server is set to ${BEEHIVE_HOST}."
+sleep 1
 echo ${BEEHIVE_HOST} > /etc/waggle/server_ip
 
-host_name=$RANDOM #has to changed so that the requirement for node ID in the packet header is met
+
+#has to be changed so that the requirement for node ID in the packet header is met
+host_name=$RANDOM 
 echo " " > /etc/waggle/queuename
 echo "$host_name" > /etc/waggle/hostname # The node's waggle hostname
 echo "$host_name, \n" > /etc/waggle/devices
 echo "1,2,3,4, \n" >> /etc/waggle/devices
 echo "$host_name:5, \n" >> /etc/waggle/devices
-echo " " >> /etc/waggle/NCIP
+echo " " >> /etc/waggle/NCIP #Why is this empty? and we need to clean this portion of code up
 
 #make directory to store data cache log files and stored messages
 #make / as large as possible, all the cached data gets stored here. 
@@ -68,56 +70,40 @@ mkdir -p /var/log/comms
 
 #set processes to start at boot
 
-#move communications.sh into the init.d folder and update
-#starts communication processes
-#cd ./waggle/nodecontroller/nc-wag-os/waggled
-
-#cp ${waggled_dir}/communications.sh /etc/init.d
+#add communication processes to autostart
 ln -sf  ${waggled_dir}/communications.sh /etc/init.d/
 #chmod +x /etc/init.d/communications.sh 
 update-rc.d communications.sh defaults 
 
-#move data_cache.sh into the init.d folder and update
-#starts data cache process
-#cp ${waggled_dir}/data_cache.sh /etc/init.d
+#add data cache process to autostart
 ln -sf  ${waggled_dir}/data_cache.sh /etc/init.d/
 #chmod +x /etc/init.d/data_cache.sh 
 update-rc.d data_cache.sh defaults 
 
-#comment this out if nodecontroller and guestnode are separate machines
-#move sensor.sh into the init.d folder and update
-#starts sensor script
-#cp ${waggled_dir}/start_sensor.sh /etc/init.d
+#add core sensor script to autostart
 ln -sf  ${waggled_dir}/start_sensor.sh /etc/init.d/
 #chmod +x /etc/init.d/start_sensor.sh 
 update-rc.d start_sensor.sh defaults 
 
-#set up SysMon stuff
-#starts WagMan script at boot
-#cp ${waggled_dir}/WagMan_start.sh /etc/init.d
+#add WagMan script to autostart
 ln -sf  ${waggled_dir}/WagMan_start.sh /etc/init.d/
 #chmod +x /etc/init.d/WagMan_start.sh 
 update-rc.d WagMan_start.sh defaults 
 
-#starts set-up for heart beat script at boot
-#cp ${waggled_dir}/heartbeat_setup_start.sh /etc/init.d
+#add heart beat script to autostart
 ln -sf  ${waggled_dir}/heartbeat_setup_start.sh /etc/init.d/
 #chmod +x /etc/init.d/heartbeat_setup_start.sh 
 #update-rc.d heartbeat_setup_start.sh defaults 
 
-#starts node controller heart beat at boot
-#cp ${waggled_dir}/heartbeat_start.sh /etc/init.d
+#add node controller heart beat to autostart
 ln -sf  ${waggled_dir}/heartbeat_start.sh /etc/init.d/
 #chmod +x /etc/init.d/heartbeat_start.sh 
 #update-rc.d heartbeat_start.sh defaults 
 
-#creates udev rule to attach SysMon to /dev/arduinoMicro
+#creates udev rule to attach Wagman to /dev/wagman
 #cp ${waggled_dir}/99-usb-serial.rules /etc/udev/rules.d
 ln -sf  ${waggled_dir}/99-usb-serial.rules /etc/udev/rules.d/
 
 #cd ${waggled_dir}/WagMan
 #chmod +x heartbeat_setup.sh
-echo "System will reboot now for the settinsg to take effect."
-sleep 10
-#reboot
 
