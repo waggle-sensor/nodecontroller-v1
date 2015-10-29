@@ -14,7 +14,8 @@ if [ `pwd` != "/usr/lib/waggle/nodecontroller" ] ; then
     echo "Error: Directory /usr/lib/waggle/nodecontroller already exists."
     exit 1
   fi
-  ln -sf `pwd` /usr/lib/waggle/nodecontroller
+  rm /usr/lib/waggle/nodecontroller
+  ln -s `pwd` /usr/lib/waggle/nodecontroller
 fi
 
 #install pika package from the git repo.
