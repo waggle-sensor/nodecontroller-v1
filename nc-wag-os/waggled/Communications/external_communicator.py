@@ -39,8 +39,8 @@ class pika_push(Process):
     def run(self):
         #set log files
         #TODO The logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-        stdout='/var/log/comms/pika_push.log'
-        stderr='/var/log/comms/pika_push.err'
+        stdout='/var/log/waggle/communicator/pika_push.log'
+        stderr='/var/log/waggle/communicator/pika_push.err'
         
         comm = external_communicator()
         params = comm.params
@@ -88,8 +88,8 @@ class pika_pull(Process):
     def run(self):
         #set log files
         #TODO The logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-        stdout='/var/log/comms/pika_pull.log'
-        stderr='/var/log/comms/pika_pull.err'
+        stdout='/var/log/waggle/communicator/pika_pull.log'
+        stderr='/var/log/waggle/communicator/pika_pull.err'
         
         sys.stdout.write('Pika pull started...\n')
         comm = external_communicator()
@@ -144,8 +144,8 @@ class external_client_pull(Process):
     def run(self):
         #set log files
         #TODO The logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-        stdout='/var/log/comms/external_client_pull.log'
-        stderr='/var/log/comms/external_client_pull.err'
+        stdout='/var/log/waggle/communicator/external_client_pull.log'
+        stderr='/var/log/waggle/communicator/external_client_pull.err'
         
         sys.stdout.write('External client pull started...\n')
         comm = external_communicator()
@@ -194,8 +194,8 @@ class external_client_push(Process):
     def run(self):
         #set log files
         #TODO The logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-        stdout='/var/log/comms/external_client_pull.log'
-        stderr='/var/log/comms/external_client_pull.err'
+        stdout='/var/log/waggle/communicator/external_client_pull.log'
+        stderr='/var/log/waggle/communicator/external_client_pull.err'
         
         sys.stdout.write('External client push started...\n')
         comm = external_communicator()
