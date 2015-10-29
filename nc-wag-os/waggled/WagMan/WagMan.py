@@ -343,7 +343,7 @@ def convert_tempToADC(temperature):
 while True: 
     try:
         # Establish serial connection to SysMon
-        ser_SysMon = serial.Serial('/dev/arduinoMicro', params_core['baud rate'], timeout = 10)
+        ser_SysMon = serial.Serial('/dev/wagman', params_core['baud rate'], timeout = 10)
         #send the signal to SysMon to indicate successful node controller configuration
         ser_SysMon.write("=!")
         break
