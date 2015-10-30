@@ -100,7 +100,7 @@ do_start()
 	if [ "${NODE_ID}x" == "x" ] ; then
 	  NODE_ID="random_${RANDOM}"
 	fi
-	
+	mkdir -p /etc/waggle/
 	echo waggle_${NODE_ID} > /etc/waggle/node_id
 	echo waggle_${NODE_ID} > /etc/hostname
 
