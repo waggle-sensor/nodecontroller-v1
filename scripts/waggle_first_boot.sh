@@ -64,7 +64,7 @@ do_start()
 
 
 	# create Node ID
-	/root/create_node_id.sh
+	/usr/lib/waggle/nodecontroller/scripts/create_node_id.sh
 
 	# new host keys
 	# Not needed here because they will be recreated by the /etc/rc.local script by default.
