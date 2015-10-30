@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+
+# This rc.local file is only used once to create the waggle image. 
+
+
+if [ ! -f /etc/ssh/ssh_host_dsa_key ] ; then 
+  dpkg-reconfigure openssh-server
+  sleep 1
+  service ssh restart
+fi
+exec 2> /root/rc.local.log
+exec 1>&2
+set -x
+if [ ! -e /root/waggle_started ] ; then
+  # make sure it starts only once
+  touch /root/waggle_started
+  /usr/lib/waggle/nodecontroller/scripts/create_waggle_image.sh
+  shutdown -h now
+fi
+exit 0
