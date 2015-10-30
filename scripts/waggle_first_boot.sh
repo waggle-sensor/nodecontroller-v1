@@ -64,7 +64,7 @@ do_start()
 
 	export ODROIDMODEL=`head -n 1 /media/boot/boot.ini | cut -d '-' -f 1`
 
-	if [[ ! ${ODROIDMODEL} =~ ^ODROID ]] ; then
+	if [ $(echo $ODROIDMODEL | grep -c "^ODROID") -eq 0 ] ; then
 	  echo "error: could not detect ODROID model"
 	  return 2
 	fi
@@ -73,7 +73,7 @@ do_start()
 	export NODE_ID=""
 	
 	# try MAC address (some older models do not have unique MAC addresses)
-	if [ ${ODROIDMODEL}_ == "ODROIDC_" ] ; then
+	if [ $(echo $ODROIDMODEL | grep -c "^ODROIDC") -eq 1 ] ; then
 	  export MACADDRESS=`ifconfig eth0 | head -n 1 | grep -o "[[:xdigit:]:]\{17\}" | sed 's/://g'`
 	  if [ ! ${#MACADDRESS} -ge 12 ]; then
 	    echo "warning: could not extract MAC address"
