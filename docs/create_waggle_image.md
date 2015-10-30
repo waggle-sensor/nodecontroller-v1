@@ -4,7 +4,7 @@ Users of waggle should not need to build the waggle image on their own, but if t
 
 # Manually 
 ### 1) Boot the stock odroid ubuntu image
-   1. Copy ODROID ubuntu image onto SD-card, see [copy_image_to_sd_card.md](./copy_image_to_sd_card.md).
+   1. Copy ODROID ubuntu image onto SD-card, see [copy_waggle_image_to_memory_card.md](https://github.com/waggle-sensor/waggle/blob/master/user_documentation/copy_waggle_image_to_memory_card.md).
    2. Boot the ODROID with SD-card.
    3. ssh into ODROID as root ! Do not ssh as "odroid", and if you do accidentally, reboot! Otherwise the waggle script cannot rename the default user.
 
