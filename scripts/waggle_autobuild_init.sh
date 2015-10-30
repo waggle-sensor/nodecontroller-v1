@@ -17,11 +17,18 @@ else
 fi
 echo "DEVICE_NAME: ${DEVICE_NAME}"
 
-
+#get curl
 if ! $(hash curl 2>/dev/null) ; then
   apt-get update
   apt-get install -y curl
 fi
+
+# get git
+if ! $(hash git 2>/dev/null) ; then
+  apt-get update
+  apt-get install -y git
+fi
+
 
 #OTHER_UUID=$(blkid /dev/${DEVICE_NAME}p2 -s UUID | grep -o "[0-9a-zA-Z-]\{36\}")
 
@@ -53,49 +60,23 @@ sleep 1
 
 
 # now we need to insert the init script, such that on next boot the waggle image can be created:
-mkdir -p /media/waggleroot
+export WAGGLEROOT=/media/waggleroot
+mkdir -p ${WAGGLEROOT}
 #partprobe /dev/${DEVICE_NAME}
 sleep 2
-mount /dev/${DEVICE_NAME}p2 /media/waggleroot
+mount /dev/${DEVICE_NAME}p2 ${WAGGLEROOT}
 
+# download nodecontroller repo
+mkdir -p ${WAGGLEROOT}/usr/lib/waggle
+rm -rf ${WAGGLEROOT}/usr/lib/waggle/nodecontroller
 
+git clone --recursive https://github.com/waggle-sensor/nodecontroller.git ${WAGGLEROOT}/usr/lib/waggle/nodecontroller
 
-curl https://raw.githubusercontent.com/waggle-sensor/waggle/master/nodecontroller/scripts/create_waggle_image.sh > /media/waggleroot/root/create_waggle_image.sh
-chmod +x /media/waggleroot/root/create_waggle_image.sh
-echo 'shutdown -h now'  >> /media/waggleroot/root/create_waggle_image.sh
+# uce rc.local to start autobuild on next boot
+rm -f ${WAGGLEROOT}/etc/rc.local
+#dangling symlink
+ln -s /usr/lib/waggle/nodecontroller/scripts/rc.local ${WAGGLEROOT}/etc/rc.local
 
-
-
-# simply invoke via /media/waggleroot/etc/rc.local
-
-cat <<EOF > /media/waggleroot/etc/rc.local
-#!/bin/bash
-#
-# rc.local
-#
-# This script is executed at the end of each multiuser runlevel.
-# Make sure that the script will "exit 0" on success or any other
-# value on error.
-#
-# In order to enable or disable this script just change the execution
-# bits.
-#
-# By default this script does nothing.
-
-if [ ! -f /etc/ssh/ssh_host_dsa_key ] ; then 
-  dpkg-reconfigure openssh-server
-  sleep 1
-  service ssh restart
-fi
-exec 2> /root/rc.local.log
-exec 1>&2
-set -x
-if [ ! -e /root/waggle_started ] ; then
-  touch /root/waggle_started
-  /root/create_waggle_image.sh
-fi
-exit 0
-EOF
 #umount
 if [ $(df -h | grep -c /dev/${DEVICE_NAME}p2 ) == 1 ] ; then 
   while ! $(umount /dev/${DEVICE_NAME}p2) ; do sleep 3 ; done
