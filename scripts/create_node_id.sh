@@ -7,8 +7,7 @@ set -x
 export ODROIDMODEL=`head -n 1 /media/boot/boot.ini | cut -d '-' -f 1`
 
 if [ $(echo $ODROIDMODEL | grep -c "^ODROID") -eq 0 ] ; then
-  echo "error: could not detect ODROID model"
-  return 2
+  echo "warning: could not detect ODROID model"
 fi
 
 ### Node ID
