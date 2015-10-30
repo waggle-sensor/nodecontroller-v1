@@ -48,7 +48,10 @@ case "$1" in
     stop)
     if is_running; then
         echo -n "Stopping $name.."
-        kill -TERM -`get_pid`
+        # delete process group ID
+        export PID=`get_pid`
+        export PGID=$(ps -o pgid= $PID | grep -o '[0-9]*')
+        kill -TERM -"$PGID"
         for i in {1..10}
         do
             if ! is_running; then
