@@ -78,7 +78,7 @@ do_start()
 	  if [ ! ${#MACADDRESS} -ge 12 ]; then
 	    echo "warning: could not extract MAC address"
 	  else
-	    NODE_ID=${MACADDRESS}  
+	    NODE_ID="mac_${MACADDRESS}"  
 	  fi
 	fi
 	
@@ -92,7 +92,7 @@ do_start()
 	  if [ ! ${#SERIAL_ID} -ge 11 ]; then
 	    echo "warning: could not create unique identifier from SD-card serial number"
 	  else
-	    NODE_ID=${SERIAL_ID} 
+	    NODE_ID="serial_${SERIAL_ID}" 
 	  fi
 	fi
 	
