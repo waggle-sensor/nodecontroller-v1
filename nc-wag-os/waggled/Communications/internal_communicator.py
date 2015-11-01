@@ -178,9 +178,13 @@ class push_server(Process):
         comm = internal_communicator()
         HOST = NCIP 
         PORT = 9090
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server.bind((HOST,PORT))
-        server.listen(5) #supports up to 5 threads, one for each GN
+        try:
+          server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+          server.bind((HOST,PORT))
+          server.listen(5) #supports up to 5 threads, one for each GN
+        except socket.error as msg:
+          print "Socket Error: %s" % msg 
+          
         sys.stdout.write('Internal push server process started...\n')
 
         while True:
