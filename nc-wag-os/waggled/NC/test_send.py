@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import time, serial, sys
 sys.path.append('../../../protocol/')
 from utilities import packetmaker
