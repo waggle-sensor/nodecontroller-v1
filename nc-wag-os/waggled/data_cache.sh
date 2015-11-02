@@ -14,7 +14,7 @@ cmd_start="python Data_Cache.py start"
 cmd_stop="python Data_Cache.py stop"
 user=""
 
-name=`basename $0`
+name="data_cache_initd"
 #pid_file="/var/run/$name.pid"
 # data_cache writes its own pid file
 pid_file="/var/run/Data_Cache.pid" 
