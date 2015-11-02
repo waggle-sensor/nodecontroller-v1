@@ -13,7 +13,7 @@ dir="/usr/lib/waggle/nodecontroller/nc-wag-os/waggled/WagMan"
 cmd="python WagMan.py"
 user=""
 
-name=`basename $0`
+name="wagman"
 pid_file="/var/run/$name.pid"
 stdout_log="/var/log/waggle/$name.log"
 stderr_log="/var/log/waggle/$name.err"
