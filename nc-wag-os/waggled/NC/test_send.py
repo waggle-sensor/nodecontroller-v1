@@ -7,8 +7,8 @@ from internal_communicator import send
 import time
 count = 0
 while 1:
-    #sendData=['This', str(time.time()) ,'is','a','fake','sensor - ',str(count)]
-    sendData=['This','is','a','fake','sensor - ',str(count)]
+    tempC = int(open('/sys/class/thermal/thermal_zone0/temp').read()) / 1e3
+    sendData=['sensor1', int(time.time()), ['Temperature']  , ['i'], [tempC], ['Celsius'], ['count='+str(count)]]
     print 'Sending data: ',sendData
     #packs and sends the data
     packet = packetmaker.make_data_packet(sendData)
