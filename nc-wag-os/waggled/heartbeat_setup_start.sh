@@ -13,7 +13,7 @@ dir="/usr/lib/waggle/nodecontroller/nc-wag-os/waggled/WagMan"
 cmd="./heartbeat_setup.sh"
 user=""
 
-name=`basename $0`
+name="heartbeat_setup_initd"
 pid_file="/var/run/$name.pid"
 stdout_log="/var/log/waggle/$name.log"
 stderr_log="/var/log/waggle/$name.err"
