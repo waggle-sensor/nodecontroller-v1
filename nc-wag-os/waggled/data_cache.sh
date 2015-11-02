@@ -66,10 +66,11 @@ case "$1" in
             echo -n "."
             sleep 1
         done
-        echo "kill -9"
-        kill -9 $pid
-        sleep 2
-
+        if is_running; then
+          echo "kill -9"
+          kill -9 $pid
+          sleep 2
+        fi
         if is_running; then
             echo "Not stopped; may still be shutting down or shutdown may have failed"
             exit 1
