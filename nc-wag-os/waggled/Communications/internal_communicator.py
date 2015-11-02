@@ -30,7 +30,8 @@ def send(msg):
                 client_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                 try:
                     client_sock.connect('/tmp/Data_Cache_server')
-                    #print "Connected to data cache... "
+                    print "Connected to data cache... "
+                    sys.stdout.flush()
                     client_sock.sendall(msg)
                     client_sock.close() #closes socket after each message is sent 
                     break #break loop when message sent. Otherwise, keep trying to connect until successful.
@@ -45,6 +46,7 @@ def send(msg):
 
         except KeyboardInterrupt, k:
             print "Shutting down."
+            sys.stdout.flush()
             break
     client_sock.close()
     
@@ -81,6 +83,7 @@ class internal_client_push(Process):
         
         comm = internal_communicator()
         sys.stdout.write('Internal client push started...\n')
+        sys.stdout.flush()
         while True:
             try:
                 #if the queue is not empty, connect to DC and send msg
@@ -124,7 +127,7 @@ class internal_client_pull(Process):
         
         comm = internal_communicator()
         sys.stdout.write('Internal client pull started...\n')
-        
+        sys.stdout.flush()
         while True:
             while comm.incoming_request.empty(): #sleeps until a GN initiates a pull request
                 time.sleep(1)
@@ -153,6 +156,7 @@ class internal_client_pull(Process):
                     except Exception as e:
                         sys.stderr.write(e)
                         print e
+                        sys.stdout.flush()
                         client_sock.close()
                         time.sleep(5)
                 else:
@@ -183,6 +187,7 @@ class push_server(Process):
           server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         except socket.error as msg:
           sys.stdout.write( "(socket.socket) Socket Error: %s\n" % msg )
+          sys.stdout.flush()
           return 1
         try:  
           server.bind((HOST,PORT))
@@ -212,6 +217,7 @@ class push_server(Process):
                     
                 except KeyboardInterrupt, k:
                     print "Internal push server shutting down."
+                    sys.stdout.flush()
                     break
         server.close()
             
@@ -267,6 +273,7 @@ class pull_server(Process):
                             
                 except KeyboardInterrupt, k:
                     print "Internal pull server shutting down."
+                    sys.stdout.flush()
                     server.close()
                     break
         server.close()
