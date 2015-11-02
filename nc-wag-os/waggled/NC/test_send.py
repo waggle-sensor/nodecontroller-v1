@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import time, serial, sys
+import time, serial, sys, datetime
 sys.path.append('../../../protocol/')
 from utilities import packetmaker
 sys.path.append('../Communications/')
