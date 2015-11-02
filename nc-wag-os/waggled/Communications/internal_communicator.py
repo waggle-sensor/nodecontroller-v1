@@ -176,7 +176,8 @@ class push_server(Process):
         stderr='/var/log/waggle/communicator/push_server.err'
         
         comm = internal_communicator()
-        HOST = NCIP 
+        #HOST = NCIP 
+        socket.gethostname()
         PORT = 9090
         try:
           server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -229,7 +230,8 @@ class pull_server(Process):
         stderr='/var/log/waggle/communicator/pull_server.err'
         
         comm = internal_communicator()
-        HOST = NCIP
+        #HOST = NCIP
+        HOST=socket.gethostname()
         PORT = 9091
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind((HOST,PORT))
