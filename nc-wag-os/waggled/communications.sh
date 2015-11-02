@@ -13,7 +13,7 @@ dir="/usr/lib/waggle/nodecontroller/nc-wag-os/waggled/Communications"
 cmd="python communications_main.py"
 user=""
 
-name=`basename $0`
+name=communications
 pid_file="/var/run/$name.pid"
 stdout_log="/var/log/waggle/communicator/$name.log"
 stderr_log="/var/log/waggle/communicator/$name.err"
