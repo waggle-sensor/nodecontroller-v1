@@ -177,7 +177,7 @@ class push_server(Process):
         
         comm = internal_communicator()
         #HOST = NCIP 
-        socket.gethostname()
+        HOST = socket.gethostname()
         PORT = 9090
         try:
           server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -231,7 +231,7 @@ class pull_server(Process):
         
         comm = internal_communicator()
         #HOST = NCIP
-        HOST=socket.gethostname()
+        HOST = socket.gethostname()
         PORT = 9091
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind((HOST,PORT))
