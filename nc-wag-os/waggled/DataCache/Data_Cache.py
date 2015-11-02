@@ -52,10 +52,12 @@ class Data_Cache(Daemon):
             #indicates that the server is flushing the buffers. Shuts down the server until the all queues have been written to a file
             while Data_Cache.flush ==1:
                 print "Cache is in flush state"
+                sys.stdout.flush()
                 time.sleep(1)
             if os.path.exists('/tmp/Data_Cache_server'): #checking for the file
                 os.remove('/tmp/Data_Cache_server')
             print "Opening server socket..."
+            sys.stdout.flush()
             
             #creates a UNIX, STREAMing socket
             server_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -68,9 +70,11 @@ class Data_Cache(Daemon):
             
                 if Data_Cache.flush==1: #shuts down the server until the all queues have been written to a file
                     print 'Server flush!'
+                    sys.stdout.flush()
                     server_sock.close()
                     os.remove('/tmp/Data_Cache_server')
                     print 'Server flush closed socket'
+                    sys.stdout.flush()
                     break
                 
                 #accept connections from outside
@@ -85,6 +89,7 @@ class Data_Cache(Daemon):
                         if data == 'Flush':
                             #flush all stored messages into files
                             print 'External flush request made.'
+                            sys.stdout.flush()
                             DC_flush(incoming_available_queues, outgoing_available_queues)
                         #Indicates that it is a pull request 
                         elif data[0] == '|': #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
@@ -184,6 +189,7 @@ class Data_Cache(Daemon):
     def stop(self):
         try:
             print 'Flushing data cache....'
+            sys.stdout.flush()
             external_flush()
             #The data cache needs time to flush the messages before stopping the process
             time.sleep(5)
@@ -209,7 +215,7 @@ def external_flush():
         print "Sent flush command."
     else: 
         print 'Data cache running?'
-            
+    sys.stdout.flush()
 
 def outgoing_push(dev, msg_p, msg, outgoing_available_queues, incoming_available_queues): 
     """
@@ -427,12 +433,13 @@ def DC_flush(incoming_available_queues, outgoing_available_queues):
     Data_Cache.flush = 1
     cur_date = str(datetime.datetime.now().strftime('%Y%m%d%H:%M:%S'))
     print 'Flushing at ' + cur_date
-    
+    sys.stdout.flush()
     try:
         
         filename = '/var/dc/outgoing_msgs/' + cur_date #file name is date of flush
         f = open(filename, 'w')
         print 'Flushing outgoing'
+        sys.stdout.flush()
         while True: #write all outgoing messages to outgoing file
             #messages are written to file with highest priority at the top
             msg = outgoing_pull(outgoing_available_queues) #returns false when all queues are empty
@@ -443,6 +450,7 @@ def DC_flush(incoming_available_queues, outgoing_available_queues):
                 f.write(msg + '\n') 
         f.close()
         print 'Flushing incoming'
+        sys.stdout.flush()
         for i in PRIORITY_ORDER: #write all incoming messages to file
             #each device has a separate folder. This prevents needing to loop through all messages or all files to find messages for only the connected devices.
             #TODO Change this to /etc/waggle/dc/outgoing or something
@@ -469,6 +477,7 @@ def DC_flush(incoming_available_queues, outgoing_available_queues):
                     
         Data_Cache.flush = 0 #restart server
         print 'Data cache restarted'
+        sys.stdout.flush()
     except Exception as e:
         print e
 
