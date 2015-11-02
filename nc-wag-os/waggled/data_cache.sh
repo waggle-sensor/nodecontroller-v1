@@ -15,7 +15,9 @@ cmd_stop="python Data_Cache.py stop"
 user=""
 
 name=`basename $0`
-pid_file="/var/run/$name.pid"
+#pid_file="/var/run/$name.pid"
+# data_cache writes its own pid file
+pid_file="/var/run/Data_Cache.pid" 
 stdout_log="/var/log/waggle/$name.log"
 stderr_log="/var/log/waggle/$name.err"
 
@@ -39,7 +41,7 @@ case "$1" in
         else
             sudo -u "$user" $cmd_start >> "$stdout_log" 2>> "$stderr_log" &
         fi
-        echo $! > "$pid_file"
+        #echo $! > "$pid_file" # data_cache writes its own pid file
         sleep 1
         if ! is_running; then
             echo "Unable to start, see $stdout_log and $stderr_log"
@@ -69,9 +71,9 @@ case "$1" in
             exit 1
         else
             echo "Stopped"
-            if [ -f "$pid_file" ]; then
-                rm "$pid_file"
-            fi
+            #if [ -f "$pid_file" ]; then
+            #    rm "$pid_file"
+            #fi
         fi
     else
         echo "Not running"
