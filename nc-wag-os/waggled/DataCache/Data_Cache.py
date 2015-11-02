@@ -50,7 +50,8 @@ class Data_Cache(Daemon):
         while True:
             
             #indicates that the server is flushing the buffers. Shuts down the server until the all queues have been written to a file
-            while Data_Cache.flush ==1: 
+            while Data_Cache.flush ==1:
+                print "Cache is in flush state"
                 time.sleep(1)
             if os.path.exists('/tmp/Data_Cache_server'): #checking for the file
                 os.remove('/tmp/Data_Cache_server')
@@ -83,7 +84,7 @@ class Data_Cache(Daemon):
                         #'Flush' means that there is an external flush request or if WagMan is about to shut down the node controller
                         if data == 'Flush':
                             #flush all stored messages into files
-                            print 'Flush request made.'
+                            print 'External flush request made.'
                             DC_flush(incoming_available_queues, outgoing_available_queues)
                         #Indicates that it is a pull request 
                         elif data[0] == '|': #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
@@ -205,6 +206,7 @@ def external_flush():
         except Exception as e:
             print e
             client_sock.close()
+         print 'Sent flush command.'
     else: 
         print 'Data cache running?'
             
