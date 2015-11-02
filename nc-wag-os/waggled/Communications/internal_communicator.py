@@ -186,7 +186,7 @@ class push_server(Process):
         try:  
           server.bind((HOST,PORT))
         except socket.error as msg:
-          sys.stdout.write( "(server.bind) Socket Error: %s\n" % msg )
+          sys.stdout.write( "(server.bind) Socket Error: %s (%s, %s)\n" % msg, HOST, PORT )
           return 1
         try:
           server.listen(5) #supports up to 5 threads, one for each GN
