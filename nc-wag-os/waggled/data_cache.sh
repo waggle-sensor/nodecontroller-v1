@@ -40,6 +40,7 @@ case "$1" in
             sudo -u "$user" $cmd_start >> "$stdout_log" 2>> "$stderr_log" &
         fi
         echo $! > "$pid_file"
+        sleep 1
         if ! is_running; then
             echo "Unable to start, see $stdout_log and $stderr_log"
             exit 1
