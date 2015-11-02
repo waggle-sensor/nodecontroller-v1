@@ -35,6 +35,7 @@ case "$1" in
         echo "Already started"
     else
         echo "Starting $name"
+        rm -f $pid_file
         cd "$dir"
         if [ -z "$user" ]; then
             sudo $cmd_start >> "$stdout_log" 2>> "$stderr_log" &
