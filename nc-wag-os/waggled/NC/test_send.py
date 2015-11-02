@@ -13,7 +13,8 @@ while 1:
     packet = packetmaker.make_data_packet(sendData)
     for pack in packet:
         send(pack)
-    #send a packet every ten seconds
-    time.sleep(10)
+    #send a packet every second
+    time.sleep(1)
+    count = count + 1
 
 
