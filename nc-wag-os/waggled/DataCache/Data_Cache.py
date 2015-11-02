@@ -206,7 +206,7 @@ def external_flush():
         except Exception as e:
             print e
             client_sock.close()
-         print 'Sent flush command.'
+         print "Sent flush command."
     else: 
         print 'Data cache running?'
             
