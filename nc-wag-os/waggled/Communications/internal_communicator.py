@@ -181,17 +181,17 @@ class push_server(Process):
         try:
           server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         except socket.error as msg:
-          sys.stdout.write( "(socket.socket) Socket Error: %s" % msg )
+          sys.stdout.write( "(socket.socket) Socket Error: %s\n" % msg )
           return 1
         try:  
           server.bind((HOST,PORT))
         except socket.error as msg:
-          sys.stdout.write( "(server.bind) Socket Error: %s" % msg )
+          sys.stdout.write( "(server.bind) Socket Error: %s\n" % msg )
           return 1
         try:
           server.listen(5) #supports up to 5 threads, one for each GN
         except socket.error as msg:
-          sys.stdout.write( "(server.listen) Socket Error: %s" % msg )
+          sys.stdout.write( "(server.listen) Socket Error: %s\n" % msg )
           return 1
           
         sys.stdout.write('Internal push server process started...\n')
