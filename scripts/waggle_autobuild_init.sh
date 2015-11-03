@@ -162,6 +162,20 @@ if [ $(blkid /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 /dev/${CURRENT_DEVICE}${CU
   exit 1
 fi
 
+# activate slave image
+export OTHER_UUID=$(blkid /dev/sda2 -o export | grep UUID | grep -o "[a-f0-9-]*")
+if [ "${OTHER_UUID}_" == "_" ] ; then
+  echo "uuid not found"
+  exit 1
+fi
+
+if [ $(grep "^setenv bootargs" /media/boot/boot.ini | grep -c ${OTHER_UUID}) -eq 0 ] ; then
+  sed -i.bak -n -e 'p; s/^setenv bootargs/###original### setenv bootargs/p'  /media/boot/boot.ini
+
+  sed -i -e "0,/^setenv bootargs/{s/root=UUID=[a-f0-9-]*/root=UUID=${OTHER_UUID}/}"  /media/boot/boot.ini
+fi
+
+
 set +x
 echo "Restart now with jumper 1 closed. Be sure to take the power away completly, a simple reboot is not enough. 30 seconds after new start you can open the jumper again."
 echo "e.g.: shutdown -h now"
