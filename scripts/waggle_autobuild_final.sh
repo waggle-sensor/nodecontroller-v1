@@ -135,7 +135,7 @@ export SECTOR_SIZE=`fdisk -l /dev/${OTHER_DEVICE} | grep "Sector size" | grep -o
 
 export FRONT_SIZE_KB=`echo "${SECTOR_SIZE} * ${START} / 1024" | bc` ; echo "FRONT_SIZE_KB: ${FRONT_SIZE_KB}"
 
-
+partprobe  /dev/${OTHER_DEVICE}
 
 ### fdisk (shrink partition)
 # fdisk: (d)elete partition 2 ; (c)reate new partiton 2 ; specify start posirion and size of new partiton
