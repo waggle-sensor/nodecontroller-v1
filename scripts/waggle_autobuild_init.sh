@@ -11,11 +11,11 @@ export IMAGE="ubuntu-14.04.3lts-lubuntu-odroid-c1-20151020.img"
 # this is the device where we will build the waggle image
 export CURRENT_DEVICE=$(df --output=source / | grep "^/") ; echo "CURRENT_DEVICE: ${CURRENT_DEVICE}" 
 if [ ${CURRENT_DEVICE} == "/dev/mmcblk1p2" ] ; then 
-  export DEVICE_NAME="mmcblk0" 
+  export OTHER_DEVICE="mmcblk0"
 else 
-  export DEVICE_NAME="mmcblk1"
+  export OTHER_DEVICE="mmcblk1"
 fi
-echo "DEVICE_NAME: ${DEVICE_NAME}"
+echo "OTHER_DEVICE: ${OTHER_DEVICE}"
 
 #get curl
 if ! $(hash curl 2>/dev/null) ; then
@@ -30,7 +30,7 @@ if ! $(hash git 2>/dev/null) ; then
 fi
 
 
-#OTHER_UUID=$(blkid /dev/${DEVICE_NAME}p2 -s UUID | grep -o "[0-9a-zA-Z-]\{36\}")
+#OTHER_UUID=$(blkid /dev/${OTHER_DEVICE}p2 -s UUID | grep -o "[0-9a-zA-Z-]\{36\}")
 
 if [ ! -e ${IMAGE}.xz ] ; then
   wget ${URL}${IMAGE}.xz
@@ -42,18 +42,18 @@ if [ ! -e ${IMAGE}.xz ] ; then
 fi
 
 set +e
-if [ $(df -h | grep -c /dev/${DEVICE_NAME}p1 ) == 1 ] ; then 
-  while ! $(umount /dev/${DEVICE_NAME}p1) ; do sleep 3 ; done
+if [ $(df -h | grep -c /dev/${OTHER_DEVICE}p1 ) == 1 ] ; then 
+  while ! $(umount /dev/${OTHER_DEVICE}p1) ; do sleep 3 ; done
 fi
-if [ $(df -h | grep -c /dev/${DEVICE_NAME}p2 ) == 1 ] ; then 
-  while ! $(umount /dev/${DEVICE_NAME}p2) ; do sleep 3 ; done
+if [ $(df -h | grep -c /dev/${OTHER_DEVICE}p2 ) == 1 ] ; then 
+  while ! $(umount /dev/${OTHER_DEVICE}p2) ; do sleep 3 ; done
 fi
 set -e
 
 sleep 1
-# dd if=${IMAGE} of=/dev/${DEVICE_NAME} bs=1M conv=fsync
+# dd if=${IMAGE} of=/dev/${OTHER_DEVICE} bs=1M conv=fsync
 # image too large, this is why we unxz on the fly: (takes about 8 minutes)
-cat ${IMAGE}.xz | unxz - | dd of=/dev/${DEVICE_NAME} bs=1M conv=fsync
+cat ${IMAGE}.xz | unxz - | dd of=/dev/${OTHER_DEVICE} bs=1M conv=fsync
 sleep 1 
 sync
 sleep 1
@@ -62,9 +62,9 @@ sleep 1
 # now we need to insert the init script, such that on next boot the waggle image can be created:
 export WAGGLEROOT=/media/waggleroot
 mkdir -p ${WAGGLEROOT}
-#partprobe /dev/${DEVICE_NAME}
+#partprobe /dev/${OTHER_DEVICE}
 sleep 2
-mount /dev/${DEVICE_NAME}p2 ${WAGGLEROOT}
+mount /dev/${OTHER_DEVICE}p2 ${WAGGLEROOT}
 
 # download nodecontroller repo
 mkdir -p ${WAGGLEROOT}/usr/lib/waggle
@@ -78,19 +78,19 @@ rm -f ${WAGGLEROOT}/etc/rc.local
 ln -s /usr/lib/waggle/nodecontroller/scripts/rc.local ${WAGGLEROOT}/etc/rc.local
 
 #umount
-if [ $(df -h | grep -c /dev/${DEVICE_NAME}p2 ) == 1 ] ; then 
-  while ! $(umount /dev/${DEVICE_NAME}p2) ; do sleep 3 ; done
+if [ $(df -h | grep -c /dev/${OTHER_DEVICE}p2 ) == 1 ] ; then 
+  while ! $(umount /dev/${OTHER_DEVICE}p2) ; do sleep 3 ; done
 fi
 
 mkdir -p /media/waggleboot
 sleep 2
-mount /dev/${DEVICE_NAME}p1 /media/waggleboot
+mount /dev/${OTHER_DEVICE}p1 /media/waggleboot
 
 #change resolution:
 sed -i.bak -e "s/^setenv m /# setenv m /" -e "s/# setenv m \"1440x900p60hz\"/setenv m \"1440x900p60hz\"/" /media/waggleboot/boot.ini
 
-if [ $(df -h | grep -c /dev/${DEVICE_NAME}p1 ) == 1 ] ; then 
-  while ! $(umount /dev/${DEVICE_NAME}p1) ; do sleep 3 ; done
+if [ $(df -h | grep -c /dev/${OTHER_DEVICE}p1 ) == 1 ] ; then 
+  while ! $(umount /dev/${OTHER_DEVICE}p1) ; do sleep 3 ; done
 fi
 
 if [ $(blkid /dev/mmcblk0p2 /dev/mmcblk1p2 | grep -o "UUID=\"[^ ]*\"" | sort -u | wc -l) == 1 ] ; then 
