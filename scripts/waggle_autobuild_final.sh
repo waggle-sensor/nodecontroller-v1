@@ -115,9 +115,17 @@ export FILESYSTEM_SIZE_KB=`df -BK --output=used /dev/${OTHER_DEVICE}${OTHER_DEV_
 # add 300MB
 export NEW_PARTITION_SIZE_KB=$(echo "${FILESYSTEM_SIZE_KB} + (1024)*300" | bc) ; echo "NEW_PARTITION_SIZE_KB: ${NEW_PARTITION_SIZE_KB}"
 
+# unmount the boot partition
+if [ $(df -h | grep -c /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}1 ) == 1 ] ; then
+  while ! $(umount /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}1) ; do sleep 3 ; done
+fi
+
+# unmount the root partition
 if [ $(df -h | grep -c /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ) == 1 ] ; then
   while ! $(umount /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2) ; do sleep 3 ; done
 fi
+
+
 
 
 # just for information: dumpe2fs -h ${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2
