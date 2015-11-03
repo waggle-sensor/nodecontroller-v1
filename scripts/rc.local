@@ -12,7 +12,8 @@
 # By default this script does nothing.
 
 
-# This rc.local file is only used once to create the waggle image. 
+### Waggle ###
+### This rc.local file is only used once to create the waggle image. ###
 
 
 if [ ! -f /etc/ssh/ssh_host_dsa_key ] ; then 
@@ -24,16 +25,21 @@ exec 2> /root/rc.local.log
 exec 1>&2
 set -x
 
-# reactivate original bootargs
-if [ $(grep -c "###original### " /media/boot/boot.ini) -eq 1 ] ; then
-  sed -i.bak2 -e '/^setenv bootargs/d' -e "s/^###original### //" /media/boot/boot.ini
+# first reactivate original bootargs
+export BOOTINI="/media/odroid/BOOT/boot.ini"
+if [ -e ${BOOTINI} ] ; then
+  if [ $(grep -c "###original### " ${BOOTINI}) -eq 1 ] ; then
+    sed -i.bak2 -e '/^setenv bootargs/d' -e "s/^###original### //" ${BOOTINI}
+  else
+    echo "info: ###original### bootargs not found in ${BOOTINI}"
+  fi
 else
-  echo "info: ###original### bootargs not found in /media/boot/boot.ini"
+  echo "did not find file ${BOOTINI}"
 fi
 
-if [ ! -e /root/waggle_started ] ; then
+if [ ! -e /root/.waggle_started ] ; then
   # make sure it starts only once
-  touch /root/waggle_started
+  touch /root/.waggle_started
   /usr/lib/waggle/nodecontroller/scripts/create_waggle_image.sh
   shutdown -h now
 fi
