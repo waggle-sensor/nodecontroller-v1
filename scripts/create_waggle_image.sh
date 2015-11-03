@@ -140,5 +140,16 @@ touch /root/first_boot
 
 set +x
 date
-echo "Done. You can now run \"shutdown -h now\"."
+
+echo "Done."
+set -x
+
+if [ ! $# -eq 0 ] ; then
+  if [ "${1}_" == "reboot_" ] ; then
+    reboot
+  fi
+fi
+
+set +x
+echo "You can now run \"shutdown -h now\"."
 
