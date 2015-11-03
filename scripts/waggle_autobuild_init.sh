@@ -55,15 +55,20 @@ function dev_suffix {
 
 
   echo "error: Device type unknown"
-  exit 1
-
-
+  return "unknown"
 }
 
 
 export OTHER_DEV_SUFFIX=`dev_suffix "/dev/${OTHER_DEVICE}"`
+if [ "${OTHER_DEV_SUFFIX}_" == "unknown_" ] ; then
+  exit 1
+fi
 
 export CURRENT_DEV_SUFFIX=`dev_suffix "/dev/${CURRENT_DEVICE}"`
+if [ "${CURRENT_DEV_SUFFIX}_" == "unknown_" ] ; then
+  exit 1
+fi
+
 
 echo "CURRENT_DEV_SUFFIX: ${CURRENT_DEV_SUFFIX}"
 echo "OTHER_DEV_SUFFIX: ${OTHER_DEV_SUFFIX}"
