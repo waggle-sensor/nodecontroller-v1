@@ -137,6 +137,8 @@ export FRONT_SIZE_KB=`echo "${SECTOR_SIZE} * ${START} / 1024" | bc` ; echo "FRON
 
 partprobe  /dev/${OTHER_DEVICE}
 
+sleep 3
+
 ### fdisk (shrink partition)
 # fdisk: (d)elete partition 2 ; (c)reate new partiton 2 ; specify start posirion and size of new partiton
 echo -e "d\n2\nn\np\n2\n${START}\n+${NEW_PARTITION_SIZE_KB}K\nw\n" | fdisk /dev/${OTHER_DEVICE}
