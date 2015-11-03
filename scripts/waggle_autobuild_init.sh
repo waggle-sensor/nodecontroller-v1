@@ -6,7 +6,7 @@ set -e
 set -x
 
 export URL="http://odroid.in/ubuntu_14.04lts/"
-export IMAGE="ubuntu-14.04.3lts-lubuntu-odroid-c1-20150811.img"
+export IMAGE="ubuntu-14.04.3lts-lubuntu-odroid-c1-20151020.img"
 
 # this is the device where we will build the waggle image
 export CURRENT_DEVICE=$(df --output=source / | grep "^/") ; echo "CURRENT_DEVICE: ${CURRENT_DEVICE}" 
