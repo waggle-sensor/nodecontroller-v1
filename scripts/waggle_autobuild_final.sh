@@ -85,6 +85,7 @@ cp ${WAGGLE_ROOT}/root/report.txt ${NEW_IMAGE}.report.txt
 cp ${WAGGLE_ROOT}/root/rc.local.log ${NEW_IMAGE}.rc.local.log
 
 # put original rc.local in place again
+rm -f ${WAGGLE_ROOT}/etc/rc.local
 cat <<EOF > ${WAGGLE_ROOT}/etc/rc.local
 #!/bin/sh -e
 #
