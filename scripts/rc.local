@@ -27,6 +27,15 @@ set -x
 
 # first reactivate original bootargs
 export BOOTINI="/media/odroid/BOOT/boot.ini"
+export TRIES=30
+
+while [ 0 -lt ${TRIES} ] ; do
+  if [ -e ${BOOTINI} ] ; then
+    TRIES=0
+  fi
+  sleep 5
+done
+
 if [ -e ${BOOTINI} ] ; then
   if [ $(grep -c "###original### " ${BOOTINI}) -eq 1 ] ; then
     sed -i.bak2 -e '/^setenv bootargs/d' -e "s/^###original### //" ${BOOTINI}
