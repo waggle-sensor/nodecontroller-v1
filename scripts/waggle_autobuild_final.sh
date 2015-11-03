@@ -30,7 +30,7 @@ echo "OTHER_DEVICE: /dev/${OTHER_DEVICE}"
 
 # probably not needed anyway....
 export CURRENT_DEVICE=$(df --output=source / | grep "^/") ; echo "CURRENT_DEVICE: ${CURRENT_DEVICE}"
-
+CURRENT_DEVICE=`basename ${CURRENT_DEVICE}`
 
 
 function dev_suffix {
