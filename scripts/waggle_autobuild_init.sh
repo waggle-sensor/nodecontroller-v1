@@ -44,18 +44,20 @@ echo "OTHER_DEVICE: /dev/${OTHER_DEVICE}"
 function dev_suffix {
 
   if [[ $1 =~ ^"/dev/sd" ]] ; then
-    return ""
+    echo ""
+    return 0
   fi
   if [[ $1 =~ ^"/dev/mmcblk" ]] ; then
-    return "p"
+    echo "p"
+    return 0
   fi
   if [[ $1 =~ ^"/dev/disk" ]] ; then
-     return "s"
+	echo "s"
+	return 0
   fi
 
-
-  echo "error: Device type unknown"
-  return "unknown"
+  echo "unknown"
+  return 1
 }
 
 
