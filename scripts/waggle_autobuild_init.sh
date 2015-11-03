@@ -25,6 +25,8 @@ export OTHER_DEVICE=$1
 # this is the device where we will build the waggle image
 export CURRENT_DEVICE=$(df --output=source / | grep "^/") ; echo "CURRENT_DEVICE: ${CURRENT_DEVICE}" 
 
+CURRENT_DEVICE=`basename ${CURRENT_DEVICE}`
+
 #if [ ${CURRENT_DEVICE} == "/dev/mmcblk1p2" ] ; then
 #  export OTHER_DEVICE="mmcblk0"
 #else
