@@ -23,6 +23,14 @@ fi
 exec 2> /root/rc.local.log
 exec 1>&2
 set -x
+
+# reactivate original bootargs
+if [ $(grep -c "###original### " /media/boot/boot.ini) -eq 1 ] ; then
+  sed -i.bak2 -e '/^setenv bootargs/d' -e "s/^###original### //" /media/boot/boot.ini
+else
+  echo "info: ###original### bootargs not found in /media/boot/boot.ini"
+fi
+
 if [ ! -e /root/waggle_started ] ; then
   # make sure it starts only once
   touch /root/waggle_started
