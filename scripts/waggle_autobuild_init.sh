@@ -19,7 +19,10 @@ fi
 export OTHER_DEVICE=$1
 
 
-
+if [ ! -e change_partition_uuid.sh ] ; then
+  echo "error: change_partition_uuid.sh not found"
+  exit 1
+fi
 
 
 # this is the device where we will build the waggle image
@@ -158,8 +161,9 @@ if [ $(df -h | grep -c /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}1 ) == 1 ] ; then
 fi
 
 if [ $(blkid /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 /dev/${CURRENT_DEVICE}${CURRENT_DEV_SUFFIX}2 | grep -o "UUID=\"[^ ]*\"" | sort -u | wc -l) == 1 ] ; then
-  echo "Error: Both partitions (/dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 /dev/${CURRENT_DEVICE}${CURRENT_DEV_SUFFIX}2) have the same UUID. That will not work."
-  exit 1
+  echo "Info: Partitions (/dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 /dev/${CURRENT_DEVICE}${CURRENT_DEV_SUFFIX}2) have the same UUID. Will try to change UUID of /dev/${OTHER_DEVICE}..."
+  ./change_partition_uuid.sh /dev/${OTHER_DEVICE}
+  sleep 1
 fi
 
 # activate slave image
