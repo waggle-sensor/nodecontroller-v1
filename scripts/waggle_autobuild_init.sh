@@ -3,7 +3,7 @@
 # this script is specifically for (auto-)building images on the odroid.
 
 set -e
-set -x
+
 
 export URL="http://odroid.in/ubuntu_14.04lts/"
 export IMAGE="ubuntu-14.04.3lts-lubuntu-odroid-c1-20151020.img"
@@ -12,6 +12,9 @@ export DIR="/root"
 
 if [ $# -eq 0 ] ; then
   echo "usage: $0 <device>"
+  echo ""
+  echo "list of available devices:"
+  blkid
   exit 1
 fi
 
@@ -24,6 +27,7 @@ if [ ! -e change_partition_uuid.sh ] ; then
   exit 1
 fi
 
+set -x
 
 # this is the device where we will build the waggle image
 export CURRENT_DEVICE=$(df --output=source / | grep "^/") ; echo "CURRENT_DEVICE: ${CURRENT_DEVICE}" 
