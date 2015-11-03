@@ -110,6 +110,12 @@ if [ ! -e ${DIR}/${IMAGE}.xz ] ; then
   # too large for my 8GB-eMMC: 
   #unxz ${IMAGE}.xz
   #TODO md5sum check
+  md5sum ${DIR}/${IMAGE}.xz > ${DIR}/${IMAGE}.xz.md5sum_computed
+
+  if [ $(diff ${DIR}/${IMAGE}.xz.md5sum ${DIR}/${IMAGE}.xz.md5sum_computed) -eq 1 ] ; then
+    echo "error: md5sum seems to be wrong"
+    exit 1
+  fi
 fi
 
 set +e
