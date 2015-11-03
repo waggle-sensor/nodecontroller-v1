@@ -133,7 +133,10 @@ sleep 1
 cat ${DIR}/${IMAGE}.xz | unxz - | dd of=/dev/${OTHER_DEVICE} bs=1M conv=fsync
 sleep 1 
 sync
-sleep 1
+sleep 2
+# use partprobe, otherwise the partitions might not show up in blkid
+partprobe
+sleep 2
 
 
 # now we need to insert the init script, such that on next boot the waggle image can be created:
