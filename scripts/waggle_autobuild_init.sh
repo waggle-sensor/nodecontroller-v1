@@ -12,6 +12,7 @@ export DIR="/root"
 
 if [ $# -eq 0 ] ; then
   echo "No arguments supplied"
+  exit 1
 fi
 
 
@@ -60,9 +61,9 @@ function dev_suffix {
 }
 
 
-export OTHER_DEV_SUFFIX=dev_suffix("/dev/${OTHER_DEVICE}")
+export OTHER_DEV_SUFFIX=dev_suffix "/dev/${OTHER_DEVICE}"
 
-export CURRENT_DEV_SUFFIX=dev_suffix("/dev/${CURRENT_DEVICE}")
+export CURRENT_DEV_SUFFIX=dev_suffix "/dev/${CURRENT_DEVICE}"
 
 echo "CURRENT_DEV_SUFFIX: ${CURRENT_DEV_SUFFIX}"
 echo "OTHER_DEV_SUFFIX: ${OTHER_DEV_SUFFIX}"
