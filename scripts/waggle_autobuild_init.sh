@@ -11,7 +11,7 @@ export IMAGE="ubuntu-14.04.3lts-lubuntu-odroid-c1-20151020.img"
 export DIR="/root"
 
 if [ $# -eq 0 ] ; then
-  echo "No arguments supplied"
+  echo "usage: $0 <device>"
   exit 1
 fi
 
