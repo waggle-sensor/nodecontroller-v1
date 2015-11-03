@@ -31,6 +31,10 @@ cd ../../../
 #set waggle parameters
 mkdir -p /etc/waggle/
 
+# set node controller IP for "internal" network
+echo "10.31.81.10" > /etc/waggle/NCIP
+
+
 if [ ${BEEHIVE_HOST}x == "x" ] ; then
   # Get the IP for the server you want to connect to
   read -p "Enter the URL or IP address of the beehive cloud server you want to use: " BEEHIVE_HOST
