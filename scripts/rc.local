@@ -50,6 +50,6 @@ if [ ! -e /root/.waggle_started ] ; then
   # make sure it starts only once
   touch /root/.waggle_started
   /usr/lib/waggle/nodecontroller/scripts/create_waggle_image.sh
-  shutdown -h now
+  reboot
 fi
 exit 0
