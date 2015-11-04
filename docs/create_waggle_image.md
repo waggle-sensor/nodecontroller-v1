@@ -1,5 +1,5 @@
 
-Users of waggle should not need to build the waggle image on their own, but if they want to, here are the instructions to do that (see Section "Manually"). Further below there are also instructions on how to use an odroid/wagman-system for automatic (e.g. nightly) waggle image builds. Those instructions are mostly of interest to the waggle team itself.
+Users of waggle should not need to build the waggle image on their own, but if they want to, here are the instructions to do that (see Section "Manually"). Further below there are also instructions on how to do automatic (e.g. nightly) waggle image builds. Those instructions are mostly of interest to the waggle team itself.
 
 
 # Manually 
@@ -27,26 +27,12 @@ https://github.com/waggle-sensor/waggle/blob/master/nodecontroller/scripts/waggl
 # Auto-build setup
 This approach is used to automatically create the waggle production images.
 
-The waggle image auto-build setup requires a “master” and a “slave” memory device on the odroid. The master device can run a normal ubuntu image and the slave device is used to create the waggle image. Default operation mode is the master device. The master will copy a clean ubuntu image onto the slave and create init scripts on the slave. 
-Then the boot order needs to be changed. This can be done either manually (switching jumper 1) or by using Wagman. In both cases the boot order has to be switched to slave-master and the odroid had to be turned off and on again to let the slave prepare the waggle image. Once the slave has finished, Wagman (or the user) will invoke a reboot and the master memory device takes over control again. The master can make small modifications to the waggle image, shrink the partition and upload the final waggle image. 
+The waggle image auto-build setup requires a “master” and a “slave” memory device on the odroid. The master device can run a normal ubuntu image and the slave device (e.g. a USB stick) is used to create the waggle image. Default operation mode is the master device. The master will copy a clean ubuntu image onto the slave and create init scripts on the slave. Then the boot partition of the master will be modified to boot into the root partition of the slave.
+
 
 ### First time starting from the master
 
-The master memory device needs to be prepared a bit. You may need to resize the partition and file system and you may have to change its UUID. The UUID has to be different from the UUID of the slave!
-
-Copy image to memory:
-https://github.com/waggle-sensor/waggle/blob/master/nodecontroller/docs/copy_image_to_sd_card.md
-
-Change its UUID: (Do that before you boot from the master!)
-https://github.com/waggle-sensor/waggle/blob/master/nodecontroller/scripts/change_partition_uuid.sh
-
-
-In case you are not sure what device you are booting from
-```bash
-cat /sys/block/$(df / | grep -o "mmcblk[0-9]")/device/uevent | grep "MMC_TYPE" | cut -d '=' -f 2
-```
-
-Resize filesystem and partition
+You may have to resize filesystem and partition of the master first to have enough space to store the disk images:
 ```bash
 source /usr/local/bin/fs_resize.sh ; resize_p2
 # or if file not found
@@ -54,37 +40,43 @@ wget https://raw.githubusercontent.com/waggle-sensor/waggle/master/nodecontrolle
 chmod +x resize.sh
 ./resize.sh
 ```
-and execute this script another time after booting
 
-Change resolution (for the stock ubuntu image)
+In case you are not sure what device you just booted from
+```bash
+cat /sys/block/$(df / | grep -o "mmcblk[0-9]")/device/uevent | grep "MMC_TYPE" | cut -d '=' -f 2
+```
+
+In case you use a monitor with the ODROID and you have to change resolution (e.g. for the stock ubuntu image)
 ```bash
 sed -i.bak -e "s/^setenv m /# setenv m/" -e "s/# setenv m \"1440x900p60hz\"/setenv m \"1440x900p60hz\"/" ./boot.ini
 ```
 
-Copy private ssh key to /root/waggle-id_rsa
+Clone the nodecontroller repository:
+```bash
+git clone https://github.com/waggle-sensor/nodecontroller.git
+```
+
+Only for the waggle team: Copy private ssh key to /root/waggle-id_rsa and set correct permissions. The script will automatically upload the new waggle image to our download server.
 ```bash
 chmod 600 /root/waggle-id_rsa
 ```
 
 ### Init step
-This script will download an ubuntu image and write it to the slave memory device. It will also deploy some init scripts so that the waggle images can be build once the slave starts.
+This script will download an ubuntu image, write it to the slave memory device and modify the boot partition of the master device. It will also deploy some init scripts so that the waggle images can be build once the slave starts. Run the script without arguments to get a list of available devices.
 
 ```bash
-wget https://raw.githubusercontent.com/waggle-sensor/waggle/master/nodecontroller/scripts/waggle_autobuild_init.sh
-chmod +x waggle_autobuild_init.sh
-./waggle_autobuild_init.sh
+cd nodecontroller/scripts
+./waggle_autobuild_init.sh <device>
 ```
 
-Reboot with slave-master boot order !
+Reboot to let the slave create the waggle image. It will automaticall reboot the master afterwards.
+```bash
+reboot ; exit
+```
 
-Let slave build waggle image.
-
-Reboot with master-slave boot order !
 
 ### Final step
-This script will copy some log files out of the new waggle image, do some clean-up, and shrink filesystem and partition, copy the new image into a file, compress and upload it.
+This script will copy some log files out of the new waggle image, do some clean-up, and shrink filesystem and partition, copy the new image into a file amd compress it. (Note for waggle team members: if you copied the waggle-id_rsa, this script will also upload the image to the waggle download server.)
 ```bash
-wget https://raw.githubusercontent.com/waggle-sensor/waggle/master/nodecontroller/scripts/waggle_autobuild_final.sh
-chmod +x waggle_autobuild_final.sh
-./waggle_autobuild_final.sh
+./waggle_autobuild_final.sh <device>
 ```
