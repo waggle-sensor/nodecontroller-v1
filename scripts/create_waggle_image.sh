@@ -125,6 +125,9 @@ update-rc.d waggle_first_boot.sh defaults
 ### create report
 echo "image created: " > ${REPORT_FILE}
 date >> ${REPORT_FILE}
+echo "" >> ${REPORT_FILE}
+uname -a >> ${REPORT_FILE}
+echo "" >> ${REPORT_FILE}
 cat /etc/os-release >> ${REPORT_FILE}
 dpkg -l >> ${REPORT_FILE}
 
