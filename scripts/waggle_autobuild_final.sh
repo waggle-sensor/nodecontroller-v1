@@ -105,8 +105,8 @@ cat <<EOF > ${WAGGLE_ROOT}/etc/rc.local
 exit 0
 EOF
 
-
-#TODO: delete some intermediate files ine the new waggle image.
+chmod +x ${WAGGLE_ROOT}/etc/rc.local
+rm -f ${WAGGLE_ROOT}/root/.first_boot
 
 
 #get size
