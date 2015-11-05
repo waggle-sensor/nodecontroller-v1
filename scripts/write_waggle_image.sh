@@ -27,14 +27,14 @@ if [[ "$unamestr" == 'Darwin' ]]; then
       DEVICE_NAME=$(system_profiler SPUSBDataType | grep -A 20  "${USB_NAME}"  | grep -m 1 "BSD Name" | cut -d ':' -f 2 | tr -d ' ' | tr -d '\n')
 
       if [ "${DEVICE_NAME}_" != "_" ] ;then
-        if [ ! -e ${DEVICE_NAME} ] ; then
+        if [ ! -e /dev/r${DEVICE_NAME} ] ; then
           DEVICE_NAME=""
         fi
       fi
     done
 
     if [ "${DEVICE_NAME}_" != "_" ] && [ -e /dev/r${DEVICE_NAME} ] ; then
-      echo "found device: ${SD_DISK}"
+      echo "found device: /dev/${DEVICE_NAME}"
       sleep 2
       
       set -x
