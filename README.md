@@ -10,6 +10,22 @@ cd nodecontroller
 BEEHIVE_HOST=<IP> ./configure
 ```
 
+### node controller services
+
+```bash
+/etc/init.d/data_cache.sh start
+/etc/init.d/communications.sh start
+```
+
+### Simple CPU temperature sensor
+
+This script can be used to test sending of sensor data. Note that this script sends data to the data cache. It does not check if data actually arrives at the server.
+
+```bash
+cd /usr/lib/waggle/nodecontroller/nc-wag-os/waggled/NC
+./node_sensor.py 
+```
+
 ## Docker (only x86)
 
 A docker image is available for testing and developing purposes. Currently this is x86, thus it will not run on the ODROID, you can only execute it on Linux. We will provide ARM Docker images soon I guess.
