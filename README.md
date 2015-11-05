@@ -10,6 +10,16 @@ cd nodecontroller
 BEEHIVE_HOST=<IP> ./configure
 ```
 
+## Docker (only x86)
+
+A docker image is available for testing and developing purposes. Currently this is x86, thus it will not run on the ODROID, you can only execute it on Linux. We will provide ARM Docker images soon I guess.
+
+```bash
+docker run -ti --name nc --rm waggle/nodecontroller
+cd /usr/lib/waggle/nodecontroller/
+BEEHIVE_HOST=<IP> ./configure
+```
+
 ## Developer Notes
 
 Everything that is installed on the Node Controller lives here.  There
