@@ -47,4 +47,4 @@ fi
 #save node ID
 mkdir -p /etc/waggle/
 echo ${NODE_ID} > /etc/waggle/node_id
-echo ${NODE_ID} > /etc/hostname
+# echo ${NODE_ID} > /etc/hostname
