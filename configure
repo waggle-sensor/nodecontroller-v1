@@ -8,7 +8,7 @@ export waggled_dir="$(pwd)/nc-wag-os/waggled"
 
 
 if [ $(python -c "import crcmod;" ; echo $?) -ne 0 ] ; then
-  ./scripts/install_depdendencies.sh
+  ./scripts/install_dependencies.sh
 fi
 
 # for log files
