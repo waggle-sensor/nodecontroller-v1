@@ -2,7 +2,7 @@
 set -x
 IMAGE="waggle-odroid-c1-20151105.img"
 USB_NAME="Transcend"
-DEVICE_NAME=""
+
 
 ### Use this script at your own risk ###
 
@@ -22,6 +22,7 @@ if [[ "$unamestr" == 'Darwin' ]]; then
   while [ 1 ] ; do
     set +x
     echo "waiting for memory device..."
+    DEVICE_NAME=""
     while [ "${DEVICE_NAME}_" == "_" ] ; do
       sleep 2
       DEVICE_NAME=$(system_profiler SPUSBDataType | grep -A 20  "${USB_NAME}"  | grep -m 1 "BSD Name" | cut -d ':' -f 2 | tr -d ' ' | tr -d '\n')
