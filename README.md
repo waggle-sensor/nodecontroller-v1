@@ -36,6 +36,13 @@ cd /usr/lib/waggle/nodecontroller/
 BEEHIVE_HOST=<IP> ./configure
 ```
 
+For developing purposes mounting the git repo from the host can be helpful:
+```bash
+cd ~/git
+git clone --recursive git@github.com:waggle-sensor/nodecontroller.git
+docker run -ti --name nc --rm -v /home/${USER}/git/nodecontroller/:/usr/lib/waggle/nodecontroller  waggle/nodecontroller
+```
+
 ## Developer Notes
 
 Everything that is installed on the Node Controller lives here.  There
