@@ -106,7 +106,6 @@ exit 0
 EOF
 
 chmod +x ${WAGGLE_ROOT}/etc/rc.local
-rm -f ${WAGGLE_ROOT}/root/.first_boot
 
 
 #get size
