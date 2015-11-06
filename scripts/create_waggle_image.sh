@@ -116,11 +116,18 @@ echo waggle:waggle | chpasswd
 echo root:waggle | chpasswd
 
 
+### get nodecontroller repo
+if [ ! -d /usr/lib/waggle/nodecontroller ] ; then
+  mkdir -p /usr/lib/waggle/
+  git clone --recursive https://github.com/waggle-sensor/nodecontroller.git /usr/lib/waggle/nodecontroller
+fi
+
+
 ### deploy waggle_first_boot.sh script
-curl https://raw.githubusercontent.com/waggle-sensor/waggle/master/nodecontroller/scripts/waggle_first_boot.sh > /etc/init.d/waggle_first_boot.sh
-chmod 755 /etc/init.d/waggle_first_boot.sh
+ln -s /usr/lib/waggle/nodecontroller/scripts/waggle_first_boot.sh /etc/init.d/waggle_first_boot.sh
 chown root:root /etc/init.d/waggle_first_boot.sh
 update-rc.d waggle_first_boot.sh defaults
+
 
 ### create report
 echo "image created: " > ${REPORT_FILE}
@@ -137,6 +144,9 @@ echo > /home/waggle/.bash_history
 
 ### Remove ssh host files. Those will be recreated by the /etc/rc.local script by default.
 rm /etc/ssh/ssh_host*
+
+
+
 
 ### mark image for first boot
 touch /root/first_boot
