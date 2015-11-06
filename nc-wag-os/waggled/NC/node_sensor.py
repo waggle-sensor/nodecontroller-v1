@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import time, serial, sys, datetime
+import time, serial, sys, datetime, os, random
 sys.path.append('../../../protocol/')
 from utilities import packetmaker
 sys.path.append('../Communications/')
@@ -17,17 +17,36 @@ def unix_time_millis(dt):
     
 
 
-count = 0
-while 1:
-    tempC = int(open('/sys/class/thermal/thermal_zone0/temp').read()) / 1e3
-    sendData=['CPU temperature', int(unix_time_millis(datetime.datetime.now())), ['Temperature']  , ['i'], [tempC], ['Celsius'], ['count='+str(count)]]
-    print 'Sending data: ',sendData
-    #packs and sends the data
-    packet = packetmaker.make_data_packet(sendData)
-    for pack in packet:
-        send(pack)
-    #send a packet every 10 seconds
-    time.sleep(10)
-    count = count + 1
+temperature_file = '/sys/class/thermal/thermal_zone0/temp'
+
+
+if os.path.isfile(temperature_file): 
+    count = 0
+    while 1:
+        tempC = int(open(temperature_file).read()) / 1e3
+        sendData=['CPU temperature', int(unix_time_millis(datetime.datetime.now())), ['Temperature']  , ['i'], [tempC], ['Celsius'], ['count='+str(count)]]
+        print 'Sending data: ',sendData
+        #packs and sends the data
+        packet = packetmaker.make_data_packet(sendData)
+        for pack in packet:
+            send(pack)
+        #send a packet every 10 seconds
+        time.sleep(10)
+        count = count + 1
+        
+else:
+    count = 0
+    while 1:
+        rint = random.randint(1, 100)
+        sendData=['RandomNumber', int(unix_time_millis(datetime.datetime.now())), ['Random']  , ['i'], [rint], ['NA'], ['count='+str(count)]]
+        print 'Sending data: ',sendData
+        #packs and sends the data
+        packet = packetmaker.make_data_packet(sendData)
+        for pack in packet:
+            send(pack)
+        #send a packet every 10 seconds
+        time.sleep(10)
+        count = count + 1
+
 
 
