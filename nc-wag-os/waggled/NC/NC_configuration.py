@@ -7,21 +7,27 @@ from utilities.packetmaker import *
 
 """
 
+
+
+def read_file( str ):
+    if not os.path.isfile(str) :
+        return ""
+    with open(str,'r') as file_:
+        return file_.read().strip()
+    return ""
+
+
 #Node's hostname
-with open('/etc/waggle/hostname','r') as file_:
-    HOSTNAME = file_.read().strip()
+HOSTNAME = read_file('/etc/waggle/hostname')
     
 #Node's queuename
-with open('/etc/waggle/queuename','r') as file_:
-    QUEUENAME = file_.read().strip() 
-    
+QUEUENAME = read_file('/etc/waggle/queuename')
+
 #Get node controller IP
-with open('/etc/waggle/NCIP','r') as file_:
-    NCIP = file_.read().strip()
-    
+NCIP = read_file('/etc/waggle/NCIP')
+
 #get server IP from file
-with open('/etc/waggle/server_ip','r') as file_:
-    CLOUD_IP = file_.read().strip()
+CLOUD_IP = read_file('/etc/waggle/server_ip')
     
 def create_dev_dict():
     """
