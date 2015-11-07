@@ -83,10 +83,8 @@ class internal_communicator(object):
 
 
 def internal_client_push():
-    #set log files
-    #TODO This logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-    #stdout='/var/log/waggle/communicator/internal_client_push.log'
-    #stderr='/var/log/waggle/communicator/internal_client_push.err'
+    
+    #sys.stderr.write('internal_client_push')
     
     comm = internal_communicator()
     logger.info('Internal client push started...\n')
@@ -127,10 +125,6 @@ def internal_client_push():
 """
 
 def internal_client_pull():
-    #set log files
-    #TODO This logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-    #stdout='/var/log/waggle/communicator/internal_client_pull.log'
-    #stderr='/var/log/waggle/communicator/internal_client_pull.err'
     
     comm = internal_communicator()
     logger.info('Internal client pull started...\n')
@@ -181,10 +175,6 @@ def internal_client_pull():
 """
 
 def push_server():
-    #set log files
-    #TODO This logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-    #stdout='/var/log/waggle/communicator/push_server.log'
-    #stderr='/var/log/waggle/communicator/push_server.err'
     
     comm = internal_communicator()
     #HOST = NCIP 
@@ -237,11 +227,7 @@ def push_server():
 """
 
 def pull_server():
-    #set log files
-    #TODO The logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-    #stdout='/var/log/waggle/communicator/pull_server.log'
-    #stderr='/var/log/waggle/communicator/pull_server.err'
-    
+   
     comm = internal_communicator()
     #HOST = NCIP
     HOST = socket.gethostname()
@@ -314,23 +300,7 @@ if __name__ == "__main__":
             name2process[name]=new_process
             logger.info(name+' has started.')
                 
-        ##starts the pull server
-        #pull_serv = pull_server()
-        #pull_serv.start()
-        
-        ##starts the push server 
-        #push_serv = push_server()
-        #push_serv.start()
-        
-        ##starts the push client
-        #push_client = internal_client_push()
-        #push_client.start()
-        
-        ##starts the pull client
-        #pull_client = internal_client_pull()
-        #pull_client.start()
-        #while True:
-            #pass
+
         
     except KeyboardInterrupt, k:
         for name, subhash in internal_communicator_name2func.iteritems():

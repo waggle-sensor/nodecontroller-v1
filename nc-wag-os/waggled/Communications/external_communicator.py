@@ -23,7 +23,6 @@ logger.setLevel(logging.ERROR)
     The external communicator is the communication channel between the cloud and the DC. It consists of four processes: two pika clients for pushing and pulling to the cloud and two clients for pushing 
     and pulling to the data cache.
 """
-
 class external_communicator(object):
     """
         This class is a convenience class that stores shared variables amongst all instances. 
@@ -45,48 +44,44 @@ class external_communicator(object):
     When the outgoing queue is not empty, this pika client will connect and push those messages to the cloud.
 """ 
 def pika_push():
-        #set log files
-        #TODO The logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-        stdout='/var/log/waggle/communicator/pika_push.log'
-        stderr='/var/log/waggle/communicator/pika_push.err'
-        
-        comm = external_communicator()
-        params = comm.params
-        logger.info('Pika push started...\n')
-        while True:
-            try: 
-                #connecting to cloud
-                connection = pika.BlockingConnection(params)
-                channel = connection.channel()
-                comm.cloud_connected.value = 1 #set the flag to true when connected to cloud
-                #Declaring the queue
-                channel.queue_declare(queue=QUEUENAME)
-                logger.info('Pika push connected to cloud.\n')
-                send_registrations() #sends registration for each node and node controller configuration file
-                connected = True #might not be neccessary 
-            except: 
-                logger.warning( 'Pika_push currently unable to connect to cloud... ('+CLOUD_ADDR+')')
-                comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
-                time.sleep(5)
-                connected = False #might not be neccessary
+       
+    comm = external_communicator()
+    params = comm.params
+    logger.info('Pika push started...\n')
+    while True:
+        try: 
+            #connecting to cloud
+            connection = pika.BlockingConnection(params)
+            channel = connection.channel()
+            comm.cloud_connected.value = 1 #set the flag to true when connected to cloud
+            #Declaring the queue
+            channel.queue_declare(queue=QUEUENAME)
+            logger.info('Pika push connected to cloud.\n')
+            send_registrations() #sends registration for each node and node controller configuration file
+            connected = True #might not be neccessary 
+        except: 
+            logger.warning( 'Pika_push currently unable to connect to cloud... ('+CLOUD_ADDR+')')
+            comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
+            time.sleep(5)
+            connected = False #might not be neccessary
+            
+        while connected:
+            try:
+                while comm.outgoing.empty(): #sleeps until there are messages to send
+                    time.sleep(1)
                 
-            while connected:
-                try:
-                    while comm.outgoing.empty(): #sleeps until there are messages to send
-                        time.sleep(1)
-                    
-                    msg = comm.outgoing.get() # gets the first item in the outgoing queue
-                    logger.debug('Pika_push... sending msg to cloud.')
-                    channel.basic_publish(exchange='waggle_in', routing_key= 'in', body= msg) #sends to cloud 
-                    #connection.close()
-                    
-                except pika.exceptions.ConnectionClosed:
-                    logger.debug("Pika push connection closed. Waiting and trying again " + str(datetime.datetime.now()) + '\n')
-                    
-                    comm.cloud_connected.value = 0
-                    time.sleep(5)
-                    break #need to break this loop to reconnect
-        connection.close(0)
+                msg = comm.outgoing.get() # gets the first item in the outgoing queue
+                logger.debug('Pika_push... sending msg to cloud.')
+                channel.basic_publish(exchange='waggle_in', routing_key= 'in', body= msg) #sends to cloud 
+                #connection.close()
+                
+            except pika.exceptions.ConnectionClosed:
+                logger.debug("Pika push connection closed. Waiting and trying again " + str(datetime.datetime.now()) + '\n')
+                
+                comm.cloud_connected.value = 0
+                time.sleep(5)
+                break #need to break this loop to reconnect
+    connection.close(0)
 
 
 
@@ -95,10 +90,7 @@ def pika_push():
      A pika client for pulling messages from the cloud. If messages are sent from the cloud, this client will put them into the incoming queue.
 """       
 def pika_pull():
-    #set log files
-    #TODO The logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-    #stdout='/var/log/waggle/communicator/pika_pull.log'
-    #stderr='/var/log/waggle/communicator/pika_pull.err'
+    
 
     logger.info('Pika pull started...\n')
     comm = external_communicator()
@@ -151,11 +143,7 @@ def callback(ch, method, properties, body):
 """
 
 def external_client_pull():
-    #set log files
-    #TODO The logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-    stdout='/var/log/waggle/communicator/external_client_pull.log'
-    stderr='/var/log/waggle/communicator/external_client_pull.err'
-    
+  
     logger.info('External client pull started...\n')
     comm = external_communicator()
     while True:
@@ -201,10 +189,7 @@ def external_client_pull():
 """
 
 def external_client_push():
-    #set log files
-    #TODO The logging doesn't work for the individual processes. Log for all communications processes can be cound in /var/log
-    stdout='/var/log/waggle/communicator/external_client_pull.log'
-    stderr='/var/log/waggle/communicator/external_client_pull.err'
+    
     
     logger.info('External client push started...\n')
     comm = external_communicator()
@@ -275,26 +260,18 @@ if __name__ == "__main__":
     name2process={}
     
     try:
-            
-        
-       
         
         for name, function in external_communicator_name2func.iteritems():
             new_process = multiprocessing.Process(target=function, name=name)
             new_process.start()
             name2process[name]=new_process
             logger.info(name+' has started.')
-            
-            
         
         while True:
             pass
         
     except KeyboardInterrupt, k:
-        #pika_pull.terminate()
-       # pika_push.terminate()
-        #push_client.terminate()
-        #pull_client.terminate()
+      
         for name, subhash in external_communicator_name2func.iteritems():
             logger.info( '(KeyboardInterrupt) shutting down ' + name)
             name2process[name].terminate()

@@ -86,7 +86,7 @@ if __name__ == "__main__":
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)
     
-    sys.stderr.write('hello world')
+   # sys.stderr.write('hello world')
         
     try:
         #checks if the queuename has been established yet
@@ -153,13 +153,10 @@ if __name__ == "__main__":
             logger.info( 'shutting down ' + name)
             name2process[name].terminate()
        
-       # external_push_client.terminate()
-       # external_pull_client.terminate()
+      
         logger.info( 'External communications shut down.')
 
-        #terminate the internal communication processes
-        #pull_serv.terminate()
-        #push_serv.terminate()
+        
         internal_push_client.terminate()
         internal_pull_client.terminate()
         logger.info( 'Internal communications shut down.' )
@@ -171,18 +168,7 @@ if __name__ == "__main__":
         for name, subhash in name2func.iteritems():
             logger.info( '(KeyboardInterrupt) shutting down ' + name)
             name2process[name].terminate()
-        #pull_pika.terminate()
-        #push_pika.terminate()
-       # external_push_client.terminate()
-       # external_pull_client.terminate()
-       # print 'External communications shut down.'
-        
-        #terminate the internal communication processes
-        #pull_serv.terminate()
-        #push_serv.terminate()
-        #internal_push_client.terminate()
-        #internal_pull_client.terminate()
-        #print 'Internal communications shut down.'
+       
 
         
        
