@@ -83,8 +83,7 @@ class internal_communicator(object):
 
 
 def internal_client_push():
-    
-    #sys.stderr.write('internal_client_push')
+
     
     comm = internal_communicator()
     logger.info('Internal client push started...\n')
