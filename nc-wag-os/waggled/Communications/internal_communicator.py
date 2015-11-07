@@ -9,9 +9,9 @@ sys.path.append('../NC/')
 from NC_configuration import *
 
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s', stream=sys.stdout)
+#logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s', stream=sys.stdout)
 logger = logging.getLogger(__name__)
-
+logger.setLevel(logging.ERROR)
 
 
 #TODO Could combine processes: one server and one client instead of two. Need to be able to distinguish between a pull request and a message push.

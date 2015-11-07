@@ -16,7 +16,7 @@ from internal_communicator import send
 
 #logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', stream=sys.stdout)
 logger = logging.getLogger(__name__)
-
+logger.setLevel(logging.ERROR)
 
 
 """ 
