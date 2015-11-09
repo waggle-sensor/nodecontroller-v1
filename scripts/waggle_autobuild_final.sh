@@ -187,10 +187,10 @@ dd if=/dev/${OTHER_DEVICE} bs=1M count=${BLOCKS_TO_WRITE} | xz -1 --stdout - > $
 
 if [ -e ${DIR}/waggle-id_rsa ] ; then
   md5sum ${NEW_IMAGE}.xz > ${NEW_IMAGE}.xz.md5sum 
-  scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}.xz ${NEW_IMAGE}.xz.md5sum waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads
+  scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}.xz ${NEW_IMAGE}.xz.md5sum waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/unstable
   
   if [ -e ${NEW_IMAGE}.report.txt ] ; then 
-    scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}.report.txt waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads
+    scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}.report.txt waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/unstable
   fi
 fi
 
