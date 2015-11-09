@@ -80,8 +80,6 @@ class internal_communicator(object):
     When a GN connects to the push server, the push server puts the msg into the DC_push queue. 
     When the DC_push queue is not empty, the client process connects to the data cache server and pushes the message into the data cache. 
 """
-
-
 def internal_client_push():
 
     

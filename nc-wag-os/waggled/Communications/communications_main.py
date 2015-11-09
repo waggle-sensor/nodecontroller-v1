@@ -27,10 +27,9 @@ LOG_FORMAT='%(asctime)s - %(name)s - %(levelname)s - line=%(lineno)d - %(message
 logger = logging.getLogger(__name__)
 
 root_logger = logging.getLogger()
-#TODO set format for  root_logger
 
 formatter = logging.Formatter(LOG_FORMAT)
- 
+
 
 # from: http://www.electricmonk.nl/log/2011/08/14/redirect-stdout-and-stderr-to-a-logger-in-python/
 class StreamToLogger(object):
@@ -42,7 +41,6 @@ class StreamToLogger(object):
         self.log_level = log_level
         self.linebuf = ''
         self.prefix = prefix
-       # self.formatter=logging.Formatter(LOG_FORMAT+' XXXXXXXXXXXXXXXXX '+logger.name)
  
     def write(self, buf):
         for line in buf.rstrip().splitlines():
