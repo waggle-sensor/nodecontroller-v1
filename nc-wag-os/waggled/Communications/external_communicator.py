@@ -56,7 +56,7 @@ def pika_push():
             comm.cloud_connected.value = 1 #set the flag to true when connected to cloud
             #Declaring the queue
             channel.queue_declare(queue=QUEUENAME)
-            logger.info('Pika push connected to cloud.\n')
+            logger.info("Pika push connected to cloud using queue %s.\n" % (QUEUENAME))
             send_registrations() #sends registration for each node and node controller configuration file
             connected = True #might not be neccessary 
         except: 
