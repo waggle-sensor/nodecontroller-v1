@@ -82,7 +82,7 @@ export WAGGLE_ROOT="/media/waggle/"
 mkdir -p ${WAGGLE_ROOT}
 mount /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ${WAGGLE_ROOT}
 cp ${WAGGLE_ROOT}/root/report.txt ${NEW_IMAGE}.report.txt
-cp ${WAGGLE_ROOT}/root/rc.local.log ${NEW_IMAGE}.rc.local.log
+cp ${WAGGLE_ROOT}/root/rc.local.log ${NEW_IMAGE}.build_log.txt
 
 # put original rc.local in place again
 rm -f ${WAGGLE_ROOT}/etc/rc.local
@@ -192,6 +192,11 @@ if [ -e ${DIR}/waggle-id_rsa ] ; then
   if [ -e ${NEW_IMAGE}.report.txt ] ; then 
     scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}.report.txt waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/unstable
   fi
+  
+  if [ -e ${NEW_IMAGE}.build_log.txt ] ; then 
+    scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}.build_log.txt waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/unstable
+  fi
+  
 fi
 
 
