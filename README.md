@@ -38,9 +38,10 @@ BEEHIVE_HOST=<IP> ./configure
 
 For developing purposes mounting the git repo from the host can be helpful:
 ```bash
-cd ~/git
+mkdir -p cd ${HOME}/git/
+cd ${HOME}/git/
 git clone --recursive git@github.com:waggle-sensor/nodecontroller.git
-docker run -ti --name nc --rm -v /home/${USER}/git/nodecontroller/:/usr/lib/waggle/nodecontroller  waggle/nodecontroller
+docker run -ti --name nc --rm -v ${HOME}/git/nodecontroller/:/usr/lib/waggle/nodecontroller  waggle/nodecontroller
 ```
 
 ## Developer Notes
