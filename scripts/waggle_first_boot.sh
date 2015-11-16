@@ -54,9 +54,6 @@ do_start()
 
 	set -x
 
-	# this script increases the partition size. It is an odroid script. The user will have to reboot afterwards.
-	.  /usr/local/bin/fs_resize.sh ; resize_p2
-
 	if [ ! -e /media/boot/boot.ini ] ; then
 	  echo "error: could not find /media/boot/boot.ini"
 	  return 2
@@ -66,12 +63,16 @@ do_start()
 	# create Node ID
 	/usr/lib/waggle/nodecontroller/scripts/create_node_id.sh
 
-	# new host keys
-	# Not needed here because they will be recreated by the /etc/rc.local script by default.
-	#rm /etc/ssh/ssh_host*
-	#dpkg-reconfigure openssh-server
+
+	# this script increases the partition size. It is an odroid script. The user will have to reboot afterwards.
+	alias msgbox=echo
+	.  /usr/local/bin/fs_resize.sh ; resize_p2
 
 	rm -f /root/first_boot
+
+	# to prevent user from changing filesystem at this point, reboot now.
+	reboot
+
 	return 0
 }
 
