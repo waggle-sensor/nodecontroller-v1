@@ -1,10 +1,25 @@
 #!/bin/bash
-set -x
-IMAGE="waggle-odroid-c1-20151105.img"
-USB_NAME="Transcend"
 
 
 ### Use this script at your own risk ###
+
+
+
+
+set -x
+#example: IMAGE="waggle-odroid-c1-20151105.img"
+USB_NAME="Transcend"
+
+
+if [ "${1}x" != "x" ] ; then
+  IMAGE=${1}
+fi
+
+if [ "${IMAGE}x" == "x" ] ; then
+  echo Please define variable IMAGE.
+  exit 1
+fi
+
 
 
 # OSX: brew install pv
@@ -18,6 +33,13 @@ fi
 unamestr=`uname`
 if [[ "$unamestr" == 'Darwin' ]]; then
 
+  ##### OSX HERE #####
+
+  hash foo &> /dev/null
+  if [ $? -eq 1 ]; then
+    echo >&2 "Please install pv (Pipe Viewer), e.g. \"brew install pv\"."
+    exit 1
+  fi
 
   while [ 1 ] ; do
     set +x
@@ -55,5 +77,17 @@ if [[ "$unamestr" == 'Darwin' ]]; then
   done
 
 else
+
+  ##### LINUX HERE #####
+
   echo "TODO"
+  exit 1
+
+  hash foo &> /dev/null
+  if [ $? -eq 1 ]; then
+    echo >&2 "Please install pv (Pipe Viewer), e.g. \"apt-get install pv\"."
+    exit 1
+  fi
+
+
 fi
