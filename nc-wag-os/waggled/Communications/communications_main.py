@@ -12,6 +12,9 @@ from internal_communicator import *
 #pika is a bit too verbose...
 logging.getLogger('pika').setLevel(logging.ERROR)
 
+
+
+
 loglevel=logging.DEBUG
 #loglevel=logging.ERROR
 
@@ -24,10 +27,10 @@ LOG_FORMAT='%(asctime)s - %(name)s - %(levelname)s - line=%(lineno)d - %(message
 
 #logging.basicConfig(level=loglevel, format=, filename=LOG_FILENAME)
 #logging.basicConfig(level=loglevel, format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s', stream=sys.stdout)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("communications_main.py") #__name__
 
 root_logger = logging.getLogger()
-
+root_logger.setLevel(loglevel)
 formatter = logging.Formatter(LOG_FORMAT)
 
 
@@ -61,9 +64,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--logging', dest='enable_logging', help='write to log files instead of stdout', action='store_true')
     args = parser.parse_args()
-    #if args.help:
-    #    parser.print_help()
-    #    sys.exit(0)
+    
         
     if args.enable_logging:
         # 5 times 10MB
@@ -82,6 +83,7 @@ if __name__ == "__main__":
         handler = logging.StreamHandler(stream=sys.stdout)
         
     handler.setFormatter(formatter)
+    root_logger.handlers = []
     root_logger.addHandler(handler)
     
    # sys.stderr.write('hello world')
@@ -89,12 +91,19 @@ if __name__ == "__main__":
     try:
         #checks if the queuename has been established yet
         #The default file is empty. So, if it is empty, make an initial connection to get a unique queuename.
+        connection = None
         if not QUEUENAME:
             logger.debug('QUEUENAME is empty')
             #get the connection parameters
             params = pika.connection.URLParameters(CLOUD_ADDR)
             #make the connection
-            connection = pika.BlockingConnection(params)
+            try:
+                connection = pika.BlockingConnection(params)
+            except Exception as err:
+                logger.error("Could not connect to Beehive server: ")
+                logger.error(err)
+                sys.exit(1)
+                
             #create the channel
             channel = connection.channel()
             #queue_declare is left empty so RabbitMQ assigns a unique queue name
