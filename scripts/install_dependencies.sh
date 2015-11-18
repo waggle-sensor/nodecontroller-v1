@@ -7,3 +7,8 @@ apt-get update && apt-get install -y \
     && \
     pip install crcmod
 
+#install pika package from the git repo.
+cd nc-wag-os/packages/python/
+
+pip install -e pika-0.9.14
+pip install pyserial
