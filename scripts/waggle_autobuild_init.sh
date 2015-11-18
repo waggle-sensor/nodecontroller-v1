@@ -2,7 +2,7 @@
 
 # this script is specifically for (auto-)building images on the odroid.
 
-set -e
+
 
 
 export URL="http://odroid.in/ubuntu_14.04lts/"
@@ -28,7 +28,7 @@ if [ $? -eq 1 ]; then
     apt-get install -y pv
 fi
 
-
+set -e
 
 if [ ! -e change_partition_uuid.sh ] ; then
   echo "error: change_partition_uuid.sh not found"
