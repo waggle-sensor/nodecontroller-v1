@@ -21,6 +21,12 @@ fi
 
 export OTHER_DEVICE=$1
 
+hash pv &> /dev/null
+if [ $? -eq 1 ]; then
+    apt-get install -y pv
+fi
+
+
 
 if [ ! -e change_partition_uuid.sh ] ; then
   echo "error: change_partition_uuid.sh not found"
@@ -131,7 +137,7 @@ sleep 1
 # dd if=${IMAGE} of=/dev/${OTHER_DEVICE} bs=1M conv=fsync
 # image too large, this is why we unxz on the fly: (takes about 8 minutes)
 if [ ! "${SKIP_DD}_" == "1_"  ] ; then
-  cat ${DIR}/${IMAGE}.xz | unxz - | dd of=/dev/${OTHER_DEVICE} bs=1M conv=fsync
+  pv -per --width 80 -f ${DIR}/${IMAGE}.xz | unxz - | dd of=/dev/${OTHER_DEVICE} bs=1M conv=fsync
 fi
 
 sleep 1
