@@ -1,4 +1,4 @@
-import sys
+import sys, pika, ssl
 sys.path.append('../../../protocol/')
 from utilities.packetmaker import *
 
@@ -27,7 +27,8 @@ QUEUENAME = read_file('/etc/waggle/queuename')
 NCIP = read_file('/etc/waggle/NCIP')
 
 #get server IP from file
-CLOUD_IP = read_file('/etc/waggle/server_ip')
+CLOUD_IP = read_file('/etc/waggle/server_ip') #TODO: deprecate this
+RABBITMQ_HOST=CLOUD_IP
     
 def create_dev_dict():
     """
@@ -71,7 +72,33 @@ PRIORITY_ORDER = [5,4,3,2,1]
 AVAILABLE_MEM = 256000
 
 #The params used to connect to the cloud are stored here
-CLOUD_ADDR = 'amqps://waggle:waggle@' + CLOUD_IP + ':5671/%2F'
+CLOUD_ADDR = 'amqps://waggle:waggle@' + RABBITMQ_HOST + ':5671/%2F'
+
+RABBITMQ_PORT=5672 # non-ssl
+#RABBITMQ_PORT=5671 # ssl        TODO: enforce ssl
+USE_SSL=False
+#USE_SSL=True
+
+CLIENT_KEY_FILE="/usr/lib/waggle/SSL/node1/node1_key.pem"
+CLIENT_CERT_FILE="/usr/lib/waggle/SSL/node1/node1_cert.pem"
+CA_ROOT_FILE="/usr/lib/waggle/SSL/waggleca/cacert.pem"
+
+
+pika_params=None
+
+if USE_SSL:
+    pika_params=pika.ConnectionParameters(  host=RABBITMQ_HOST, 
+                                        credentials=pika.credentials.ExternalCredentials(), 
+                                        virtual_host='/', 
+                                        port=RABBITMQ_PORT, 
+                                        ssl=USE_SSL, 
+                                        ssl_options={"ca_certs": CA_ROOT_FILE , 'certfile': CLIENT_KEY_FILE, 'keyfile': CLIENT_KEY_FILE, 'cert_reqs' : ssl.CERT_REQUIRED} 
+                                         )
+else:
+    pika_credentials = pika.PlainCredentials('waggle', 'waggle')
+    pika_params=pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=pika_credentials, virtual_host='/', port=RABBITMQ_PORT, ssl=USE_SSL)
+
+
 
 def get_config():
     """ 
