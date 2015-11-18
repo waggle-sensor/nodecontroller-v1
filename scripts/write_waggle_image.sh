@@ -35,7 +35,7 @@ if [[ "$unamestr" == 'Darwin' ]]; then
 
   ##### OSX HERE #####
 
-  hash foo &> /dev/null
+  hash pv &> /dev/null
   if [ $? -eq 1 ]; then
     echo >&2 "Please install pv (Pipe Viewer), e.g. \"brew install pv\"."
     exit 1
