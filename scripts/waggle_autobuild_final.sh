@@ -111,11 +111,11 @@ chmod +x ${WAGGLE_ROOT}/etc/rc.local
 #get size
 export FILESYSTEM_SIZE_KB=`df -BK --output=used /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 | grep -o "[0-9]\+"` ; echo "FILESYSTEM_SIZE_KB: ${FILESYSTEM_SIZE_KB}"
 
-# add 500MB
-export NEW_PARTITION_SIZE_KB=$(echo "${FILESYSTEM_SIZE_KB} + (1024)*500" | bc) ; echo "NEW_PARTITION_SIZE_KB: ${NEW_PARTITION_SIZE_KB}"
+# add 100MB
+export NEW_PARTITION_SIZE_KB=$(echo "${FILESYSTEM_SIZE_KB} + (1024)*100" | bc) ; echo "NEW_PARTITION_SIZE_KB: ${NEW_PARTITION_SIZE_KB}"
 
-# add 300MB
-export NEW_FS_SIZE_KB=$(echo "${FILESYSTEM_SIZE_KB} + (1024)*300" | bc) ; echo "NEW_FS_SIZE_KB: ${NEW_FS_SIZE_KB}"
+# add 50MB
+export NEW_FS_SIZE_KB=$(echo "${FILESYSTEM_SIZE_KB} + (1024)*50" | bc) ; echo "NEW_FS_SIZE_KB: ${NEW_FS_SIZE_KB}"
 
 
 # unmount the boot partition
