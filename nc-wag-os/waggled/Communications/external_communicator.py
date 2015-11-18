@@ -51,7 +51,7 @@ def pika_push():
     while True:
         try: 
             #connecting to cloud
-            connection = pika.BlockingConnection(params)
+            connection = pika.BlockingConnection(pika_params)
             channel = connection.channel()
             comm.cloud_connected.value = 1 #set the flag to true when connected to cloud
             #Declaring the queue
@@ -100,7 +100,7 @@ def pika_pull():
         
         try:
             try:
-                connection = pika.BlockingConnection(params) 
+                connection = pika.BlockingConnection(pika_params) 
                 channel = connection.channel()
                 logger.info('Pika pull connection successful.\n')
                 comm.cloud_connected.value = 1 #sets indicator flag to 1 so clients will connect to data cache
