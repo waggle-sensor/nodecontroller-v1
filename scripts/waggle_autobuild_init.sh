@@ -21,6 +21,8 @@ fi
 
 export OTHER_DEVICE=$1
 
+set -x
+
 hash pv &> /dev/null
 if [ $? -eq 1 ]; then
     apt-get install -y pv
@@ -33,7 +35,7 @@ if [ ! -e change_partition_uuid.sh ] ; then
   exit 1
 fi
 
-set -x
+
 
 # this is the device where we will build the waggle image
 export CURRENT_DEVICE=$(df --output=source / | grep "^/") ; echo "CURRENT_DEVICE: ${CURRENT_DEVICE}" 
