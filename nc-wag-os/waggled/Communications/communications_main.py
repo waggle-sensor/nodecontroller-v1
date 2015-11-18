@@ -95,14 +95,19 @@ if __name__ == "__main__":
         if not QUEUENAME:
             logger.debug('QUEUENAME is empty')
             #get the connection parameters
-            params = pika.connection.URLParameters(CLOUD_ADDR)
+            
+            
+            
+            
             #make the connection
             try:
-                connection = pika.BlockingConnection(params)
+                connection = pika.BlockingConnection(pika_params)
             except Exception as err:
-                logger.error("Could not connect to Beehive server: ")
+                logger.error("Could not connect to Beehive server (%s): " % (pika_params.host))
                 logger.error(err)
                 sys.exit(1)
+            
+            logger.info("Connected to Beehive server (%s): " % (pika_params.host))
                 
             #create the channel
             channel = connection.channel()
