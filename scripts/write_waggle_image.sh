@@ -6,7 +6,7 @@
 
 
 
-set -x
+
 #example: IMAGE="waggle-odroid-c1-20151105.img"
 USB_NAME="Transcend"
 
@@ -16,7 +16,15 @@ if [ "${1}x" != "x" ] ; then
 fi
 
 if [ "${IMAGE}x" == "x" ] ; then
-  echo Please define variable IMAGE.
+  echo
+  echo "Usage: ./write_waggle_image.sh <image>"
+  echo
+  echo "Or define environment variable IMAGE."
+  echo
+  echo "Possible images in current directory:"
+  echo
+  ls -1 *.img *.img.xz 2>/dev/null | sort | sed -e "s/^/  /"
+  echo
   exit 1
 fi
 
@@ -66,7 +74,13 @@ if [[ "$unamestr" == 'Darwin' ]]; then
         sleep 2
       fi
       #dd if=${IMAGE} of=/dev/r${DEVICE_NAME} bs=1m
-      pv -per --width 80 -f ${IMAGE} | dd of=/dev/r${DEVICE_NAME} bs=1m
+      set -x
+      if [[ ${IMAGE} == *.xz ]] ; then
+        pv -per --width 80 -f ${IMAGE} | unxz --decompress --threads=0 --stdout - | dd of=/dev/r${DEVICE_NAME} bs=1m
+      else
+        pv -per --width 80 -f ${IMAGE} | dd of=/dev/r${DEVICE_NAME} bs=1m
+      fi
+      set +x
       sleep 2
       sync
       diskutil eject /dev/r${DEVICE_NAME}
@@ -83,7 +97,7 @@ else
   echo "TODO"
   exit 1
 
-  hash foo &> /dev/null
+  hash pv &> /dev/null
   if [ $? -eq 1 ]; then
     echo >&2 "Please install pv (Pipe Viewer), e.g. \"apt-get install pv\"."
     exit 1
