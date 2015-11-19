@@ -185,8 +185,10 @@ export BLOCKS_TO_WRITE=`echo "${COMBINED_SIZE_KB}/1024" | bc` ; echo "BLOCKS_TO_
 
 
 
-dd if=/dev/${OTHER_DEVICE} bs=1M count=${BLOCKS_TO_WRITE} | xz -1 --stdout - > ${NEW_IMAGE}.xz
+dd if=/dev/${OTHER_DEVICE} bs=1M count=${BLOCKS_TO_WRITE} | xz -1 --stdout - > ${NEW_IMAGE}.xz_part
 # xz -1 creates a 560MB file in 18.5 minutes
+
+mv ${NEW_IMAGE}.xz_part ${NEW_IMAGE}.xz
 
 
 if [ -e ${DIR}/waggle-id_rsa ] ; then
