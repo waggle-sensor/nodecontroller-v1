@@ -118,14 +118,22 @@ EOF
 chmod +x ${WAGGLE_ROOT}/etc/rc.local
 
 
-#get size
-export FILESYSTEM_SIZE_KB=`df -BK --output=used /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 | grep -o "[0-9]\+"` ; echo "FILESYSTEM_SIZE_KB: ${FILESYSTEM_SIZE_KB}"
+
+export ESTIMATED_FS_SIZE_BLOCKS=$(resize2fs -P /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 | grep -o "[0-9]*") ; echo "ESTIMATED_FS_SIZE_BLOCKS: ${ESTIMATED_FS_SIZE_BLOCKS}"
+#export BLOCK_SIZE=$(tune2fs -l /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 | grep "^Block size:" | grep -o "[0-9]*") ; echo "BLOCK_SIZE: ${BLOCK_SIZE}"
+export BLOCK_SIZE=`blockdev --getbsz /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2`
+
+export ESTIMATED_FS_SIZE_KB=$(echo "${ESTIMATED_FS_SIZE_BLOCKS}*${BLOCK_SIZE}/1024" | bc) ; echo "ESTIMATED_FS_SIZE_KB: ${ESTIMATED_FS_SIZE_KB}"
+
+
+export OLD_PARTITION_SIZE_KB=$(df -BK --output=size /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 | tail -n 1 | grep -o "[0-9]\+") ; echo "OLD_PARTITION_SIZE_KB: ${OLD_PARTITION_SIZE_KB}"
+
 
 # add 500MB
-export NEW_PARTITION_SIZE_KB=$(echo "${FILESYSTEM_SIZE_KB} + (1024)*500" | bc) ; echo "NEW_PARTITION_SIZE_KB: ${NEW_PARTITION_SIZE_KB}"
+export NEW_PARTITION_SIZE_KB=$(echo "${ESTIMATED_FS_SIZE_KB} + (1024)*500" | bc) ; echo "NEW_PARTITION_SIZE_KB: ${NEW_PARTITION_SIZE_KB}"
 
 # add 100MB
-export NEW_FS_SIZE_KB=$(echo "${FILESYSTEM_SIZE_KB} + (1024)*100" | bc) ; echo "NEW_FS_SIZE_KB: ${NEW_FS_SIZE_KB}"
+export NEW_FS_SIZE_KB=$(echo "${ESTIMATED_FS_SIZE_KB} + (1024)*100" | bc) ; echo "NEW_FS_SIZE_KB: ${NEW_FS_SIZE_KB}"
 
 
 # unmount the boot partition
@@ -146,8 +154,8 @@ fi
 # verify partition:
 e2fsck -f -y /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2
 
-# shrink filesystem (that does not shrink the partition!)
-resize2fs -p /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ${NEW_FS_SIZE_KB}K
+
+
 
 # detect start position of second partition
 export START=$(fdisk -l /dev/${OTHER_DEVICE} | grep "/dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2" | awk '{print $2}') ; echo "partition START: ${START}"
@@ -156,36 +164,51 @@ export SECTOR_SIZE=`fdisk -l /dev/${OTHER_DEVICE} | grep "Sector size" | grep -o
 
 export FRONT_SIZE_KB=`echo "${SECTOR_SIZE} * ${START} / 1024" | bc` ; echo "FRONT_SIZE_KB: ${FRONT_SIZE_KB}"
 
-partprobe  /dev/${OTHER_DEVICE}
-
-sleep 3
-
-### fdisk (shrink partition)
-# fdisk: (d)elete partition 2 ; (c)reate new partiton 2 ; specify start posirion and size of new partiton
-set +e
-echo -e "d\n2\nn\np\n2\n${START}\n+${NEW_PARTITION_SIZE_KB}K\nw\n" | fdisk /dev/${OTHER_DEVICE}
-set -e
 
 
-partprobe  /dev/${OTHER_DEVICE}
+if [ "${NEW_PARTITION_SIZE_KB}" -lt "${OLD_PARTITION_SIZE_KB}" ] ; then 
 
-set +e
-resize2fs /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2
-set -e
+  echo "NEW_PARTITION_SIZE_KB is smaller than OLD_PARTITION_SIZE_KB"
 
-# does not show the new size
-fdisk -l /dev/${OTHER_DEVICE}
-
-# shows the new size (-b for bytes)
-partx --show /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2
+  # shrink filesystem (that does not shrink the partition!)
+  resize2fs -p /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ${NEW_FS_SIZE_KB}K
 
 
-e2fsck -f /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2
+  partprobe  /dev/${OTHER_DEVICE}
+
+  sleep 3
+
+  ### fdisk (shrink partition)
+  # fdisk: (d)elete partition 2 ; (c)reate new partiton 2 ; specify start posirion and size of new partiton
+  set +e
+  echo -e "d\n2\nn\np\n2\n${START}\n+${NEW_PARTITION_SIZE_KB}K\nw\n" | fdisk /dev/${OTHER_DEVICE}
+  set -e
+
+
+  partprobe  /dev/${OTHER_DEVICE}
+
+  set +e
+  resize2fs /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2
+  set -e
+
+  # does not show the new size
+  fdisk -l /dev/${OTHER_DEVICE}
+
+  # shows the new size (-b for bytes)
+  partx --show /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2
+
+
+  e2fsck -f /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2
+
+else
+  echo "NEW_PARTITION_SIZE_KB is NOT smaller than OLD_PARTITION_SIZE_KB"
+fi
+
 
 # add size of boot partition
 COMBINED_SIZE_KB=`echo "${NEW_PARTITION_SIZE_KB} + ${FRONT_SIZE_KB}" | bc` ; echo "COMBINED_SIZE_KB: ${COMBINED_SIZE_KB}"
 
-#export BLOCK_SIZE=`blockdev --getbsz /dev/${OTHER_DEVICE}`
+
 
 
 # from kb to mb
