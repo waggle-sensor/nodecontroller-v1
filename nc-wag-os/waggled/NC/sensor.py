@@ -160,7 +160,7 @@ try:
                                     pass
                         for all in range(len(sensorReading_bucket)):
                             if (sensorReading_bucket[all] <> [[],[],[],[],[]]):
-                                sendData=[sensor_names[all],int(time.time()),sensorReading_bucket[all][0],sensorReading_bucket[all][1],sensorReading_bucket[all][2],sensorReading_bucket[all][3],sensorReading_bucket[all][4]]
+                                sendData=[sensor_names[all],int(unix_time_millis(datetime.datetime.now())),sensorReading_bucket[all][0],sensorReading_bucket[all][1],sensorReading_bucket[all][2],sensorReading_bucket[all][3],sensorReading_bucket[all][4]]
                                 print 'Sending data: ',sendData
                                 #packs and sends the data
                                 packet = packetmaker.make_data_packet(sendData)
