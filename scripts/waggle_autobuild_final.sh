@@ -78,11 +78,21 @@ export DATE=`date +"%Y%m%d"` ; echo "DATE: ${DATE}"
 export NEW_IMAGE="${DIR}/waggle-odroid-c1-${DATE}.img" ; echo "NEW_IMAGE: ${NEW_IMAGE}"
 
 # extract the report.txt from the new waggle image
-export WAGGLE_ROOT="/media/waggle/"
+export WAGGLE_ROOT="/media/waggleroot/"
 mkdir -p ${WAGGLE_ROOT}
 mount /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ${WAGGLE_ROOT}
-cp ${WAGGLE_ROOT}/root/report.txt ${NEW_IMAGE}.report.txt
-cp ${WAGGLE_ROOT}/root/rc.local.log ${NEW_IMAGE}.build_log.txt
+if [ -e ${WAGGLE_ROOT}/root/report.txt ] ; then
+  cp ${WAGGLE_ROOT}/root/report.txt ${NEW_IMAGE}.report.txt
+else
+  echo "no report found" > ${NEW_IMAGE}.report.txt
+fi
+
+if [ -e ${WAGGLE_ROOT}/root/rc.local.log ] ; then
+  cp ${WAGGLE_ROOT}/root/rc.local.log ${NEW_IMAGE}.build_log.txt
+else
+  echo "no log found" > ${NEW_IMAGE}.build_log.txt
+fi
+
 
 # put original rc.local in place again
 rm -f ${WAGGLE_ROOT}/etc/rc.local
@@ -137,21 +147,7 @@ fi
 e2fsck -f -y /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2
 
 # shrink filesystem (that does not shrink the partition!)
-set +e
-resize2fs /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ${NEW_FS_SIZE_KB}K
-if [ $? -ne 0 ] ; then
-  while true; do
-    read -p "Do you wish to continue?" yn
-    case $yn in
-        [Yy]* ) break;;
-        [Nn]* ) exit;;
-        * ) echo "Please answer yes or no.";;
-    esac
-  done
-fi
-
-
-set -e
+resize2fs -p /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ${NEW_FS_SIZE_KB}K
 
 # detect start position of second partition
 export START=$(fdisk -l /dev/${OTHER_DEVICE} | grep "/dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2" | awk '{print $2}') ; echo "partition START: ${START}"
