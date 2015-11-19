@@ -137,7 +137,21 @@ fi
 e2fsck -f -y /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2
 
 # shrink filesystem (that does not shrink the partition!)
+set +e
 resize2fs /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ${NEW_FS_SIZE_KB}K
+if [ $? -ne 0 ] ; then
+  while true; do
+    read -p "Do you wish to continue?" yn
+    case $yn in
+        [Yy]* ) break;;
+        [Nn]* ) exit;;
+        * ) echo "Please answer yes or no.";;
+    esac
+  done
+fi
+
+
+set -e
 
 # detect start position of second partition
 export START=$(fdisk -l /dev/${OTHER_DEVICE} | grep "/dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2" | awk '{print $2}') ; echo "partition START: ${START}"
