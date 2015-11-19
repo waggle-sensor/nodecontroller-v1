@@ -1,4 +1,4 @@
-import time, serial, sys
+import time, serial, sys, datetime
 sys.path.append('../../../protocol/')
 from utilities import packetmaker
 sys.path.append('../Communications/')
@@ -9,6 +9,15 @@ from internal_communicator import send
    
    
 """
+def unix_time(dt):
+    epoch = datetime.datetime.utcfromtimestamp(0)
+    delta = dt - epoch
+    return delta.total_seconds()
+
+def unix_time_millis(dt):
+    return long(unix_time(dt) * 1000.0)
+
+
 print 'Beginning sensor script...'
 
 Sensor_Index=["D6T_44L_06_1_T_C","MMA8452_1_A_X_Units","MMA8452_1_A_Y_Units",
