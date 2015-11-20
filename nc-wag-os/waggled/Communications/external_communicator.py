@@ -54,8 +54,8 @@ def pika_push():
         # try to connect to cloud
         try: 
             connection = pika.BlockingConnection(pika_params)
-        except: 
-            logger.warning( 'Pika_push currently unable to connect to cloud (%s:%d) (queue: %s)' % (pika_params.host, pika_params.port , QUEUENAME) )
+        except Exception as e: 
+            logger.warning( 'Pika_push currently unable to connect to cloud (%s:%d) (queue: %s) : %s' % (pika_params.host, pika_params.port , QUEUENAME, e) )
             comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
             time.sleep(5)
             break
