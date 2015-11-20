@@ -49,39 +49,60 @@ def pika_push():
     params = comm.params
     logger.info('Pika push started...\n')
     while True:
+        connection=None
+        
+        # try to connect to cloud
         try: 
-            #connecting to cloud
             connection = pika.BlockingConnection(pika_params)
+        except: 
+            logger.warning( 'Pika_push currently unable to connect to cloud (%s) (queue: %s)' % (CLOUD_ADDR , QUEUENAME) )
+            comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
+            time.sleep(5)
+            break
+                
+        logger.warning( 'Pika_push connected to cloud (%s)' % (CLOUD_ADDR) )
+        
+        # get channel
+        try:    
             channel = connection.channel()
             comm.cloud_connected.value = 1 #set the flag to true when connected to cloud
             #Declaring the queue
             channel.queue_declare(queue=QUEUENAME)
             logger.info("Pika push connected to cloud using queue \"%s\"." % (QUEUENAME))
             send_registrations() #sends registration for each node and node controller configuration file
-            connected = True #might not be neccessary 
+            
         except: 
-            logger.warning( 'Pika_push currently unable to connect to cloud (%s) (queue: %s)' % (CLOUD_ADDR , QUEUENAME) )
+            logger.warning('Pika_push currently unable to connect to cloud (%s) (queue: %s)' % (CLOUD_ADDR , QUEUENAME) )
             comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
             time.sleep(5)
-            connected = False #might not be neccessary
+            break
             
-        while connected:
+            
+        while True:
+            
+            while comm.outgoing.empty(): #sleeps until there are messages to send
+                time.sleep(1)
+            
+            msg = comm.outgoing.get() # gets the first item in the outgoing queue
+            logger.debug('Pika_push: sending message to cloud.')
+            
             try:
-                while comm.outgoing.empty(): #sleeps until there are messages to send
-                    time.sleep(1)
-                
-                msg = comm.outgoing.get() # gets the first item in the outgoing queue
-                logger.debug('Pika_push... sending msg to cloud.')
+               
                 channel.basic_publish(exchange='waggle_in', routing_key= 'in', body= msg) #sends to cloud 
                 #connection.close()
                 
             except pika.exceptions.ConnectionClosed:
                 logger.debug("Pika push connection closed. Waiting and trying again " + str(datetime.datetime.now()) + '\n')
-                
                 comm.cloud_connected.value = 0
                 time.sleep(5)
                 break #need to break this loop to reconnect
-    connection.close(0)
+            except Exception as e:
+                logger.error("Pika push encounterd some weired error: %s" % (e))
+                comm.cloud_connected.value = 0
+                time.sleep(5)
+                break
+                
+        connection.close(0)
 
 
 
