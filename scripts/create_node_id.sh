@@ -21,7 +21,7 @@ if [ $(echo $ODROIDMODEL | grep -c "^ODROIDC") -eq 1 ] ; then
   if [ ! ${#MACADDRESS} -ge 12 ]; then
     echo "warning: could not extract MAC address"
   else
-    NODE_ID="${MACADDRESS}000000"  
+    NODE_ID="${MACADDRESS}0000"  
   fi
 fi
 
@@ -35,7 +35,7 @@ if [ "${NODE_ID}x" == "x" ] && [ -e ${CID_FILE} ]; then
   if [ ! ${#SERIAL_ID} -ge 11 ]; then
     echo "warning: could not create unique identifier from SD-card serial number"
   else
-    NODE_ID="${SERIAL_ID}00000000" 
+    NODE_ID="${SERIAL_ID}000000" 
   fi
 fi
 
