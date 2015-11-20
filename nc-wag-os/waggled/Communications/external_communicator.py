@@ -71,8 +71,8 @@ def pika_push():
             logger.info("Pika push connected to cloud using queue \"%s\"." % (QUEUENAME))
             send_registrations() #sends registration for each node and node controller configuration file
             
-        except: 
-            logger.warning('Pika_push currently unable to connect to cloud (%s:%d) (queue: %s)' % (pika_params.host, pika_params.port , QUEUENAME) )
+        except Exception as e:  
+            logger.warning('Pika_push unable to get channel (%s:%d) (queue: %s) : %s' % (pika_params.host, pika_params.port , QUEUENAME, e) )
             comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
             time.sleep(5)
             break
