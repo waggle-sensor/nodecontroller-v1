@@ -114,7 +114,7 @@ def get_config():
     
     """
     #add all the configuration
-    config ='Hostname: ' + HOSTNAME + '\n'
+    config ='Node ID: ' + NODE_ID + '\n'
     config = config + 'Queuename: ' + QUEUENAME + '\n'
     config = config + 'Node Controller IP: ' + NCIP + '\n'
     config = config + 'Device dictionary: ' + str(DEVICE_DICT) + '\n'
