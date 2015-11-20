@@ -17,8 +17,16 @@ def read_file( str ):
     return ""
 
 
+NODE_ID = read_file('/etc/waggle/node_id')
+
+if not NODE_ID:
+    sys.stdout.write("error: NODE_ID is not defined")
+    sys.exit(1)
+
 #Node's hostname
-HOSTNAME = read_file('/etc/waggle/hostname')
+# HOSTNAME is DEPRECATED
+#HOSTNAME = read_file('/etc/waggle/hostname')
+HOSTNAME=NODE_ID
     
 #Node's queuename
 QUEUENAME = read_file('/etc/waggle/queuename')
