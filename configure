@@ -43,6 +43,9 @@ if [ "${NODE_ID}x" == "x" ] ; then
   exit 1
 fi
 
+# this is only for backwards compatibility with PacketHandler.py
+echo ${NODE_ID} > /etc/waggle/hostname
+
 if [ ${BEEHIVE_HOST}x == "x" ] ; then
   # Get the IP for the server you want to connect to
   read -p "Enter the URL or IP address of the beehive cloud server you want to use: " BEEHIVE_HOST
