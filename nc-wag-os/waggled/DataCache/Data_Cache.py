@@ -19,6 +19,9 @@ from glob import glob
 
 #TODO make improvements. Suggestions for improvements are written as TODOs
 
+LOG_FILENAME="/var/log/waggle/data_cache_logging.log"
+
+logger = logging.getLogger(__name__)
 
 class Data_Cache(Daemon):
    
@@ -51,13 +54,11 @@ class Data_Cache(Daemon):
             
             #indicates that the server is flushing the buffers. Shuts down the server until the all queues have been written to a file
             while Data_Cache.flush ==1:
-                print "Cache is in flush state"
-                sys.stdout.flush()
+                logger.debug("Cache is in flush state")
                 time.sleep(1)
             if os.path.exists('/tmp/Data_Cache_server'): #checking for the file
                 os.remove('/tmp/Data_Cache_server')
-            print "Opening server socket..."
-            sys.stdout.flush()
+            logger.debug("Opening server socket...")
             
             #creates a UNIX, STREAMing socket
             server_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -69,27 +70,27 @@ class Data_Cache(Daemon):
             while True:
             
                 if Data_Cache.flush==1: #shuts down the server until the all queues have been written to a file
-                    print 'Server flush!'
-                    sys.stdout.flush()
+                    logger.debug('Server flush!')
+                    
                     server_sock.close()
                     os.remove('/tmp/Data_Cache_server')
-                    print 'Server flush closed socket'
-                    sys.stdout.flush()
+                    logger.debug('Server flush closed socket')
+                    
                     break
                 
                 #accept connections from outside
                 client_sock, address = server_sock.accept()
                 try:
                     data = client_sock.recv(2048) #arbitrary
-                    #print 'Server received: ', data
+                    logger.debug('Server received: %s' % (data))
                     if not data:
                         break
                     else:
                         #'Flush' means that there is an external flush request or if WagMan is about to shut down the node controller
                         if data == 'Flush':
                             #flush all stored messages into files
-                            print 'External flush request made.'
-                            sys.stdout.flush()
+                            logger.debug('External flush request made.')
+                            
                             DC_flush(incoming_available_queues, outgoing_available_queues)
                         #Indicates that it is a pull request 
                         elif data[0] == '|': #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
@@ -114,13 +115,13 @@ class Data_Cache(Daemon):
                                 try:
                                     client_sock.sendall(msg) #sends the message
                                 except Exception as e:
-                                    print e
+                                    logger.error(e)
                                     #pushes it back into the outgoing queue if the client disconnects before the message is sent
                                     try:#Will pass if data is a pull request instead of a full message
                                         #TODO default msg_p is 5 for messages pushed back into queue. Improvement recommended.
                                         outgoing_push(int(dest),5,msg, outgoing_available_queues, incoming_available_queues)
                                     except Exception as e: 
-                                        #print e
+                                        logger.error(e)
                                         pass
                         
                             time.sleep(1)
@@ -145,6 +146,7 @@ class Data_Cache(Daemon):
                                             #If the device is registered and the push is successful, no need to try again, break the loop
                                             break 
                                         except Exception as e: 
+                                            logger.error(e)
                                             #The device dictionary may not be up to date. Need to update and try again.
                                             #If the device is still not found after first try, move on.
                                             DEVICE_DICT = update_dev_dict() #this function is in NC_configuration.py
@@ -158,7 +160,7 @@ class Data_Cache(Daemon):
                                             msg_handler(data,DEVICE_DICT)
                                             break #break the loop if this is successful
                                         except Exception as e:
-                                            #print e
+                                            logger.error(e)
                                             DEVICE_DICT = update_dev_dict()
                                     else:
                                         try:
@@ -171,13 +173,13 @@ class Data_Cache(Daemon):
                                             #If the device is still not found after first try, move on.
                                             DEVICE_DICT = update_dev_dict()
                             except Exception as e:
-                                print 'Message corrupt. Will not store in data cache.'
-                                print e
+                                logger.error('Message corrupt. Will not store in data cache.')
+                                logger.error(e)
                             time.sleep(1)
 
                         
                 except KeyboardInterrupt, k:
-                    print "Data Cache server shutting down..."
+                    logger.info("Data Cache server shutting down...")
                     break
             #server_sock.close()
             #os.remove('/tmp/Data_Cache_server')
@@ -188,14 +190,13 @@ class Data_Cache(Daemon):
             
     def stop(self):
         try:
-            print 'Flushing data cache....'
-            sys.stdout.flush()
+            logger.debug('Flushing data cache....')
             external_flush()
             #The data cache needs time to flush the messages before stopping the process
             time.sleep(5)
             Daemon.stop(self) 
         except Exception as e:
-            print e
+            logger.error(e)
 
 def external_flush():
     """
@@ -210,12 +211,12 @@ def external_flush():
             client_sock.sendall('Flush')
             client_sock.close()
         except Exception as e:
-            print e
+            logger.error(e)
             client_sock.close()
-        print "Sent flush command."
+        logger.debug("Sent flush command.")
     else: 
-        print 'Data cache running?'
-    sys.stdout.flush()
+        logger.debug('Data cache running?')
+    
 
 def outgoing_push(dev, msg_p, msg, outgoing_available_queues, incoming_available_queues): 
     """
@@ -248,7 +249,7 @@ def outgoing_push(dev, msg_p, msg, outgoing_available_queues, incoming_available
         except: 
             outgoing_available_queues.append((dev, msg_p)) #prevents duplicates
     except:
-        print 'Outgoing push unable to store in data cache...'#TODO Should an error message be sent back to the recipient?
+        logger.error('Outgoing push unable to store in data cache...') #TODO Should an error message be sent back to the recipient?
        
 def incoming_push(device, msg_p, msg, incoming_available_queues, outgoing_available_queues):
     """ 
@@ -304,7 +305,7 @@ def outgoing_pull(outgoing_available_queues):
         #so, send the messages one by one using a file generator object.
         #when all messages have been read from file and sent to cloud, close and delete that file from the directory.
         if len(glob('/var/dc/outgoing_msgs/*')) > 0 and Data_Cache.flush == 0: #prevents the flush from pulling messages from files
-            #print 'Len(glob) outgoing_stored/* is greater than 0'
+            logger.debug('Len(glob) outgoing_stored/* is greater than 0')
             #is there a file generator object already stored as the current file?
             if Data_Cache.outgoing_cur_file == '':
                 #print 'cur_file is empty string.'
@@ -337,7 +338,7 @@ def outgoing_pull(outgoing_available_queues):
         else:
             #Are there any messages available?
             if len(outgoing_available_queues) == 0: #no messages available
-                #print ' No messages available.'
+                logger.debug('No messages available.')
                 return 'False' 
                 break
             else:
@@ -432,14 +433,12 @@ def DC_flush(incoming_available_queues, outgoing_available_queues):
     """ 
     Data_Cache.flush = 1
     cur_date = str(datetime.datetime.now().strftime('%Y%m%d%H:%M:%S'))
-    print 'Flushing at ' + cur_date
-    sys.stdout.flush()
+    logger.debug('Flushing at ' + cur_date)
     try:
         
         filename = '/var/dc/outgoing_msgs/' + cur_date #file name is date of flush
         f = open(filename, 'w')
-        print 'Flushing outgoing'
-        sys.stdout.flush()
+        logger.debug('Flushing outgoing')
         while True: #write all outgoing messages to outgoing file
             #messages are written to file with highest priority at the top
             msg = outgoing_pull(outgoing_available_queues) #returns false when all queues are empty
@@ -449,13 +448,12 @@ def DC_flush(incoming_available_queues, outgoing_available_queues):
                 #write the message to the file
                 f.write(msg + '\n') 
         f.close()
-        print 'Flushing incoming'
-        sys.stdout.flush()
+        logger.debug('Flushing incoming')
         for i in PRIORITY_ORDER: #write all incoming messages to file
             #each device has a separate folder. This prevents needing to loop through all messages or all files to find messages for only the connected devices.
             #TODO Change this to /etc/waggle/dc/outgoing or something
             pathname = '/var/dc/incoming_msgs/' + str(i) + '/' #set the path
-            #print 'pathname: ', pathname
+            logger.debug('pathname: '+ pathname)
             if not os.path.exists(pathname): #make sure the directory exists
                 os.makedirs(pathname)
             filename = pathname + cur_date #set the file name to the date and time of flush
@@ -476,10 +474,9 @@ def DC_flush(incoming_available_queues, outgoing_available_queues):
                     f.write(msg + '\n')
                     
         Data_Cache.flush = 0 #restart server
-        print 'Data cache restarted'
-        sys.stdout.flush()
+        logger.debug('Data cache restarted')
     except Exception as e:
-        print e
+        logger.error(e)
 
 def get_status():
 #TODO This doesn't work. Needs to be a unix socket to communicate with the data cache as it is running. 
@@ -537,6 +534,18 @@ def get_priority(outgoing_available_queues):
         return (highest_de_p, highest_msg_p)           
 
 if __name__ == "__main__":
+    
+    # 5 times 10MB
+    sys.stdout.write('logging to '+LOG_FILENAME+'\n')
+    log_dir = os.path.dirname(LOG_FILENAME)
+    if not os.path.isdir(log_dir):
+        os.makedirs(log_dir)
+    handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=1485760, backupCount=5)
+    
+    handler.setFormatter(formatter)
+    root_logger.handlers = []
+    root_logger.addHandler(handler)
+    
     dc = Data_Cache('/var/run/Data_Cache.pid',stdout='/var/log/waggle/data_cache_stdout.log', stderr='/var/log/waggle/data_cache_stderr.log') #TODO may want to change this
     if len(sys.argv) == 2:
         if 'start' == sys.argv[1]:
