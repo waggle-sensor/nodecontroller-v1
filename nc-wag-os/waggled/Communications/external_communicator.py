@@ -56,11 +56,11 @@ def pika_push():
             comm.cloud_connected.value = 1 #set the flag to true when connected to cloud
             #Declaring the queue
             channel.queue_declare(queue=QUEUENAME)
-            logger.info("Pika push connected to cloud using queue %s.\n" % (QUEUENAME))
+            logger.info("Pika push connected to cloud using queue \"%s\"." % (QUEUENAME))
             send_registrations() #sends registration for each node and node controller configuration file
             connected = True #might not be neccessary 
         except: 
-            logger.warning( 'Pika_push currently unable to connect to cloud... ('+CLOUD_ADDR+')')
+            logger.warning( 'Pika_push currently unable to connect to cloud (%s) (queue: %s)' % (CLOUD_ADDR , QUEUENAME) )
             comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
             time.sleep(5)
             connected = False #might not be neccessary
