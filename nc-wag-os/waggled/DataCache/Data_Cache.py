@@ -21,6 +21,7 @@ from glob import glob
 
 LOG_FILENAME="/var/log/waggle/data_cache_logging.log"
 
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 class Data_Cache(Daemon):
