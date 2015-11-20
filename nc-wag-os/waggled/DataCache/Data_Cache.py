@@ -10,6 +10,7 @@ from NC_configuration import *
 sys.path.append('../NC/')
 from msg_handler import msg_handler
 from glob import glob
+import logging, logging.handlers
 
 """ 
     The Data Cache stores messages between the nodes and the cloud. The main function is a unix socket server. The internal and external facing communication classes connect to
@@ -19,10 +20,27 @@ from glob import glob
 
 #TODO make improvements. Suggestions for improvements are written as TODOs
 
+loglevel=logging.DEBUG
 LOG_FILENAME="/var/log/waggle/data_cache_logging.log"
+LOG_FORMAT='%(asctime)s - %(name)s - %(levelname)s - line=%(lineno)d - %(message)s'
 
-logging.basicConfig()
+
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+
+
+root_logger = logging.getLogger()
+root_logger.setLevel(loglevel)
+formatter = logging.Formatter(LOG_FORMAT)
+
+handler = logging.StreamHandler(stream=sys.stdout)
+handler.setFormatter(formatter)
+
+root_logger.handlers = []
+root_logger.addHandler(handler)
+
+
 
 class Data_Cache(Daemon):
    
