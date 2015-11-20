@@ -116,7 +116,7 @@ def get_config():
     #add all the configuration
     config ='Node ID: ' + NODE_ID + '\n'
     config = config + 'Queuename: ' + QUEUENAME + '\n'
-    config = config + 'Node Controller IP: ' + NCIP + '\n'
+   # config = config + 'Node Controller IP: ' + NCIP + '\n' # deprecated
     config = config + 'Device dictionary: ' + str(DEVICE_DICT) + '\n'
     config = config + 'Priority order: ' + str(PRIORITY_ORDER) + '\n'
     config = config + 'Available memory for data cache: ' + str(AVAILABLE_MEM) + '\n'
