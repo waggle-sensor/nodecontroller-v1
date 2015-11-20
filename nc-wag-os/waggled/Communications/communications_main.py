@@ -150,7 +150,7 @@ if __name__ == "__main__":
             
             for name, function in name2func.iteritems():
                 if not name2process[name].is_alive():
-                    logger.warning( name + ' has crashed. Restarting...', str(datetime.datetime.now()) )
+                    logger.warning( 'Process "%s" has crashed. Restarting...' % (name) )
                     new_process = multiprocessing.Process(target=function, name=name)
                     new_process.start()
                     name2process[name]=new_process
