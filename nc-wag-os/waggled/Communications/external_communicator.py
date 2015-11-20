@@ -46,7 +46,7 @@ class external_communicator(object):
 def pika_push():
        
     comm = external_communicator()
-    params = comm.params
+    #params = comm.params
     logger.info('Pika push started...\n')
     while True:
         connection=None
@@ -55,12 +55,12 @@ def pika_push():
         try: 
             connection = pika.BlockingConnection(pika_params)
         except: 
-            logger.warning( 'Pika_push currently unable to connect to cloud (%s) (queue: %s)' % (CLOUD_ADDR , QUEUENAME) )
+            logger.warning( 'Pika_push currently unable to connect to cloud (%s:%d) (queue: %s)' % (pika_params.host, pika_params.port , QUEUENAME) )
             comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
             time.sleep(5)
             break
                 
-        logger.warning( 'Pika_push connected to cloud (%s)' % (CLOUD_ADDR) )
+        logger.warning( 'Pika_push connected to cloud (%s:%d)' % (pika_params.host, pika_params.port) )
         
         # get channel
         try:    
@@ -72,7 +72,7 @@ def pika_push():
             send_registrations() #sends registration for each node and node controller configuration file
             
         except: 
-            logger.warning('Pika_push currently unable to connect to cloud (%s) (queue: %s)' % (CLOUD_ADDR , QUEUENAME) )
+            logger.warning('Pika_push currently unable to connect to cloud (%s:%d) (queue: %s)' % (pika_params.host, pika_params.port , QUEUENAME) )
             comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
             time.sleep(5)
             break
