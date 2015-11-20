@@ -36,6 +36,15 @@ if [ ! -e /etc/waggle/node_id ] ; then
  source ./scripts/create_node_id.sh
 fi
 
+export NODE_ID=`cat /etc/waggle/node_id`
+
+if [ "${NODE_ID}x" == "x" ] ; then
+  echo "error: NODE_ID is undefined"
+  exit 1
+fi
+
+# this is only for backwards compatibility with PacketHandler.py
+echo ${NODE_ID} > /etc/waggle/hostname
 
 if [ ${BEEHIVE_HOST}x == "x" ] ; then
   # Get the IP for the server you want to connect to
@@ -55,13 +64,10 @@ echo ${BEEHIVE_HOST} > /etc/waggle/server_ip
 
 
 #has to be changed so that the requirement for node ID in the packet header is met
-host_name=$RANDOM 
 echo " " > /etc/waggle/queuename
-echo "$host_name" > /etc/waggle/hostname # The node's waggle hostname
-echo "$host_name, \n" > /etc/waggle/devices
+echo "${NODE_ID}, \n" > /etc/waggle/devices
 echo "1,2,3,4, \n" >> /etc/waggle/devices
-echo "$host_name:5, \n" >> /etc/waggle/devices
-echo " " >> /etc/waggle/NCIP #Why is this empty? and we need to clean this portion of code up
+echo "${NODE_ID}:5, \n" >> /etc/waggle/devices
 
 #make directory to store data cache log files and stored messages
 #make / as large as possible, all the cached data gets stored here. 

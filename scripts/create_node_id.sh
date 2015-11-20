@@ -21,7 +21,7 @@ if [ $(echo $ODROIDMODEL | grep -c "^ODROIDC") -eq 1 ] ; then
   if [ ! ${#MACADDRESS} -ge 12 ]; then
     echo "warning: could not extract MAC address"
   else
-    NODE_ID="waggle_mac_${MACADDRESS}"  
+    NODE_ID="${MACADDRESS}0000"  
   fi
 fi
 
@@ -31,17 +31,18 @@ if [ "${NODE_ID}x" == "x" ] && [ -e ${CID_FILE} ]; then
   # use serial number from SD-card
   # some devices do not have a unique MAC address, they could use this code
  
-  export SERIAL_ID=`python -c "cid = '$(cat ${CID_FILE})' ; len=len(cid) ; mid=cid[:2] ; psn=cid[-14:-6] ; print mid+'_'+psn"`
+  export SERIAL_ID=`python -c "cid = '$(cat ${CID_FILE})' ; len=len(cid) ; mid=cid[:2] ; psn=cid[-14:-6] ; print mid+psn"`
   if [ ! ${#SERIAL_ID} -ge 11 ]; then
     echo "warning: could not create unique identifier from SD-card serial number"
   else
-    NODE_ID="waggle_serial_${SERIAL_ID}" 
+    NODE_ID="${SERIAL_ID}000000" 
   fi
 fi
 
 # try random number
 if [ "${NODE_ID}x" = "x" ] ; then
-  NODE_ID="waggle_random_${RANDOM}"
+  #NODE_ID="waggle_random_${RANDOM}"
+  echo "could not generate NODE_ID"
 fi
 
 #save node ID
