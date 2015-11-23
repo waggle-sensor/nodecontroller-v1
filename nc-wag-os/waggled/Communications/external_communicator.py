@@ -174,7 +174,7 @@ def external_client_pull():
                     if os.path.exists('/tmp/Data_Cache_server'):
                         client_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                         client_sock.connect('/tmp/Data_Cache_server') #connects to server
-                        logger.debug("Client_pull connected to data cache... ")
+                        #logger.debug("Client_pull connected to data cache... ")
                         #sends the pull request indicating that it is an outgoing pull request. 
                         #TODO This can be improved (both clients combined into one) if there is a better way to distinguish incoming vs outgoing pull and pull vs push requests. 
                         data = '|o' 
