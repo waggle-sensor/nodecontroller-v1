@@ -154,12 +154,14 @@ class Data_Cache(Daemon):
                                 flags = header['flags'] #extracts priorities
                                 order = flags[2] #lifo or fifo
                                 msg_p = flags[1] 
-                                recipient = header['r_uniqid'] #gets the recipient ID
-                                sender = header['s_uniqid']
+                                recipient_int = header['r_uniqid'] #gets the recipient ID
+                                sender_int = header['s_uniqid']
+                                sender = nodeid_int2hexstr(sender_int)
+                                recipient = nodeid_int2hexstr(recipient_int)
                                 for i in range(2): #loops in case device dictionary is not up-to-date
-                                    if recipient == 0: #0 is the default ID for the cloud. Indicates an outgoing push.
+                                    if recipient_int == 0: #0 is the default ID for the cloud. Indicates an outgoing push.
                                         try: 
-                                            dev_loc = DEVICE_DICT[str(sender)] #looks up the location of the sender device
+                                            dev_loc = DEVICE_DICT[sender] #looks up the location of the sender device
                                             
                                             if order==False: #indicates lifo. lifo has highest message priority
                                                 msg_p=5
@@ -174,7 +176,7 @@ class Data_Cache(Daemon):
                                             DEVICE_DICT = update_dev_dict() #this function is in NC_configuration.py
                                             
                                     #indicates an incoming push
-                                    elif str(recipient) == HOSTNAME:
+                                    elif recipient == NODE_ID:
                                         try:
                                             #An error will occur if a guestnode registers and then tries to deregister before the device dictionary has been updated
                                             #This may be unlikely but is still possible
@@ -186,7 +188,7 @@ class Data_Cache(Daemon):
                                             DEVICE_DICT = update_dev_dict()
                                     else:
                                         try:
-                                            dev_loc = DEVICE_DICT[str(recipient)] #looks up the location of the recipient device
+                                            dev_loc = DEVICE_DICT[recipient] #looks up the location of the recipient device
                                             #If the device is registered and the push is successful, no need to try again, break the loop
                                             incoming_push(int(dev_loc),msg_p,data, incoming_available_queues, outgoing_available_queues)
                                             break
