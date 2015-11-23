@@ -117,7 +117,10 @@ class Data_Cache(Daemon):
                             if dest != 'o':
                                 msg = incoming_pull(int(dest), incoming_available_queues) #pulls a message from that device's queue
                                 if msg == 'None':
+                                    logger.debug("no message")
                                     msg = 'False'
+                                else:
+                                    logger.debug("incoming_pull message: %s" %(msg))
                                 try:
                                     client_sock.sendall(msg) #sends the message
                                 except:
