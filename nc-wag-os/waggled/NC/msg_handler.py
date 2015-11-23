@@ -9,6 +9,10 @@ sys.path.append('../Communications/')
 from internal_communicator import send
 from NC_configuration import QUEUENAME
 
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.ERROR)
+
 def msg_handler(msg, DEVICE_DICT):
     """
     
@@ -21,7 +25,7 @@ def msg_handler(msg, DEVICE_DICT):
         #unpacks the header
         header = get_header(msg)
     except: 
-        print 'Message is corrupt: ', msg #TODO should this send some kind of error response? 
+        logger.error('Message is corrupt: %s' % (msg)) #TODO should this send some kind of error response? 
         
     #get the major header type
     major = chr(header['msg_mj_type'])
@@ -50,7 +54,7 @@ def msg_handler(msg, DEVICE_DICT):
             #unpack the message
             ping = unpack(msg)
             #print out the body of the message
-            print 'Node received: ', ping[1]
+            logger.debug('Node received: %s'% (ping[1]))
     #time
     elif major == 't':
         #time request
@@ -64,7 +68,7 @@ def msg_handler(msg, DEVICE_DICT):
             #unpack the message
             time = unpack(msg)
             #print out the body of the message
-            print 'Node received time: ', time[1]
+            logger.debug('Node received time: %s' % (time[1]))
     #sensor data
     elif major == 's':
         #TODO do stuff here 
@@ -72,16 +76,17 @@ def msg_handler(msg, DEVICE_DICT):
     
     #registration
     elif major =='r':
-        sender = header['s_uniqid']
+        sender_int = header['s_uniqid']
+        sender = nodeid_int2hexstr(sender_int)
         if minor == 'r': #registration request
-            if sender == 0:
+            if sender_int == 0:
                 #message is from cloud
                 #unpack the message
                 reg = unpack(msg)
-                print 'NC received registration: ', reg[1]
+                logger.debug('NC received registration: %s' % (reg[1]))
             else: 
                 #guest node registration
-                sender = str(sender) #convert from int to string
+                #sender = str(sender) #convert from int to string
                 with open('/etc/waggle/devices', 'r') as _file:
                     lines = _file.readlines()
                 #check if device is already registered
@@ -96,7 +101,7 @@ def msg_handler(msg, DEVICE_DICT):
                     #nothing else to be done
                 except: 
                     #if it fails, the device is not yet registered. Add to list of devices
-                    print 'Adding device ',sender, 'to devices file.'
+                    logger.debug('Adding device %s to devices file.' % (sender))
                     devices.append(sender)
                     
                     #Need to find available priorities to assign it
@@ -122,18 +127,18 @@ def msg_handler(msg, DEVICE_DICT):
                         header_dict = {
                             "msg_mj_type" : ord('r'),
                             "msg_mi_type" : ord('r'),
-                            "s_uniqid"    : int(sender)
+                            "s_uniqid"    : sender_int
                             }
                         msg = str(QUEUENAME)
                         try: 
                             packet = pack(header_dict, message_data = msg)
-                            print 'Registration made for node ID ', sender
+                            logger.info('Registration made for node ID %s' % (sender))
                             for pack_ in packet:
                                 send(pack_)
                         except Exception as e: 
-                            print e
+                            logger.error(e)
                     else: 
-                        print 'Cannot register any more guestnodes. Maximum of four guestnodes can be registered at one time. Please remove any unused guestnode IDs from the devices file.'
+                        logger.error( 'Cannot register any more guestnodes. Maximum of four guestnodes can be registered at one time. Please remove any unused guestnode IDs from the devices file.')
                     
                 #put the list back together to be written back into the file
                 for device in devices:
@@ -143,8 +148,8 @@ def msg_handler(msg, DEVICE_DICT):
                     _file.writelines(lines)
                     
         elif minor == 'd': #de-registration request from guest node
-            sender = str(sender) #convert from int to string
-            print 'Received de-registration message from node ', sender
+            #sender = str(sender) #convert from int to string
+            logger.info('Received de-registration message from node %s' % (sender))
             with open('/etc/waggle/devices', 'r') as _file:
                 lines = _file.readlines()
             #check if device is already registered and remove from devices list
@@ -198,7 +203,7 @@ def msg_handler(msg, DEVICE_DICT):
         
     #message type unrecognized 
     else: 
-        print 'Message major type, ' , major, ' unrecognized.'
+        logger.error('Message major type "%s" unrecognized.' % (major))
                 
                 
                 
