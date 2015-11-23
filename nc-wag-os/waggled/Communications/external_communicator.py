@@ -246,7 +246,7 @@ def send_registrations():
         header_dict = {
             "msg_mj_type" : ord('r'),
             "msg_mi_type" : ord('r'),
-            "s_uniqid"    : key
+            "s_uniqid"    : int("0x" + key, 0)
             }
         msg = str(QUEUENAME)
         try: 
