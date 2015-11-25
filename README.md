@@ -2,12 +2,12 @@
 
 ## Setting up the node controller
 
-You can use the environment variable BEEHIVE_HOST to tell the node controller where to send the sensor data.
+You can use the environment variable RABBITMQ_HOST to tell the node controller where to send the sensor data.
 
 ```bash
 git clone --recursive https://github.com/waggle-sensor/nodecontroller.git
 cd nodecontroller
-BEEHIVE_HOST=<IP> ./configure
+RABBITMQ_HOST=<IP> ./configure
 ```
 
 ### node controller services
@@ -33,7 +33,7 @@ A docker image is available for testing and developing purposes. Currently this 
 ```bash
 docker run -ti --name nc --rm waggle/nodecontroller
 cd /usr/lib/waggle/nodecontroller/
-BEEHIVE_HOST=<IP> ./configure
+RABBITMQ_HOST=<IP> ./configure
 ```
 
 For developing purposes mounting the git repo from the host can be helpful:
