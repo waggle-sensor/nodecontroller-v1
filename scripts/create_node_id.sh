@@ -24,6 +24,7 @@ export NODE_ID=""
 
 # try MAC address (some older models do not have unique MAC addresses)
 
+
 # try to detect network device, e.g. "eth0"
 export NETWORK_DEVICE=$(ifconfig -a | grep "Ethernet" | grep "^eth" | sort | head -n 1 | grep -o "^eth[0-9]" | tr -d '\n')
 echo "NETWORK_DEVICE: ${NETWORK_DEVICE}"
@@ -32,7 +33,7 @@ echo "MACADDRESS: ${MACADDRESS}"
 if [ ! ${#MACADDRESS} -ge 12 ]; then
   echo "warning: could not extract MAC address"
 else
-  NODE_ID="${MACADDRESS}0000"  
+  NODE_ID="0000${MACADDRESS}"  
 fi
 
 # try memory card serial number
@@ -45,7 +46,7 @@ if [ "${NODE_ID}x" == "x" ] && [ -e ${CID_FILE} ]; then
   if [ ! ${#SERIAL_ID} -ge 11 ]; then
     echo "warning: could not create unique identifier from SD-card serial number"
   else
-    NODE_ID="${SERIAL_ID}000000" 
+    NODE_ID="000000${SERIAL_ID}" 
   fi
 fi
 
