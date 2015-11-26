@@ -35,8 +35,8 @@ QUEUENAME = read_file('/etc/waggle/queuename')
 #NCIP = read_file('/etc/waggle/NCIP')
 
 #get server IP from file
-CLOUD_IP = read_file('/etc/waggle/server_ip') #TODO: deprecate this
-RABBITMQ_HOST=CLOUD_IP
+#CLOUD_IP = read_file('/etc/waggle/server_ip') #TODO: deprecate this
+RABBITMQ_HOST=read_file('/etc/waggle/server_host')
     
 def create_dev_dict():
     """

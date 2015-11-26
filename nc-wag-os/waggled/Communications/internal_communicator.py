@@ -38,7 +38,7 @@ def send(msg):
                 try:
                     client_sock.connect('/tmp/Data_Cache_server')
                     logger.info( "Connected to data cache... ")
-                    
+                    logger.info( "send(msg)... msg:"+msg)
                     client_sock.sendall(msg)
                     client_sock.close() #closes socket after each message is sent 
                     break #break loop when message sent. Otherwise, keep trying to connect until successful.

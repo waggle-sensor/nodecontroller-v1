@@ -25,7 +25,7 @@ LOG_FILENAME="/var/log/waggle/data_cache_logging.log"
 LOG_FORMAT='%(asctime)s - %(name)s - %(levelname)s - line=%(lineno)d - %(message)s'
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("Data_Cache.py")
 logger.setLevel(logging.DEBUG)
 
 
@@ -134,21 +134,24 @@ class Data_Cache(Daemon):
                                 msg = outgoing_pull(outgoing_available_queues) #pulls the highest priority message
                                 if msg == None: 
                                     msg = 'False'
+                                if msg !='False':
+                                    logger.debug("send message to cloud: %s" % (msg))
                                 try:
                                     client_sock.sendall(msg) #sends the message
                                 except Exception as e:
-                                    logger.error(e)
+                                    logger.error("client_sock.sendall: "+str(e))
                                     #pushes it back into the outgoing queue if the client disconnects before the message is sent
                                     try:#Will pass if data is a pull request instead of a full message
                                         #TODO default msg_p is 5 for messages pushed back into queue. Improvement recommended.
                                         outgoing_push(int(dest),5,msg, outgoing_available_queues, incoming_available_queues)
                                     except Exception as e: 
-                                        logger.error(e)
+                                        logger.error("outgoing_push: "+str(e))
                                         pass
                         
                             time.sleep(1)
                             
                         else:
+                            logger.debug("datacache got: \""+str(data)+"\"")
                             try:
                                 header = get_header(data) #uses the packet handler function get_header to unpack the header data from the message
                                 flags = header['flags'] #extracts priorities
@@ -156,13 +159,18 @@ class Data_Cache(Daemon):
                                 msg_p = flags[1] 
                                 recipient_int = header['r_uniqid'] #gets the recipient ID
                                 sender_int = header['s_uniqid']
+                                logger.debug("sender_int: %s recipient_int: %s" % (sender_int, recipient_int))
                                 sender = nodeid_int2hexstr(sender_int)
                                 recipient = nodeid_int2hexstr(recipient_int)
+                                logger.debug("sender: %s recipient: %s NODE_ID: %s" % (sender, recipient, NODE_ID))
                                 for i in range(2): #loops in case device dictionary is not up-to-date
                                     if recipient_int == 0: #0 is the default ID for the cloud. Indicates an outgoing push.
                                         try: 
                                             dev_loc = DEVICE_DICT[sender] #looks up the location of the sender device
+                                        except KeyError as e: 
+                                            logger.error("outgoing_push KeyError: "+str(e)) 
                                             
+                                        try:     
                                             if order==False: #indicates lifo. lifo has highest message priority
                                                 msg_p=5
                                             #pushes the message into the outgoing buffer to the queue corresponding to the device location and message priority
@@ -170,10 +178,10 @@ class Data_Cache(Daemon):
                                             #If the device is registered and the push is successful, no need to try again, break the loop
                                             break 
                                         except Exception as e: 
-                                            logger.error(e)
+                                            logger.error("outgoing_push2: "+str(e))
                                             #The device dictionary may not be up to date. Need to update and try again.
                                             #If the device is still not found after first try, move on.
-                                            DEVICE_DICT = update_dev_dict() #this function is in NC_configuration.py
+                                            update_dev_dict() #this function is in NC_configuration.py
                                             
                                     #indicates an incoming push
                                     elif recipient == NODE_ID:
@@ -185,7 +193,7 @@ class Data_Cache(Daemon):
                                             break #break the loop if this is successful
                                         except Exception as e:
                                             logger.error(e)
-                                            DEVICE_DICT = update_dev_dict()
+                                            update_dev_dict()
                                     else:
                                         try:
                                             dev_loc = DEVICE_DICT[recipient] #looks up the location of the recipient device
@@ -195,7 +203,7 @@ class Data_Cache(Daemon):
                                         except Exception as e: 
                                             #The device dictionary may not be up to date. Need to update and try again.
                                             #If the device is still not found after first try, move on.
-                                            DEVICE_DICT = update_dev_dict()
+                                            update_dev_dict()
                             except Exception as e:
                                 logger.error('Message corrupt. Will not store in data cache.')
                                 logger.error(e)
@@ -253,7 +261,7 @@ def outgoing_push(dev, msg_p, msg, outgoing_available_queues, incoming_available
         :param int flush: Value indicating if the data cache needs to flush the buffers into files.
         :param list incoming_available_queues: A list of tuples that specify the location of incoming queues that currently have stored messages
     """ 
-
+    logger.debug("outgoing_push: dev=%d msg_p=%d msg=%s" % (dev, msg_p, msg))
     #If the msg counter is greater than or equal to the available memory, flush the outgoing queues into a file
     if Data_Cache.msg_counter>= AVAILABLE_MEM:
         
@@ -263,6 +271,7 @@ def outgoing_push(dev, msg_p, msg, outgoing_available_queues, incoming_available
     
     #Increments the msg_counter by 1 each time a message is pushed into the data cache
     Data_Cache.msg_counter += 1 
+    logger.debug("Data_Cache.msg_counter: "+str(Data_Cache.msg_counter))
     try:
         #pushes the message into the queue at the specified location in the matrix
         Data_Cache.outgoing_bffr[(dev - 1)][(msg_p - 1)].put(msg)
@@ -362,7 +371,7 @@ def outgoing_pull(outgoing_available_queues):
         else:
             #Are there any messages available?
             if len(outgoing_available_queues) == 0: #no messages available
-                logger.debug('No messages available.')
+                #logger.debug('No messages available.')
                 return 'False' 
                 break
             else:

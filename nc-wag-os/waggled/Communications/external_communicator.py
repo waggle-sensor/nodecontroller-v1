@@ -68,15 +68,20 @@ def pika_push():
             comm.cloud_connected.value = 1 #set the flag to true when connected to cloud
             #Declaring the queue
             channel.queue_declare(queue=QUEUENAME)
-            logger.info("Pika push connected to cloud using queue \"%s\"." % (QUEUENAME))
-            send_registrations() #sends registration for each node and node controller configuration file
-            
+            logger.info("Pika push got queue \"%s\"." % (QUEUENAME))
         except Exception as e:  
             logger.warning('Pika_push unable to get channel (%s:%d) (queue: %s) : %s' % (pika_params.host, pika_params.port , QUEUENAME, e) )
             comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
             time.sleep(5)
             break
-            
+        
+        try:
+            send_registrations() #sends registration for each node and node controller configuration file
+        except Exception as e:  
+            logger.error('registration failed: %s' % (e) )   
+            comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
+            time.sleep(5)
+            break
             
         while True:
             
@@ -242,21 +247,37 @@ def send_registrations():
         Sends registration message for NC and GNs and configuration file for node controller.
     """
     #loops through the list of nodes and send a registration for each one
-    for key in DEVICE_DICT.keys():
+    logger.debug("number of devices: "+str(len(DEVICE_DICT.keys())))
+    
+    for device in DEVICE_DICT.keys():
+        logger.debug("try to send registration for device "+device)
         header_dict = {
             "msg_mj_type" : ord('r'),
             "msg_mi_type" : ord('r'),
-            "s_uniqid"    : int("0x" + key, 0)
+            "s_uniqid"    : int("0x" + device, 0)
             }
         msg = str(QUEUENAME)
         try: 
             packet = pack(header_dict, message_data = msg)
-            logger.info('Registration made for node ID '+ key)
-            for pack_ in packet:
-                send(pack_)
-            
         except Exception as e: 
-            logger.error(e)
+            logger.error("pack failed: "+str(e))
+            raise
+                
+        
+        try:
+            for pack_ in packet:
+                try:
+                    send(pack_)
+                except Exception as e: 
+                    logger.error("send(pack_) failed: "+str(e))
+                    raise
+                    
+        except Exception as e: 
+            logger.error("for loop send(pack_) failed: "+str(e))
+            raise
+            
+        logger.debug("sent registration for device "+device)
+            
     #send nodecontroller configuration file
     config = get_config() #this function is in NC_configuration
     try:
@@ -265,7 +286,7 @@ def send_registrations():
             send(pack_)
     except Exception as e:
         logger.error(e)
-            
+        raise   
 
 
  
