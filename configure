@@ -4,7 +4,14 @@ set -e
 set -x
 #set -v 
 #This is configures an odroid to be a node controller
-export waggled_dir="$(pwd)/nc-wag-os/waggled"
+export waggle_dir="$(pwd)"
+export waggled_dir="${waggle_dir}/nc-wag-os/waggled"
+
+
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
 
 
 if [ $(python -c "import crcmod;" ; echo $?) -ne 0 ] ; then
@@ -46,21 +53,28 @@ fi
 # this is only for backwards compatibility with PacketHandler.py
 echo ${NODE_ID} > /etc/waggle/hostname
 
-if [ ${BEEHIVE_HOST}x == "x" ] ; then
-  # Get the IP for the server you want to connect to
-  read -p "Enter the URL or IP address of the beehive cloud server you want to use: " BEEHIVE_HOST
+
+if [ ${RABBITMQ_HOST}x == "x" ] ; then
+  if [ -e /etc/waggle/server_host ] ; then
+    RABBITMQ_HOST=`cat /etc/waggle/server_host`
+  fi
 fi
 
-if [ ${BEEHIVE_HOST}x == "x" ] ; then
-  export BEEHIVE_HOST='127.0.0.1'
+if [ ${RABBITMQ_HOST}x == "x" ] ; then
+  # Get the IP for the server you want to connect to
+  read -p "Enter the URL or IP address of the beehive cloud server you want to use: " RABBITMQ_HOST
+fi
+
+if [ ${RABBITMQ_HOST}x == "x" ] ; then
+  export RABBITMQ_HOST='127.0.0.1'
 fi
 
 #We have to move away from manual input, and take it as an argument, with the 
 #default beehive server IP set to localhost. Also, we need a way to let the 
 #user know that a wrong server was chosen.
-echo "The beehive server is set to ${BEEHIVE_HOST}."
+echo "The beehive server is set to ${RABBITMQ_HOST}."
 sleep 1
-echo ${BEEHIVE_HOST} > /etc/waggle/server_ip
+echo ${RABBITMQ_HOST} > /etc/waggle/server_host
 
 
 #has to be changed so that the requirement for node ID in the packet header is met
@@ -115,3 +129,5 @@ ln -sf  ${waggled_dir}/99-usb-serial.rules /etc/udev/rules.d/
 #cd ${waggled_dir}/WagMan
 #chmod +x heartbeat_setup.sh
 
+rm -f /usr/local/bin/nodecontroller 
+ln -s ${waggle_dir}/scripts/nodecontroller.sh /usr/local/bin/nodecontroller
