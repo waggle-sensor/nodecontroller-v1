@@ -120,6 +120,8 @@ echo root:waggle | chpasswd
 if [ ! -d /usr/lib/waggle/nodecontroller ] ; then
   mkdir -p /usr/lib/waggle/
   git clone --recursive https://github.com/waggle-sensor/nodecontroller.git /usr/lib/waggle/nodecontroller
+  cd /usr/lib/waggle/nodecontroller
+  ./scripts/install_dependencies.sh
 fi
 
 
