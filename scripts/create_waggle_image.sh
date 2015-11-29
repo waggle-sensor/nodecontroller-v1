@@ -120,9 +120,13 @@ echo root:waggle | chpasswd
 if [ ! -d /usr/lib/waggle/nodecontroller ] ; then
   mkdir -p /usr/lib/waggle/
   git clone --recursive https://github.com/waggle-sensor/nodecontroller.git /usr/lib/waggle/nodecontroller
+else  
   cd /usr/lib/waggle/nodecontroller
-  ./scripts/install_dependencies.sh
+  git pull
 fi
+
+cd /usr/lib/waggle/nodecontroller
+./scripts/install_dependencies.sh
 
 
 ### deploy waggle_first_boot.sh script
