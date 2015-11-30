@@ -58,6 +58,7 @@ pip install crcmod
 
 ### timezone
 echo "Etc/UTC" > /etc/timezone
+dpkg-reconfigure --frontend noninteractive tzdata
 
 # kill user lightdm (display manager running in Ubuntu)
 killall -u lightdm -9
