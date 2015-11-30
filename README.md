@@ -31,6 +31,8 @@ cd /usr/lib/waggle/nodecontroller/nc-wag-os/waggled/NC
 A docker image is available for testing and developing purposes. Currently this is x86, thus it will not run on the ODROID which has an ARM architecture. We will provide ARM Docker images soon I hope.
 
 ```bash
+docker rm -f nc
+docker pull waggle/nodecontroller
 docker run -ti --name nc --rm waggle/nodecontroller
 cd /usr/lib/waggle/nodecontroller/
 RABBITMQ_HOST=<IP> ./configure
