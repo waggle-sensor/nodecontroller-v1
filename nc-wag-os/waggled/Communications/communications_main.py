@@ -120,9 +120,9 @@ if __name__ == "__main__":
             queuename = result.method.queue
             #close the connection
             connection.close()
-            
+            logger.info("Reported queuename: " + queuename)
             #strip 'amq.gen-' from queuename 
-            junk, queuename = queuename.split('-', 1)
+            #junk, queuename = queuename.split('-', 1)
             
             #write the queuename to a file
             with open('/etc/waggle/queuename', 'w') as file_: 
