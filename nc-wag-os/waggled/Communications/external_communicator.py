@@ -55,7 +55,7 @@ def pika_push():
         try: 
             connection = pika.BlockingConnection(pika_params)
         except Exception as e: 
-            logger.warning( 'Pika_push currently unable to connect to cloud (%s:%d) (queue: %s) : %s' % (pika_params.host, pika_params.port , QUEUENAME, e) )
+            logger.warning( 'Pika_push currently unable to connect to cloud (%s:%d) (queue: %s) : %s' % (pika_params.host, pika_params.port , QUEUENAME, str(e)) )
             comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
             time.sleep(5)
             break
@@ -70,7 +70,7 @@ def pika_push():
             channel.queue_declare(queue=QUEUENAME)
             logger.info("Pika push got queue \"%s\"." % (QUEUENAME))
         except Exception as e:  
-            logger.warning('Pika_push unable to get channel (%s:%d) (queue: %s) : %s' % (pika_params.host, pika_params.port , QUEUENAME, e) )
+            logger.warning('Pika_push unable to get channel (%s:%d) (queue: %s) : %s' % (pika_params.host, pika_params.port , QUEUENAME, str(e)) )
             comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
             time.sleep(5)
             break
@@ -78,7 +78,7 @@ def pika_push():
         try:
             send_registrations() #sends registration for each node and node controller configuration file
         except Exception as e:  
-            logger.error('registration failed: %s' % (e) )   
+            logger.error('registration failed: %s' % (str(e)) )   
             comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
             time.sleep(5)
             break
@@ -102,7 +102,7 @@ def pika_push():
                 time.sleep(5)
                 break #need to break this loop to reconnect
             except Exception as e:
-                logger.error("Pika push encounterd some weired error: %s" % (e))
+                logger.error("Pika push encounterd some weired error: %s" % (str(e)))
                 comm.cloud_connected.value = 0
                 time.sleep(5)
                 break
@@ -285,7 +285,7 @@ def send_registrations():
         for pack_ in packet:
             send(pack_)
     except Exception as e:
-        logger.error(e)
+        logger.error(str(e))
         raise   
 
 
