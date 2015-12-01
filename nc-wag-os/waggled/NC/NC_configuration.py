@@ -92,7 +92,7 @@ CLIENT_CERT_FILE="/usr/lib/waggle/SSL/node1/node1_cert.pem"
 CA_ROOT_FILE="/usr/lib/waggle/SSL/waggleca/cacert.pem"
 
 
-pika_credentials = pika.PlainCredentials('waggle', 'waggle')
+pika_credentials = pika.PlainCredentials('node', 'waggle')
     
 pika_params=pika.ConnectionParameters(  host=RABBITMQ_HOST, 
                                         credentials=pika_credentials, 
