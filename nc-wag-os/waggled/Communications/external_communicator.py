@@ -34,7 +34,7 @@ class external_communicator(object):
     incoming = Queue() #stores messages to push into DC 
     outgoing = Queue() #stores messages going out to cloud
     cloud_connected = Value('i') #indicates if the cloud is or is not connected. Clients only connect to DC when cloud is connected. 
-    params = pika.connection.URLParameters(CLOUD_ADDR) #SSL 
+    #params = pika.connection.URLParameters(CLOUD_ADDR) #SSL 
 
 
 
@@ -120,7 +120,7 @@ def pika_pull():
 
     logger.info('Pika pull started...\n')
     comm = external_communicator()
-    params = comm.params
+    #params = comm.params
     #params = pika.connection.URLParameters("amqps://waggle:waggle@10.10.10.108:5671/%2F") #SSL
     while True: 
         
