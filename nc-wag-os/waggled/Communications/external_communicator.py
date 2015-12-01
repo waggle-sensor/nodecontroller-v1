@@ -125,31 +125,48 @@ def pika_pull():
     while True: 
         
         try:
-            try:
-                connection = pika.BlockingConnection(pika_params) 
-                channel = connection.channel()
-                logger.info('Pika pull connection successful.\n')
-                comm.cloud_connected.value = 1 #sets indicator flag to 1 so clients will connect to data cache
-                 #Creating a queue
-                try:
-                    channel.queue_declare(queue=QUEUENAME)
-                except:
-                    logger.debug('Cannot declare queuename.')
-                    pass
-                channel.basic_consume(callback, queue=QUEUENAME)
-                #loop that waits for data 
-                channel.start_consuming() #TODO Can this process still publish to RabbitMQ while this is continuously looping? If so, The pika_pull and pika_push processes can and should be combined. 
-            except:
-                logger.warning('Pika_pull currently unable to connect to cloud. Waiting before trying again.')
-               
-                comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud
-                time.sleep(5)
-           
-        except pika.exceptions.ConnectionClosed:
-            logger.debug("Pika pull connection closed. Waiting before trying again." + str(datetime.datetime.now()) + '\n')
-            
-            comm.cloud_connected.value = 0 #set the flag to false when not connected to the cloud
+            connection = pika.BlockingConnection(pika_params)
+        except Exception as e:
+            logger.warning('(pika.BlockingConnection) Pika_pull currently unable to connect to cloud. Waiting before trying again. ' + str(e))
+            comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud
             time.sleep(5)
+            continue
+        
+        try:
+            channel = connection.channel()
+        except Exception as e:
+            logger.warning('(pika.BlockingConnection) Could not create channel. ' + str(e))
+            comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud
+            time.sleep(5)
+            continue
+        
+        logger.info('Pika pull connection successful.\n')
+        comm.cloud_connected.value = 1 #sets indicator flag to 1 so clients will connect to data cache
+        
+        try:
+            channel.queue_declare(queue=QUEUENAME)
+        except:
+            logger.debug('Cannot declare queuename.')
+            pass
+
+        try:
+            channel.basic_consume(callback, queue=QUEUENAME)
+        except:
+            logger.warning('(channel.basic_consume) failed: '+ str(e))
+            comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud
+            time.sleep(5)   
+            continue
+            
+                        
+        try:
+            #loop that waits for data 
+            channel.start_consuming() #TODO Can this process still publish to RabbitMQ while this is continuously looping? If so, The pika_pull and pika_push processes can and should be combined. 
+        except:
+            logger.warning('(channel.start_consuming) something wrong:' + str(e))
+            comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud
+            
+        time.sleep(5)    
+
     connection.close()
                 
                 
