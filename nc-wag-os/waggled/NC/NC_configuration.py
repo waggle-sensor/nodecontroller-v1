@@ -100,7 +100,7 @@ if USE_SSL:
                                         virtual_host='/', 
                                         port=RABBITMQ_PORT, 
                                         ssl=USE_SSL, 
-                                        ssl_options={"ca_certs": CA_ROOT_FILE , 'certfile': CLIENT_KEY_FILE, 'keyfile': CLIENT_KEY_FILE, 'cert_reqs' : ssl.CERT_REQUIRED} 
+                                        ssl_options={"ca_certs": CA_ROOT_FILE , 'certfile': CLIENT_CERT_FILE, 'keyfile': CLIENT_KEY_FILE, 'cert_reqs' : ssl.CERT_REQUIRED} 
                                          )
 else:
     pika_credentials = pika.PlainCredentials('waggle', 'waggle')
