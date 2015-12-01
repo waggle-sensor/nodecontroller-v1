@@ -112,7 +112,10 @@ if __name__ == "__main__":
             #create the channel
             channel = connection.channel()
             #queue_declare is left empty so RabbitMQ assigns a unique queue name
-            result = channel.queue_declare()
+            
+            
+            new_queuename = 'node_'+id_generator()
+            result = channel.queue_declare(queue=new_queuename)
             #get the name of the randomly assigned queue
             queuename = result.method.queue
             #close the connection
