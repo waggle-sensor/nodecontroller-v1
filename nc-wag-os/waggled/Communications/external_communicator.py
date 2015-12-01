@@ -124,7 +124,7 @@ def pika_pull():
     #params = pika.connection.URLParameters("amqps://waggle:waggle@10.10.10.108:5671/%2F") #SSL
     
     if not QUEUENAME:
-        debug.logger("QUEUENAME is not defined... waiting..")
+        logger.warning("QUEUENAME is not defined... waiting..")
         time.sleep(5)
         return
         
