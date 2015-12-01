@@ -1,6 +1,8 @@
 import sys, pika, ssl
 sys.path.append('../../../protocol/')
 from utilities.packetmaker import *
+import string
+import random
 
 """
     This file stores all of the configurable variables for the node controller. 
@@ -124,7 +126,8 @@ def get_config():
     
     
     
-    
+def id_generator(size=30, chars=string.ascii_letters + string.digits + ".-_"):
+    return ''.join(random.choice(chars) for _ in range(size))    
     
     
     
