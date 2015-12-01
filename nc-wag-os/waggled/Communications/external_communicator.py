@@ -122,6 +122,13 @@ def pika_pull():
     comm = external_communicator()
     #params = comm.params
     #params = pika.connection.URLParameters("amqps://waggle:waggle@10.10.10.108:5671/%2F") #SSL
+    
+    if not QUEUENAME:
+        debug.logger("QUEUENAME is not defined... waiting..")
+        time.sleep(5)
+        return
+        
+    
     while True: 
         
         try:
@@ -145,8 +152,8 @@ def pika_pull():
         
         try:
             channel.queue_declare(queue=QUEUENAME)
-        except:
-            logger.debug('Cannot declare queuename.')
+        except Exception as e:
+            logger.debug('Cannot declare queuename (%s) : %s' % (QUEUENAME, str(e)))
             pass
 
         try:
