@@ -80,31 +80,29 @@ PRIORITY_ORDER = [5,4,3,2,1]
 AVAILABLE_MEM = 256000
 
 #The params used to connect to the cloud are stored here
-CLOUD_ADDR = 'amqps://waggle:waggle@' + RABBITMQ_HOST + ':5671/%2F'
+# [deprecated] CLOUD_ADDR = 'amqps://waggle:waggle@' + RABBITMQ_HOST + ':5671/%2F'
 
-RABBITMQ_PORT=5672 # non-ssl
-#RABBITMQ_PORT=5671 # ssl        TODO: enforce ssl
-USE_SSL=False
-#USE_SSL=True
+
+
+USE_SSL=True
+RABBITMQ_PORT=5671
 
 CLIENT_KEY_FILE="/usr/lib/waggle/SSL/node1/node1_key.pem"
 CLIENT_CERT_FILE="/usr/lib/waggle/SSL/node1/node1_cert.pem"
 CA_ROOT_FILE="/usr/lib/waggle/SSL/waggleca/cacert.pem"
 
 
-pika_params=None
-
-if USE_SSL:
-    pika_params=pika.ConnectionParameters(  host=RABBITMQ_HOST, 
-                                        credentials=pika.credentials.ExternalCredentials(), 
+pika_credentials = pika.PlainCredentials('waggle', 'waggle')
+    
+pika_params=pika.ConnectionParameters(  host=RABBITMQ_HOST, 
+                                        credentials=pika_credentials, 
                                         virtual_host='/', 
                                         port=RABBITMQ_PORT, 
                                         ssl=USE_SSL, 
                                         ssl_options={"ca_certs": CA_ROOT_FILE , 'certfile': CLIENT_CERT_FILE, 'keyfile': CLIENT_KEY_FILE, 'cert_reqs' : ssl.CERT_REQUIRED} 
                                          )
-else:
-    pika_credentials = pika.PlainCredentials('waggle', 'waggle')
-    pika_params=pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=pika_credentials, virtual_host='/', port=RABBITMQ_PORT, ssl=USE_SSL)
+#else:
+#    pika_params=pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=pika_credentials, virtual_host='/', port=RABBITMQ_PORT, ssl=USE_SSL)
 
 
 
@@ -120,7 +118,7 @@ def get_config():
     config = config + 'Device dictionary: ' + str(DEVICE_DICT) + '\n'
     config = config + 'Priority order: ' + str(PRIORITY_ORDER) + '\n'
     config = config + 'Available memory for data cache: ' + str(AVAILABLE_MEM) + '\n'
-    config = config + 'Cloud IP address and parameters: ' + CLOUD_ADDR + '\n'
+    #config = config + 'Cloud IP address and parameters: ' + CLOUD_ADDR + '\n'
 
     return config
     
