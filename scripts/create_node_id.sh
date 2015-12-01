@@ -53,9 +53,13 @@ fi
 
 echo "NODE_ID: ${NODE_ID}"
 
-
-
 # try random number
+if [ "${NODE_ID}x" = "x" ] ; then
+  NODE_ID=`openssl rand -hex 8`
+fi
+
+echo "NODE_ID: ${NODE_ID}"
+
 if [ "${NODE_ID}x" = "x" ] ; then
   echo "could not generate NODE_ID"
   exit 1
