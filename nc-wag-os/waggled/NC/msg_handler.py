@@ -7,7 +7,7 @@ sys.path.append('../../../')
 from waggle_protocol.utilities import packetmaker
 sys.path.append('../Communications/')
 from internal_communicator import send
-from NC_configuration import QUEUENAME
+from NC_configuration import conf
 
 
 logger = logging.getLogger(__name__)
@@ -129,7 +129,7 @@ def msg_handler(msg, DEVICE_DICT):
                             "msg_mi_type" : ord('r'),
                             "s_uniqid"    : sender_int
                             }
-                        msg = str(QUEUENAME.value)
+                        msg = str(conf['QUEUENAME'])
                         try: 
                             packet = pack(header_dict, message_data = msg)
                             logger.info('Registration made for node ID %s' % (sender))
