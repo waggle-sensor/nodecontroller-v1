@@ -4,7 +4,7 @@ import os, os.path, sys
 sys.path.append('../../../')
 from waggle_protocol.protocol.PacketHandler import *
 sys.path.append('../../../')
-from utilities import packetmaker
+from waggle_protocol.utilities import packetmaker
 sys.path.append('../Communications/')
 from internal_communicator import send
 from NC_configuration import QUEUENAME

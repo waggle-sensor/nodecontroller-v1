@@ -6,7 +6,7 @@ import multiprocessing
 sys.path.append('../../../')
 from waggle_protocol.protocol.PacketHandler import *
 sys.path.append('../../../')
-from utilities import packetmaker
+from waggle_protocol.utilities import packetmaker
 sys.path.append('../NC/')
 from NC_configuration import *
 sys.path.append('../NC/')
