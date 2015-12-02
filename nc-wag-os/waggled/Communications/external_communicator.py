@@ -4,7 +4,7 @@ import socket, os, os.path, time, pika, logging, datetime, sys
 from multiprocessing import Process, Queue, Value
 import multiprocessing
 sys.path.append('../../../protocol/')
-from protocol.PacketHandler import *
+from waggle_protocol.protocol.PacketHandler import *
 sys.path.append('../../../protocol/')
 from utilities import packetmaker
 sys.path.append('../NC/')

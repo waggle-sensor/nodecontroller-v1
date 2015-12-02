@@ -2,7 +2,7 @@
 
 import os, os.path, sys
 sys.path.append('../../../protocol/')
-from protocol.PacketHandler import *
+from waggle_protocol.protocol.PacketHandler import *
 sys.path.append('../../../protocol/')
 from utilities import packetmaker
 sys.path.append('../Communications/')
