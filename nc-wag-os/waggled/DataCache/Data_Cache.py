@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from multiprocessing import Queue
-from daemon import Daemon
+#from daemon import Daemon
 import sys, os, os.path, time, atexit, socket, datetime
 sys.path.append('../../../')
 from waggle_protocol.protocol.PacketHandler import *
@@ -42,193 +42,30 @@ root_logger.addHandler(handler)
 
 
 
-class Data_Cache(Daemon):
-   
    #dummy variables. These buffers are created when the data cache starts.
-    incoming_bffr = []
-    outgoing_bffr = []
+incoming_bffr = []
+outgoing_bffr = []
     
-    flush = 0 #value that indicates if the DC is flushing or not
-    msg_counter = 0 #keeps track of total messages in queues
-    #If the data cache flushed messages to files, this stores the the current outgoing file that messages are being read from
-    outgoing_cur_file = '' #empty string if there are no files
-    #If the data cache flushed messages to files, this stores a list of current files for each device 
-    incoming_cur_file =  ['', '', '', '', ''] #empty string if there are no files
-    
-    
-    def run(self):
-        #lists keeping track of which queues currently have messages stored in them
-        outgoing_available_queues = list() 
-        incoming_available_queues = list() 
+flush = 0 #value that indicates if the DC is flushing or not
+msg_counter = 0 #keeps track of total messages in queues
+#If the data cache flushed messages to files, this stores the the current outgoing file that messages are being read from
+outgoing_cur_file = '' #empty string if there are no files
+#If the data cache flushed messages to files, this stores a list of current files for each device 
+incoming_cur_file =  ['', '', '', '', ''] #empty string if there are no files
 
-        
-        #Each buffer is a matrix of queues for organization and indexing purposes.
-        #make incoming buffer
-        Data_Cache.incoming_bffr = make_bffr(len(PRIORITY_ORDER))
-        #make outgoing buffer 
-        Data_Cache.outgoing_bffr = make_bffr(len(PRIORITY_ORDER))
-        
-        #the main server loop
-        while True:
-            
-            #indicates that the server is flushing the buffers. Shuts down the server until the all queues have been written to a file
-            while Data_Cache.flush ==1:
-                logger.debug("Cache is in flush state")
-                time.sleep(1)
-            if os.path.exists('/tmp/Data_Cache_server'): #checking for the file
-                os.remove('/tmp/Data_Cache_server')
-            logger.debug("Opening server socket...")
-            
-            #creates a UNIX, STREAMing socket
-            server_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            server_sock.bind('/tmp/Data_Cache_server') #binds to this file path
-            
-            #become a server socket and start listening for clients
-            server_sock.listen(6)
     
-            while True:
+    
+  
             
-                if Data_Cache.flush==1: #shuts down the server until the all queues have been written to a file
-                    logger.debug('Server flush!')
-                    
-                    server_sock.close()
-                    os.remove('/tmp/Data_Cache_server')
-                    logger.debug('Server flush closed socket')
-                    
-                    break
-                
-                #accept connections from outside
-                client_sock, address = server_sock.accept()
-                try:
-                    data = client_sock.recv(2048) #arbitrary
-                    logger.debug('Server received: %s' % (data))
-                    if not data:
-                        break
-                    else:
-                        #'Flush' means that there is an external flush request or if WagMan is about to shut down the node controller
-                        if data == 'Flush':
-                            #flush all stored messages into files
-                            logger.debug('External flush request made.')
-                            
-                            DC_flush(incoming_available_queues, outgoing_available_queues)
-                        #Indicates that it is a pull request 
-                        elif data[0] == '|': #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
-                            data, dest = data.split('|', 1) #splits to get either 'o' for outgoing request or the device location for incoming request
-                            if dest != 'o':
-                                msg = incoming_pull(int(dest), incoming_available_queues) #pulls a message from that device's queue
-                                if msg == 'None':
-                                    logger.debug("no message")
-                                    msg = 'False'
-                                else:
-                                    logger.debug("incoming_pull message: %s" %(msg))
-                                try:
-                                    client_sock.sendall(msg) #sends the message
-                                except:
-                                    #pushes it back into the incoming queue if the client disconnects before the message is sent
-                                    try: #Will pass if data is a pull request instead of a full message 
-                                        #TODO default msg_p is 5 for messages pushed back into queue. Improvement recommended.
-                                        incoming_push(int(dest),5, msg, incoming_available_queues, outgoing_available_queues) 
-                                    except: 
-                                        pass
-                            else:
-                                msg = outgoing_pull(outgoing_available_queues) #pulls the highest priority message
-                                if msg == None: 
-                                    msg = 'False'
-                                if msg !='False':
-                                    logger.debug("send message to cloud: %s" % (msg))
-                                try:
-                                    client_sock.sendall(msg) #sends the message
-                                except Exception as e:
-                                    logger.error("client_sock.sendall: "+str(e))
-                                    #pushes it back into the outgoing queue if the client disconnects before the message is sent
-                                    try:#Will pass if data is a pull request instead of a full message
-                                        #TODO default msg_p is 5 for messages pushed back into queue. Improvement recommended.
-                                        outgoing_push(int(dest),5,msg, outgoing_available_queues, incoming_available_queues)
-                                    except Exception as e: 
-                                        logger.error("outgoing_push: "+str(e))
-                                        pass
-                        
-                            time.sleep(1)
-                            
-                        else:
-                            logger.debug("datacache got: \""+str(data)+"\"")
-                            try:
-                                header = get_header(data) #uses the packet handler function get_header to unpack the header data from the message
-                                flags = header['flags'] #extracts priorities
-                                order = flags[2] #lifo or fifo
-                                msg_p = flags[1] 
-                                recipient_int = header['r_uniqid'] #gets the recipient ID
-                                sender_int = header['s_uniqid']
-                                logger.debug("sender_int: %s recipient_int: %s" % (sender_int, recipient_int))
-                                sender = nodeid_int2hexstr(sender_int)
-                                recipient = nodeid_int2hexstr(recipient_int)
-                                logger.debug("sender: %s recipient: %s NODE_ID: %s" % (sender, recipient, NODE_ID))
-                                for i in range(2): #loops in case device dictionary is not up-to-date
-                                    if recipient_int == 0: #0 is the default ID for the cloud. Indicates an outgoing push.
-                                        try: 
-                                            dev_loc = DEVICE_DICT[sender] #looks up the location of the sender device
-                                        except KeyError as e: 
-                                            logger.error("outgoing_push KeyError: "+str(e)) 
-                                            
-                                        try:     
-                                            if order==False: #indicates lifo. lifo has highest message priority
-                                                msg_p=5
-                                            #pushes the message into the outgoing buffer to the queue corresponding to the device location and message priority
-                                            outgoing_push(int(dev_loc), msg_p, data, outgoing_available_queues, incoming_available_queues)
-                                            #If the device is registered and the push is successful, no need to try again, break the loop
-                                            break 
-                                        except Exception as e: 
-                                            logger.error("outgoing_push2: "+str(e))
-                                            #The device dictionary may not be up to date. Need to update and try again.
-                                            #If the device is still not found after first try, move on.
-                                            update_dev_dict() #this function is in NC_configuration.py
-                                            
-                                    #indicates an incoming push
-                                    elif recipient == NODE_ID:
-                                        try:
-                                            #An error will occur if a guestnode registers and then tries to deregister before the device dictionary has been updated
-                                            #This may be unlikely but is still possible
-                                            #If that occurs, need to update the device dictionary and try again
-                                            msg_handler(data,DEVICE_DICT)
-                                            break #break the loop if this is successful
-                                        except Exception as e:
-                                            logger.error(e)
-                                            update_dev_dict()
-                                    else:
-                                        try:
-                                            dev_loc = DEVICE_DICT[recipient] #looks up the location of the recipient device
-                                            #If the device is registered and the push is successful, no need to try again, break the loop
-                                            incoming_push(int(dev_loc),msg_p,data, incoming_available_queues, outgoing_available_queues)
-                                            break
-                                        except Exception as e: 
-                                            #The device dictionary may not be up to date. Need to update and try again.
-                                            #If the device is still not found after first try, move on.
-                                            update_dev_dict()
-                            except Exception as e:
-                                logger.error('Message corrupt. Will not store in data cache.')
-                                logger.error(e)
-                            time.sleep(1)
-
-                        
-                except KeyboardInterrupt, k:
-                    logger.info("Data Cache server shutting down...")
-                    break
-            #server_sock.close()
-            #os.remove('/tmp/Data_Cache_server')
-            #break
-        if os.path.exists('/tmp/Data_Cache_server'): #checking for the file for a smooth shutdown
-            server_sock.close()
-            os.remove('/tmp/Data_Cache_server')
-            
-    def stop(self):
-        try:
-            logger.debug('Flushing data cache....')
-            external_flush()
-            #The data cache needs time to flush the messages before stopping the process
-            time.sleep(5)
-            Daemon.stop(self) 
-        except Exception as e:
-            logger.error(e)
+def stop():
+    try:
+        logger.debug('Flushing data cache....')
+        external_flush()
+        #The data cache needs time to flush the messages before stopping the process
+        time.sleep(5)
+        #Daemon.stop(self) 
+    except Exception as e:
+        logger.error(e)
 
 def external_flush():
     """
@@ -579,37 +416,168 @@ if __name__ == "__main__":
     root_logger.handlers = []
     root_logger.addHandler(handler)
     
-    dc = Data_Cache('/var/run/Data_Cache.pid',stdout='/var/log/waggle/data_cache_stdout.log', stderr='/var/log/waggle/data_cache_stderr.log') #TODO may want to change this
-    if len(sys.argv) == 2:
-        if 'start' == sys.argv[1]:
-            print 'starting.'
-            dc.start()
-            
-        elif 'stop' == sys.argv[1]:
-            dc.stop()
-            print 'stopping'
-        elif 'restart' == sys.argv[1]:
-            dc.restart()
-            print 'restart'
-        elif 'foreground' == sys.argv[1]: #called for debugging purposes. 
-            dc.run()
-        else:
-            print "Unknown command"
-            sys.exit(2)
-        sys.exit(0)
-    else:
-        print "usage: %s start|stop|restart" % sys.argv[0]
-        sys.exit(2)                
+    
                 
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-            
+  
+    #lists keeping track of which queues currently have messages stored in them
+    outgoing_available_queues = list() 
+    incoming_available_queues = list() 
+
+    
+    #Each buffer is a matrix of queues for organization and indexing purposes.
+    #make incoming buffer
+    Data_Cache.incoming_bffr = make_bffr(len(PRIORITY_ORDER))
+    #make outgoing buffer 
+    Data_Cache.outgoing_bffr = make_bffr(len(PRIORITY_ORDER))
+    
+    #the main server loop
+    while True:
         
+        #indicates that the server is flushing the buffers. Shuts down the server until the all queues have been written to a file
+        while Data_Cache.flush ==1:
+            logger.debug("Cache is in flush state")
+            time.sleep(1)
+        if os.path.exists('/tmp/Data_Cache_server'): #checking for the file
+            os.remove('/tmp/Data_Cache_server')
+        logger.debug("Opening server socket...")
+        
+        #creates a UNIX, STREAMing socket
+        server_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        server_sock.bind('/tmp/Data_Cache_server') #binds to this file path
+        
+        #become a server socket and start listening for clients
+        server_sock.listen(6)
+
+        while True:
+        
+            if Data_Cache.flush==1: #shuts down the server until the all queues have been written to a file
+                logger.debug('Server flush!')
+                
+                server_sock.close()
+                os.remove('/tmp/Data_Cache_server')
+                logger.debug('Server flush closed socket')
+                
+                break
+            
+            #accept connections from outside
+            client_sock, address = server_sock.accept()
+            try:
+                data = client_sock.recv(2048) #arbitrary
+                logger.debug('Server received: %s' % (data))
+                if not data:
+                    break
+                else:
+                    #'Flush' means that there is an external flush request or if WagMan is about to shut down the node controller
+                    if data == 'Flush':
+                        #flush all stored messages into files
+                        logger.debug('External flush request made.')
+                        
+                        DC_flush(incoming_available_queues, outgoing_available_queues)
+                    #Indicates that it is a pull request 
+                    elif data[0] == '|': #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
+                        data, dest = data.split('|', 1) #splits to get either 'o' for outgoing request or the device location for incoming request
+                        if dest != 'o':
+                            msg = incoming_pull(int(dest), incoming_available_queues) #pulls a message from that device's queue
+                            if msg == 'None':
+                                logger.debug("no message")
+                                msg = 'False'
+                            else:
+                                logger.debug("incoming_pull message: %s" %(msg))
+                            try:
+                                client_sock.sendall(msg) #sends the message
+                            except:
+                                #pushes it back into the incoming queue if the client disconnects before the message is sent
+                                try: #Will pass if data is a pull request instead of a full message 
+                                    #TODO default msg_p is 5 for messages pushed back into queue. Improvement recommended.
+                                    incoming_push(int(dest),5, msg, incoming_available_queues, outgoing_available_queues) 
+                                except: 
+                                    pass
+                        else:
+                            msg = outgoing_pull(outgoing_available_queues) #pulls the highest priority message
+                            if msg == None: 
+                                msg = 'False'
+                            if msg !='False':
+                                logger.debug("send message to cloud: %s" % (msg))
+                            try:
+                                client_sock.sendall(msg) #sends the message
+                            except Exception as e:
+                                logger.error("client_sock.sendall: "+str(e))
+                                #pushes it back into the outgoing queue if the client disconnects before the message is sent
+                                try:#Will pass if data is a pull request instead of a full message
+                                    #TODO default msg_p is 5 for messages pushed back into queue. Improvement recommended.
+                                    outgoing_push(int(dest),5,msg, outgoing_available_queues, incoming_available_queues)
+                                except Exception as e: 
+                                    logger.error("outgoing_push: "+str(e))
+                                    pass
+                    
+                        time.sleep(1)
+                        
+                    else:
+                        logger.debug("datacache got: \""+str(data)+"\"")
+                        try:
+                            header = get_header(data) #uses the packet handler function get_header to unpack the header data from the message
+                            flags = header['flags'] #extracts priorities
+                            order = flags[2] #lifo or fifo
+                            msg_p = flags[1] 
+                            recipient_int = header['r_uniqid'] #gets the recipient ID
+                            sender_int = header['s_uniqid']
+                            logger.debug("sender_int: %s recipient_int: %s" % (sender_int, recipient_int))
+                            sender = nodeid_int2hexstr(sender_int)
+                            recipient = nodeid_int2hexstr(recipient_int)
+                            logger.debug("sender: %s recipient: %s NODE_ID: %s" % (sender, recipient, NODE_ID))
+                            for i in range(2): #loops in case device dictionary is not up-to-date
+                                if recipient_int == 0: #0 is the default ID for the cloud. Indicates an outgoing push.
+                                    try: 
+                                        dev_loc = DEVICE_DICT[sender] #looks up the location of the sender device
+                                    except KeyError as e: 
+                                        logger.error("outgoing_push KeyError: "+str(e)) 
+                                        
+                                    try:     
+                                        if order==False: #indicates lifo. lifo has highest message priority
+                                            msg_p=5
+                                        #pushes the message into the outgoing buffer to the queue corresponding to the device location and message priority
+                                        outgoing_push(int(dev_loc), msg_p, data, outgoing_available_queues, incoming_available_queues)
+                                        #If the device is registered and the push is successful, no need to try again, break the loop
+                                        break 
+                                    except Exception as e: 
+                                        logger.error("outgoing_push2: "+str(e))
+                                        #The device dictionary may not be up to date. Need to update and try again.
+                                        #If the device is still not found after first try, move on.
+                                        update_dev_dict() #this function is in NC_configuration.py
+                                        
+                                #indicates an incoming push
+                                elif recipient == NODE_ID:
+                                    try:
+                                        #An error will occur if a guestnode registers and then tries to deregister before the device dictionary has been updated
+                                        #This may be unlikely but is still possible
+                                        #If that occurs, need to update the device dictionary and try again
+                                        msg_handler(data,DEVICE_DICT)
+                                        break #break the loop if this is successful
+                                    except Exception as e:
+                                        logger.error(e)
+                                        update_dev_dict()
+                                else:
+                                    try:
+                                        dev_loc = DEVICE_DICT[recipient] #looks up the location of the recipient device
+                                        #If the device is registered and the push is successful, no need to try again, break the loop
+                                        incoming_push(int(dev_loc),msg_p,data, incoming_available_queues, outgoing_available_queues)
+                                        break
+                                    except Exception as e: 
+                                        #The device dictionary may not be up to date. Need to update and try again.
+                                        #If the device is still not found after first try, move on.
+                                        update_dev_dict()
+                        except Exception as e:
+                            logger.error('Message corrupt. Will not store in data cache.')
+                            logger.error(e)
+                        time.sleep(1)
+
+                    
+            except KeyboardInterrupt, k:
+                logger.info("Data Cache server shutting down...")
+                break
+        #server_sock.close()
+        #os.remove('/tmp/Data_Cache_server')
+        #break
+    if os.path.exists('/tmp/Data_Cache_server'): #checking for the file for a smooth shutdown
+        server_sock.close()
+        os.remove('/tmp/Data_Cache_server')

@@ -10,16 +10,13 @@
 ### END INIT INFO
 
 dir="/usr/lib/waggle/nodecontroller/nc-wag-os/waggled/DataCache"
-cmd_start="python Data_Cache.py start"
-cmd_stop="python Data_Cache.py stop"
+cmd_start="python Data_Cache.py"
 user=""
 
 name="data_cache_initd"
-#pid_file="/var/run/$name.pid"
-# data_cache writes its own pid file
 pid_file="/var/run/Data_Cache.pid" 
-stdout_log="/var/log/waggle/$name.log"
-stderr_log="/var/log/waggle/$name.err"
+stdout_log="/var/log/waggle/$name.stdout"
+stderr_log="/var/log/waggle/$name.stderr"
 
 get_pid() {
     cat "$pid_file"
@@ -42,7 +39,7 @@ case "$1" in
         else
             sudo -u "$user" $cmd_start >> "$stdout_log" 2>> "$stderr_log" &
         fi
-        #echo $! > "$pid_file" # data_cache writes its own pid file
+        echo $! > "$pid_file" # data_cache writes its own pid file
         sleep 1
         if ! is_running; then
             echo "Unable to start, see $stdout_log and $stderr_log"
