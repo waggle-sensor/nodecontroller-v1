@@ -34,6 +34,8 @@ HOSTNAME=NODE_ID
 #Node's queuename
 #QUEUENAME = read_file('/etc/waggle/queuename')
 
+manager = Manager()
+
 conf = manager.dict()
 
 conf['QUEUENAME'] = read_file('/etc/waggle/queuename')
