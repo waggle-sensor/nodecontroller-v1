@@ -89,8 +89,8 @@ AVAILABLE_MEM = 256000
 USE_SSL=True
 RABBITMQ_PORT=5671
 
-CLIENT_KEY_FILE="/usr/lib/waggle/SSL/node1/node1_key.pem"
-CLIENT_CERT_FILE="/usr/lib/waggle/SSL/node1/node1_cert.pem"
+CLIENT_KEY_FILE="/usr/lib/waggle/SSL/node1/key.pem"
+CLIENT_CERT_FILE="/usr/lib/waggle/SSL/node1/cert.pem"
 CA_ROOT_FILE="/usr/lib/waggle/SSL/waggleca/cacert.pem"
 
 
