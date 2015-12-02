@@ -92,8 +92,8 @@ if __name__ == "__main__":
         #checks if the queuename has been established yet
         #The default file is empty. So, if it is empty, make an initial connection to get a unique queuename.
         connection = None
-        if not QUEUENAME.value:
-            logger.debug('QUEUENAME.value is empty')
+        if not conf['QUEUENAME']:
+            logger.debug('conf['QUEUENAME'] is empty')
             #get the connection parameters
             
             
@@ -129,11 +129,11 @@ if __name__ == "__main__":
                 file_.write(queuename)
     
             logger.debug('wrote new queuename "' + queuename+  '" to /etc/waggle/queuename')
-            with QUEUENAME.get_lock():
-                QUEUENAME.value = queuename
+            
+            conf['QUEUENAME'] = queuename
         
         
-        logger.debug('QUEUENAME.value: "' + QUEUENAME.value + '"')
+        logger.debug('QUEUENAME: "' + conf['QUEUENAME'] + '"')
        
         
         

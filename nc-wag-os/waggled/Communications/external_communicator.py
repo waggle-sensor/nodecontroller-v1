@@ -55,7 +55,7 @@ def pika_push():
         try: 
             connection = pika.BlockingConnection(pika_params)
         except Exception as e: 
-            logger.warning( 'Pika_push currently unable to connect to cloud (%s:%d) (queue: %s) : %s' % (pika_params.host, pika_params.port , QUEUENAME.value, str(e)) )
+            logger.warning( 'Pika_push currently unable to connect to cloud (%s:%d) (queue: %s) : %s' % (pika_params.host, pika_params.port , conf['QUEUENAME'], str(e)) )
             comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
             time.sleep(5)
             break
@@ -67,10 +67,10 @@ def pika_push():
             channel = connection.channel()
             comm.cloud_connected.value = 1 #set the flag to true when connected to cloud
             #Declaring the queue
-            channel.queue_declare(queue=QUEUENAME.value)
-            logger.info("Pika push got queue \"%s\"." % (QUEUENAME.value))
+            channel.queue_declare(queue=conf['QUEUENAME'])
+            logger.info("Pika push got queue \"%s\"." % (conf['QUEUENAME']))
         except Exception as e:  
-            logger.warning('Pika_push unable to get channel (%s:%d) (queue: %s) : %s' % (pika_params.host, pika_params.port , QUEUENAME.value, str(e)) )
+            logger.warning('Pika_push unable to get channel (%s:%d) (queue: %s) : %s' % (pika_params.host, pika_params.port , conf['QUEUENAME'], str(e)) )
             comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud. I
             time.sleep(5)
             break
@@ -123,8 +123,8 @@ def pika_pull():
     #params = comm.params
     #params = pika.connection.URLParameters("amqps://waggle:waggle@10.10.10.108:5671/%2F") #SSL
     
-    if not QUEUENAME.value:
-        logger.warning("QUEUENAME.value is not defined... waiting..")
+    if not conf['QUEUENAME']:
+        logger.warning("QUEUENAME is not defined... waiting..")
         time.sleep(5)
         return
         
@@ -151,13 +151,13 @@ def pika_pull():
         comm.cloud_connected.value = 1 #sets indicator flag to 1 so clients will connect to data cache
         
         try:
-            channel.queue_declare(queue=QUEUENAME.value)
+            channel.queue_declare(queue=conf['QUEUENAME'])
         except Exception as e:
-            logger.debug('Cannot declare queuename (%s) : %s' % (QUEUENAME.value, str(e)))
+            logger.debug('Cannot declare queuename (%s) : %s' % (conf['QUEUENAME'], str(e)))
             pass
 
         try:
-            channel.basic_consume(callback, queue=QUEUENAME.value)
+            channel.basic_consume(callback, queue=conf['QUEUENAME'])
         except:
             logger.warning('(channel.basic_consume) failed: '+ str(e))
             comm.cloud_connected.value = 0 #set the flag to 0 when not connected to the cloud
@@ -280,7 +280,7 @@ def send_registrations():
             "msg_mi_type" : ord('r'),
             "s_uniqid"    : int("0x" + device, 0)
             }
-        msg = str(QUEUENAME.value)
+        msg = str(conf['QUEUENAME'])
         try: 
             packet = pack(header_dict, message_data = msg)
         except Exception as e: 
