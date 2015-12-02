@@ -3,6 +3,7 @@ sys.path.append('../../../')
 from waggle_protocol.utilities.packetmaker import *
 import string
 import random
+from multiprocessing import Value
 
 """
     This file stores all of the configurable variables for the node controller. 
@@ -31,7 +32,9 @@ if not NODE_ID:
 HOSTNAME=NODE_ID
     
 #Node's queuename
-QUEUENAME = read_file('/etc/waggle/queuename')
+#QUEUENAME = read_file('/etc/waggle/queuename')
+QUEUENAME = Value('s', read_file('/etc/waggle/queuename'))
+
 
 #Get node controller IP
 #NCIP = read_file('/etc/waggle/NCIP')
@@ -115,7 +118,7 @@ def get_config():
     """
     #add all the configuration
     config ='Node ID: ' + NODE_ID + '\n'
-    config = config + 'Queuename: ' + QUEUENAME + '\n'
+    config = config + 'Queuename: ' + QUEUENAME.value + '\n'
    # config = config + 'Node Controller IP: ' + NCIP + '\n' # deprecated
     config = config + 'Device dictionary: ' + str(DEVICE_DICT) + '\n'
     config = config + 'Priority order: ' + str(PRIORITY_ORDER) + '\n'

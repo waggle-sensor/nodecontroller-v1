@@ -129,7 +129,7 @@ def msg_handler(msg, DEVICE_DICT):
                             "msg_mi_type" : ord('r'),
                             "s_uniqid"    : sender_int
                             }
-                        msg = str(QUEUENAME)
+                        msg = str(QUEUENAME.value)
                         try: 
                             packet = pack(header_dict, message_data = msg)
                             logger.info('Registration made for node ID %s' % (sender))
