@@ -3,7 +3,7 @@
 from multiprocessing import Queue
 from daemon import Daemon
 import sys, os, os.path, time, atexit, socket, datetime
-sys.path.append('../../../protocol/')
+sys.path.append('../../../')
 from waggle_protocol.protocol.PacketHandler import *
 sys.path.append('../NC/')
 from NC_configuration import *

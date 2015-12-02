@@ -1,9 +1,9 @@
 # msg_handler.py
 
 import os, os.path, sys
-sys.path.append('../../../protocol/')
+sys.path.append('../../../')
 from waggle_protocol.protocol.PacketHandler import *
-sys.path.append('../../../protocol/')
+sys.path.append('../../../')
 from utilities import packetmaker
 sys.path.append('../Communications/')
 from internal_communicator import send

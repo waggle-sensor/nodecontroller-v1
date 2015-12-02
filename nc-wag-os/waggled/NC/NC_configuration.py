@@ -1,5 +1,5 @@
 import sys, pika, ssl
-sys.path.append('../../../protocol/')
+sys.path.append('../../../')
 from waggle_protocol.utilities.packetmaker import *
 import string
 import random

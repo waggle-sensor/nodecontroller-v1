@@ -1,5 +1,5 @@
 import time, serial, sys, datetime
-sys.path.append('../../../protocol/')
+sys.path.append('../../../')
 from utilities import packetmaker
 sys.path.append('../Communications/')
 from internal_communicator import send
