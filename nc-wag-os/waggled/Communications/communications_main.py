@@ -93,7 +93,7 @@ if __name__ == "__main__":
         #The default file is empty. So, if it is empty, make an initial connection to get a unique queuename.
         connection = None
         if not conf['QUEUENAME']:
-            logger.debug('conf['QUEUENAME'] is empty')
+            logger.debug('QUEUENAME is empty')
             #get the connection parameters
             
             
