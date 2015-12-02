@@ -15,8 +15,8 @@ user=""
 
 name="communications_initd"
 pid_file="/var/run/$name.pid"
-stdout_log="/var/log/waggle/communicator/$name.log"
-stderr_log="/var/log/waggle/communicator/$name.err"
+stdout_log="/var/log/waggle/$name.stdout"
+stderr_log="/var/log/waggle/$name.stderr"
 
 get_pid() {
     cat "$pid_file"
