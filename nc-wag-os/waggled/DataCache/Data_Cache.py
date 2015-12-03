@@ -11,6 +11,8 @@ sys.path.append('../NC/')
 from msg_handler import msg_handler
 from glob import glob
 import logging, logging.handlers
+import signal
+
 
 """ 
     The Data Cache stores messages between the nodes and the cloud. The main function is a unix socket server. The internal and external facing communication classes connect to
@@ -55,6 +57,19 @@ incoming_cur_file =  ['', '', '', '', ''] #empty string if there are no files
 
     
     
+def signal_term_handler(signal, frame):
+    logger.debug('got SIGTERM')
+    stop()
+    sys.exit(0)
+ 
+# this would interrupt IO. Need to run everything in separate thread/process 
+def signal_info_handler(signal, frame):
+    logger.debug('got SIGUSR1')
+    print "status: ", str(get_status())
+
+signal.signal(signal.SIGTERM, signal_term_handler)
+
+#signal.signal(signal.SIGUSR1, signal_info_handler)
   
             
 def stop():
