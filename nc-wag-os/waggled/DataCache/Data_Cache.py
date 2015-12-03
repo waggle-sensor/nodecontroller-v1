@@ -105,7 +105,7 @@ class DataCache:
             logger.debug("Opening server socket...")
         
             #creates a UNIX, STREAMing socket
-            server_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            server_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) # TODO should this not be a class variable ?
             server_sock.bind('/tmp/Data_Cache_server') #binds to this file path
         
             #become a server socket and start listening for clients
@@ -166,7 +166,7 @@ class DataCache:
                                     except: 
                                         pass
                             else:
-                                msg = outgoing_pull(outgoing_available_queues) #pulls the highest priority message
+                                msg = self.outgoing_pull(outgoing_available_queues) #pulls the highest priority message
                                 if msg == None: 
                                     msg = 'False'
                                 if msg !='False':
