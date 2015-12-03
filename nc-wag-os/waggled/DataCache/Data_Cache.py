@@ -27,7 +27,7 @@ LOG_FILENAME="/var/log/waggle/data_cache_logging.log"
 LOG_FORMAT='%(asctime)s - %(name)s - %(levelname)s - line=%(lineno)d - %(message)s'
 
 
-logger = logging.getLogger("Data_Cache.py")
+logger = logging.getLogger("py")
 logger.setLevel(logging.DEBUG)
 
 
@@ -115,18 +115,18 @@ def outgoing_push(dev, msg_p, msg, outgoing_available_queues, incoming_available
     """ 
     logger.debug("outgoing_push: dev=%d msg_p=%d msg=%s" % (dev, msg_p, msg))
     #If the msg counter is greater than or equal to the available memory, flush the outgoing queues into a file
-    if Data_Cache.msg_counter>= AVAILABLE_MEM:
+    if msg_counter>= AVAILABLE_MEM:
         
         #Calls the data cache flush method and passes in the neccessary params
         DC_flush(incoming_available_queues, outgoing_available_queues) #Flushes all messages into a file
-        Data_Cache.msg_counter = 0 #resets the message counter after all buffers have been saved to a file
+        msg_counter = 0 #resets the message counter after all buffers have been saved to a file
     
     #Increments the msg_counter by 1 each time a message is pushed into the data cache
-    Data_Cache.msg_counter += 1 
-    logger.debug("Data_Cache.msg_counter: "+str(Data_Cache.msg_counter))
+    msg_counter += 1 
+    logger.debug("msg_counter: "+str(msg_counter))
     try:
         #pushes the message into the queue at the specified location in the matrix
-        Data_Cache.outgoing_bffr[(dev - 1)][(msg_p - 1)].put(msg)
+        outgoing_bffr[(dev - 1)][(msg_p - 1)].put(msg)
         
         #adds the queue to the list of available queues
         try:
@@ -147,20 +147,20 @@ def incoming_push(device, msg_p, msg, incoming_available_queues, outgoing_availa
         :param int flush: Value indicating if the data cache needs to flush the buffers into files.
         :param list incoming_available_queues: A list of tuples that specify the location of incoming queues that currently have stored messages
     """ 
-    #print 'msg counter: ',Data_Cache.msg_counter
+    #print 'msg counter: ',msg_counter
     #print 'available mem: ', AVAILABLE_MEM
     #if the msg counter is greater than or equal to the available memory, flush the buffers into files
-    if Data_Cache.msg_counter >= AVAILABLE_MEM: 
+    if msg_counter >= AVAILABLE_MEM: 
         #Calls the data cache flush method
         DC_flush(incoming_available_queues, outgoing_available_queues)
-        Data_Cache.msg_counter = 0 #resets the message counter after all buffers have been saved to a file
+        msg_counter = 0 #resets the message counter after all buffers have been saved to a file
     else:
         pass 
     #increments the counter by 1 each time a message is put into the buffer
-    Data_Cache.msg_counter += 1
+    msg_counter += 1
     
     #pushes the message into the queue at the specified location in the matrix
-    Data_Cache.incoming_bffr[device - 1][msg_p - 1].put(msg)
+    incoming_bffr[device - 1][msg_p - 1].put(msg)
     
     #adds the queue to the list of available queues
     try:
@@ -189,35 +189,35 @@ def outgoing_pull(outgoing_available_queues):
         #if so, those need to be sent to the cloud first without needing to load all messages from the file and taking up too much RAM
         #so, send the messages one by one using a file generator object.
         #when all messages have been read from file and sent to cloud, close and delete that file from the directory.
-        if len(glob('/var/dc/outgoing_msgs/*')) > 0 and Data_Cache.flush == 0: #prevents the flush from pulling messages from files
+        if len(glob('/var/dc/outgoing_msgs/*')) > 0 and flush == 0: #prevents the flush from pulling messages from files
             logger.debug('Len(glob) outgoing_stored/* is greater than 0')
             #is there a file generator object already stored as the current file?
-            if Data_Cache.outgoing_cur_file == '':
+            if outgoing_cur_file == '':
                 #print 'cur_file is empty string.'
                 #set the first file in the outgoing_stored directory as the current file generator object
-                Data_Cache.outgoing_cur_file = open(glob('/var/dc/outgoing_msgs/*')[0]) 
+                outgoing_cur_file = open(glob('/var/dc/outgoing_msgs/*')[0]) 
                 #print 'opened file'
                 try: 
                     #print 'trying to read from file'
-                    msg = Data_Cache.outgoing_cur_file.next().strip() #reads the next message in file, strips the \n
+                    msg = outgoing_cur_file.next().strip() #reads the next message in file, strips the \n
                     #print 'returning msg'
                     return msg
                     break
                 except:
-                    Data_Cache.outgoing_cur_file.close() #close the file if stop iterator error occurs
-                    if os.path.isfile(Data_Cache.outgoing_cur_file.name): #make sure the file exists
-                        os.remove(Data_Cache.outgoing_cur_file.name)#delete the file
-                    Data_Cache.outgoing_cur_file = '' #reset to empty string
+                    outgoing_cur_file.close() #close the file if stop iterator error occurs
+                    if os.path.isfile(outgoing_cur_file.name): #make sure the file exists
+                        os.remove(outgoing_cur_file.name)#delete the file
+                    outgoing_cur_file = '' #reset to empty string
             else:
                 try: 
-                    msg = Data_Cache.outgoing_cur_file.next().strip() #reads the next message in file, strips the \n
+                    msg = outgoing_cur_file.next().strip() #reads the next message in file, strips the \n
                     return msg
                     break
                 except:
-                    Data_Cache.outgoing_cur_file.close() #close the file if stop iterator error occurs
-                    if os.path.isfile(Data_Cache.outgoing_cur_file.name): #make sure the file exists
-                        os.remove(Data_Cache.outgoing_cur_file.name) #delete the file
-                    Data_Cache.outgoing_cur_file = '' #reset to empty string
+                    outgoing_cur_file.close() #close the file if stop iterator error occurs
+                    if os.path.isfile(outgoing_cur_file.name): #make sure the file exists
+                        os.remove(outgoing_cur_file.name) #delete the file
+                    outgoing_cur_file = '' #reset to empty string
                     
         #If there are no messages stored as files, pull messages from the queues
         else:
@@ -230,14 +230,14 @@ def outgoing_pull(outgoing_available_queues):
                 #Calls the function that returns the highest priority tuple in the list
                 cache_index = get_priority(outgoing_available_queues) #returns the index of the highest priority queue in fifo buffer
                 sender_p, msg_p = cache_index
-                current_q = Data_Cache.outgoing_bffr[sender_p - 1][msg_p - 1]
+                current_q = outgoing_bffr[sender_p - 1][msg_p - 1]
                 
                 #checks if the queue is empty
                 if current_q.empty():
                     #removes it from the list of available queues 
                     outgoing_available_queues.remove(cache_index) 
                 else: 
-                    Data_Cache.msg_counter -= 1 #decrements the counter by 1
+                    msg_counter -= 1 #decrements the counter by 1
                     return current_q.get()    
                     break
         
@@ -256,30 +256,30 @@ def incoming_pull(dev, incoming_available_queues):
         #if so, those need to be sent first without needing to load all messages from the file and taking up too much RAM
         #so, send the messages one by one using a file generator object.
         #when all messages have been read from file and sent to device, close and delete that file from the directory.
-        if len(glob('/var/dc/incoming_msgs/' + str(dev) + '/*')) > 0 and Data_Cache.flush == 0: #only pulls messages from file if DC is not flushing
+        if len(glob('/var/dc/incoming_msgs/' + str(dev) + '/*')) > 0 and flush == 0: #only pulls messages from file if DC is not flushing
             #is there a file generator object already stored as the current file?
-            if Data_Cache.incoming_cur_file[dev - 1] == '':
+            if incoming_cur_file[dev - 1] == '':
                 #set the first file in the incoming_stored/dev directory as the current file generator object
-                Data_Cache.incoming_cur_file[dev -1] = open(glob('/var/dc/incoming_msgs/' + str(dev) + '/*')[0]) 
+                incoming_cur_file[dev -1] = open(glob('/var/dc/incoming_msgs/' + str(dev) + '/*')[0]) 
                 try: 
-                    msg = Data_Cache.incoming_cur_file[dev -1].next().strip() #reads the next message in file, strips the \n
+                    msg = incoming_cur_file[dev -1].next().strip() #reads the next message in file, strips the \n
                     return msg
                     break
                 except:
-                    Data_Cache.incoming_cur_file[dev -1].close() #close the file if stop iterator error occurs
-                    if os.path.isfile(Data_Cache.incoming_cur_file[dev -1].name): #make sure the file exists
-                        os.remove(Data_Cache.incoming_cur_file[dev -1].name)#delete the file
-                    Data_Cache.incoming_cur_file[dev -1] = '' #reset to empty string
+                    incoming_cur_file[dev -1].close() #close the file if stop iterator error occurs
+                    if os.path.isfile(incoming_cur_file[dev -1].name): #make sure the file exists
+                        os.remove(incoming_cur_file[dev -1].name)#delete the file
+                    incoming_cur_file[dev -1] = '' #reset to empty string
             else:
                 try: 
-                    msg = Data_Cache.incoming_cur_file[dev -1].next().strip() #reads the next message in file, strips the \n
+                    msg = incoming_cur_file[dev -1].next().strip() #reads the next message in file, strips the \n
                     return msg
                     break
                 except:
-                    Data_Cache.incoming_cur_file[dev -1].close() #close the file if stop iterator error occurs
-                    if os.path.isfile(Data_Cache.incoming_cur_file[dev -1].name): #make sure the file exists
-                        os.remove(Data_Cache.incoming_cur_file[dev -1].name)#delete the file
-                    Data_Cache.incoming_cur_file[dev -1] = '' #reset to empty string
+                    incoming_cur_file[dev -1].close() #close the file if stop iterator error occurs
+                    if os.path.isfile(incoming_cur_file[dev -1].name): #make sure the file exists
+                        os.remove(incoming_cur_file[dev -1].name)#delete the file
+                    incoming_cur_file[dev -1] = '' #reset to empty string
         
         #if no messages are stored in files, check for messages in queues
         else:
@@ -289,12 +289,12 @@ def incoming_pull(dev, incoming_available_queues):
                 incoming_available_queues.index(dev) #TODO Probably need a better way to do this
                 msg = 'False' #default 
                 for i in range(4,-1,-1): # loop to search for messages starting with highest priority
-                    if Data_Cache.incoming_bffr[dev - 1][i].empty(): #checks for an empty queue 
+                    if incoming_bffr[dev - 1][i].empty(): #checks for an empty queue 
                         pass #do nothing
                     else: 
                         #decrements the counter by 1 each time a message is removed
-                        Data_Cache.msg_counter -= 1 
-                        msg = Data_Cache.incoming_bffr[dev - 1][i].get() #sets to message and breaks the loop
+                        msg_counter -= 1 
+                        msg = incoming_bffr[dev - 1][i].get() #sets to message and breaks the loop
                         break
                 #if the message is still false (i.e. no messages are actually available for that device), remove dev from list
                 if msg == 'False':
