@@ -52,31 +52,32 @@ case "$1" in
         echo -n "Stopping $name.."
         cd "$dir"
         pid=`get_pid`
-        sudo $cmd_stop
-        #kill `get_pid`
-        for i in {1..10}
-        do
+        kill ${pid}
+        echo
+        for i in . . . . . . . . . . . . . . . . . ; do
             if ! is_running; then
+                echo "stopped."
                 break
             fi
 
             echo -n "."
-            sleep 1
+            sleep 2
         done
+        
         if is_running; then
-          echo "kill -9"
+          echo "Trying kill -9"
           kill -9 $pid
           sleep 2
         fi
+
         if is_running; then
             echo "Not stopped; may still be shutting down or shutdown may have failed"
             exit 1
         else
             echo "Stopped"
-            #if [ -f "$pid_file" ]; then
-            #    rm "$pid_file"
-            #fi
+            rm  -f ${pid_file}
         fi
+
     else
         echo "Not running"
     fi
