@@ -136,7 +136,9 @@ class DataCache:
                     
                 try:
                     data = client_sock.recv(2048) #arbitrary
-                    logger.debug('Server received: %s' % (data))
+                    if logger.isEnabledFor(logging.DEBUG):
+                        if data != '|o':
+                         logger.debug('Server received: %s' % (data))
                     if not data:
                         break
                     else:
