@@ -301,7 +301,7 @@ def DC_flush(incoming_available_queues, outgoing_available_queues):
         :param list incoming_available_queues: The list of incoming queues that currently have messages stored in them.
         :param list outgoing_available_queues: The list of outgoing queues that currently have messages stored in them.
     """ 
-    Data_Cache.flush = 1
+    flush = 1
     cur_date = str(datetime.datetime.now().strftime('%Y%m%d%H:%M:%S'))
     logger.debug('Flushing at ' + cur_date)
     try:
@@ -343,7 +343,7 @@ def DC_flush(incoming_available_queues, outgoing_available_queues):
                     #write the message to the file
                     f.write(msg + '\n')
                     
-        Data_Cache.flush = 0 #restart server
+        flush = 0 #restart server
         logger.debug('Data cache restarted')
     except Exception as e:
         logger.error(e)
@@ -357,7 +357,7 @@ def get_status():
     
     """
     
-    return Data_Cache.msg_counter
+    return msg_counter
 
 
 def make_bffr(length):
@@ -426,15 +426,15 @@ if __name__ == "__main__":
     
     #Each buffer is a matrix of queues for organization and indexing purposes.
     #make incoming buffer
-    Data_Cache.incoming_bffr = make_bffr(len(PRIORITY_ORDER))
+    incoming_bffr = make_bffr(len(PRIORITY_ORDER))
     #make outgoing buffer 
-    Data_Cache.outgoing_bffr = make_bffr(len(PRIORITY_ORDER))
+    outgoing_bffr = make_bffr(len(PRIORITY_ORDER))
     
     #the main server loop
     while True:
         
         #indicates that the server is flushing the buffers. Shuts down the server until the all queues have been written to a file
-        while Data_Cache.flush ==1:
+        while flush ==1:
             logger.debug("Cache is in flush state")
             time.sleep(1)
         if os.path.exists('/tmp/Data_Cache_server'): #checking for the file
@@ -450,7 +450,7 @@ if __name__ == "__main__":
 
         while True:
         
-            if Data_Cache.flush==1: #shuts down the server until the all queues have been written to a file
+            if flush==1: #shuts down the server until the all queues have been written to a file
                 logger.debug('Server flush!')
                 
                 server_sock.close()
