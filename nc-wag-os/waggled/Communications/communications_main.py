@@ -22,7 +22,7 @@ loglevel=logging.DEBUG
 logging.getLogger('external_communicator').setLevel(loglevel)
 logging.getLogger('internal_communicator').setLevel(loglevel)
 
-LOG_FILENAME="/var/log/waggle/communicator/communications_main.log"
+LOG_FILENAME="/var/log/waggle/communications.log"
 LOG_FORMAT='%(asctime)s - %(name)s - %(levelname)s - line=%(lineno)d - %(message)s'
 
 #logging.basicConfig(level=loglevel, format=, filename=LOG_FILENAME)
