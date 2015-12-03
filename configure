@@ -19,7 +19,7 @@ if [ $(python -c "import crcmod;" ; echo $?) -ne 0 ] ; then
 fi
 
 # for log files
-mkdir -p /var/log/waggle/communicator/
+mkdir -p /var/log/waggle/
 
 # Create symlink if repository is not already at the expected location
 if [ `pwd` != "/usr/lib/waggle/nodecontroller" ] ; then
