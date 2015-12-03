@@ -45,15 +45,15 @@ root_logger.addHandler(handler)
 
 
    #dummy variables. These buffers are created when the data cache starts.
-incoming_bffr = []
-outgoing_bffr = []
+global incoming_bffr = []
+global outgoing_bffr = []
     
-flush = 0 #value that indicates if the DC is flushing or not
-msg_counter = 0 #keeps track of total messages in queues
+global flush = 0 #value that indicates if the DC is flushing or not
+global msg_counter = 0 #keeps track of total messages in queues
 #If the data cache flushed messages to files, this stores the the current outgoing file that messages are being read from
-outgoing_cur_file = '' #empty string if there are no files
+global outgoing_cur_file = '' #empty string if there are no files
 #If the data cache flushed messages to files, this stores a list of current files for each device 
-incoming_cur_file =  ['', '', '', '', ''] #empty string if there are no files
+global incoming_cur_file =  ['', '', '', '', ''] #empty string if there are no files
 
     
     
