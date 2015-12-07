@@ -51,8 +51,23 @@ You can use the environment variable RABBITMQ_HOST to tell the node controller w
 RABBITMQ_HOST=<IP> ./configure
 ```
 
+### SSL certificates
 
-### Services
+The nodecontroller needs SSL certificates to be able to talk to the RabbitMQ component of the beehive server. 
+```text
+Private key of the node:                   /usr/lib/waggle/SSL/node/key.pem
+Public certificate of the node:            /usr/lib/waggle/SSL/node/cert.pem
+Public certificate of the RabbitMQ server: /usr/lib/waggle/SSL/waggleca/cacert.pem
+```
+
+The certificate files have to be created by the certificate authority on the beehive server. In principle there are two ways for the nodecontroller to get theses files. 
+
+1. Manual: The beehive administrator creates keys for you and you have to copy them onto your node, e.g. using ssh.
+2. Automatic: In some circumstances it can be an option to use a certificate server. If the certificate server is running, the nodecontroller software can automatically download the required files. Note that for security reasons this option might be available only in internal networks or with other special restrictions to avoid abuse. 
+
+
+
+## Services
 
 For an overview of all waggle services run the script nodecontroller.
 ```bash
