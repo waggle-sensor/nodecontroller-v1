@@ -1,32 +1,29 @@
 
 
-## Setting up the node controller
+## Installation
 
-You can use the environment variable RABBITMQ_HOST to tell the node controller where to send the sensor data.
+The nodecontroller is already installed on the Waggle image. If you need the very latest version of the nodecontroller you can do a git pull:
 
 ```bash
+cd /usr/lib/waggle/nodecontroller/
+git pull
+```
+
+Alternatively you can do a git clone on any Linux:
+
+```bash
+mkdir -p /usr/lib/waggle/
+cd /usr/lib/waggle/
 git clone --recursive https://github.com/waggle-sensor/nodecontroller.git
 cd nodecontroller
-RABBITMQ_HOST=<IP> ./configure
 ```
 
-### node controller services
-
+Also, if you are not using the Waggle image, you may have to install the dependencies of the nodecontroller. This script uses apt-get commands. For other Linux distributions look into this file to see what needs to be installed.
 ```bash
-/etc/init.d/data_cache.sh start
-/etc/init.d/communications.sh start
+scripts/install_dependencies.sh
 ```
 
-### Simple CPU temperature sensor
-
-This script can be used to test sending of sensor data. Note that this script sends data to the data cache. It does not check if data actually arrives at the server.
-
-```bash
-cd /usr/lib/waggle/nodecontroller/nc-wag-os/waggled/NC
-./node_sensor.py 
-```
-
-## Docker (only x86)
+### Installation with Docker (only x86)
 
 A docker image is available for testing and developing purposes. Currently this is x86, thus it will not run on the ODROID which has an ARM architecture. We will provide ARM Docker images soon I hope.
 
@@ -45,6 +42,39 @@ cd ${HOME}/git/
 git clone --recursive git@github.com:waggle-sensor/nodecontroller.git
 docker run -ti --name nc --rm -v ${HOME}/git/nodecontroller/:/usr/lib/waggle/nodecontroller  waggle/nodecontroller
 ```
+
+## Configuration
+
+You can use the environment variable RABBITMQ_HOST to tell the node controller where to send the sensor data. Run the configure script.
+
+```bash
+RABBITMQ_HOST=<IP> ./configure
+```
+
+
+### Services
+
+For an overview of all waggle services run the script nodecontroller.
+```bash
+nodecontroller
+```
+
+Individual services can be controlled like this.
+```bash
+/etc/init.d/data_cache.sh start
+/etc/init.d/communications.sh start
+```
+
+## Simple CPU temperature sensor
+
+This script can be used to test sending of sensor data. Note that this script sends data to the data cache. It does not check if data actually arrives at the server.
+
+```bash
+cd /usr/lib/waggle/nodecontroller/nc-wag-os/waggled/NC
+./node_sensor.py 
+```
+
+
 
 ## Developer Notes
 
