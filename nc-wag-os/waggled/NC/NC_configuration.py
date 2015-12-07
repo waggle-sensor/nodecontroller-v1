@@ -47,6 +47,10 @@ conf['QUEUENAME'] = read_file('/etc/waggle/queuename')
 #get server IP from file
 #CLOUD_IP = read_file('/etc/waggle/server_ip') #TODO: deprecate this
 RABBITMQ_HOST=read_file('/etc/waggle/server_host')
+
+# the certificate server is optional and may only be accessible in an internal network
+CERT_SERVER='http://' + RABBITMQ_HOST + ':9999'
+
     
 def create_dev_dict():
     """
@@ -97,8 +101,8 @@ AVAILABLE_MEM = 256000
 USE_SSL=True
 RABBITMQ_PORT=5671
 
-CLIENT_KEY_FILE="/usr/lib/waggle/SSL/node1/key.pem"
-CLIENT_CERT_FILE="/usr/lib/waggle/SSL/node1/cert.pem"
+CLIENT_KEY_FILE="/usr/lib/waggle/SSL/node/key.pem"
+CLIENT_CERT_FILE="/usr/lib/waggle/SSL/node/cert.pem"
 CA_ROOT_FILE="/usr/lib/waggle/SSL/waggleca/cacert.pem"
 
 

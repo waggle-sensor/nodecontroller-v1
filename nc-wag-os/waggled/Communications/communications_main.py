@@ -7,7 +7,7 @@ sys.path.append('../NC/')
 from NC_configuration import *
 from external_communicator import *
 from internal_communicator import *
-
+import urllib2
 
 #pika is a bit too verbose...
 logging.getLogger('pika').setLevel(logging.ERROR)
@@ -53,6 +53,166 @@ class StreamToLogger(object):
         pass
 
 
+
+def createDirForFile(file):
+    file_dir = os.path.dirname(file)
+    if not os.path.exists(file_dir):
+        try:
+            os.makedirs(file_dir)
+        except Exception as e:
+            logger.error("Could not create directory '%s' : %s" % (file_dir,str(e)) )
+            sys.exit(1)
+
+
+
+def get_certificates():
+    
+    while True:
+        CA_ROOT_FILE_exists = os.path.isfile(CA_ROOT_FILE)
+        CLIENT_KEY_FILE_exists = os.path.isfile(CLIENT_KEY_FILE)
+        CLIENT_CERT_FILE_exists = os.path.isfile(CLIENT_CERT_FILE)
+    
+        #check if cert server is available
+        if not (CA_ROOT_FILE_exists and CLIENT_KEY_FILE_exists and CLIENT_CERT_FILE_exists):
+        
+            if not CA_ROOT_FILE_exists:
+                logger.info("File '%s' not found." % (CA_ROOT_FILE))
+            if not CLIENT_KEY_FILE_exists:
+                logger.info("File '%s' not found." % (CLIENT_KEY_FILE))
+            if not CLIENT_CERT_FILE_exists:
+                logger.info("File '%s' not found." % (CLIENT_CERT_FILE))
+            try:
+                response = urllib2.urlopen(CERT_SERVER)
+                html = response.read()
+            except Exception as e:
+                logger.error('Could not connect to certificate server: '+str(e))
+                time.sleep(5)
+                continue
+            
+            if html != 'This is the Waggle certificate server.':
+                logger.error("Did not find certificate server.")
+                time.sleep(5)
+                continue
+        else:
+            logger.info("All certificate files found.")
+            break
+            
+        # make sure certficate files exist.
+        if not CA_ROOT_FILE_exists:
+            createDirForFile(CA_ROOT_FILE)
+            certca_url= CERT_SERVER+"/certca"
+            logger.info("trying to get server certificate from certificate server %s..." % (certca_url))
+            try:
+                response = urllib2.urlopen(certca_url)
+                html = response.read()
+            except Exception as e:
+                logger.error('Could not connect to certificate server: '+str(e))
+                time.sleep(5)
+                continue
+            
+            if html.startswith( '-----BEGIN CERTIFICATE-----' ) and html.endswith('-----END CERTIFICATE-----'):
+                logger.info('certificate downloaded')
+            else:
+                logger.error('certificate parsing problem')
+                #logger.debug('content: '+str(html))
+                time.sleep(5)
+                continue
+        
+            with open(CA_ROOT_FILE, 'w') as f:
+                f.write(html)
+    
+            logger.debug("File %s written." % (CA_ROOT_FILE))
+        
+        if not (CLIENT_KEY_FILE_exists and CLIENT_CERT_FILE_exists):
+            createDirForFile(CLIENT_KEY_FILE)
+            createDirForFile(CLIENT_CERT_FILE)
+            cert_url= CERT_SERVER+"/node?"+NODE_ID
+            logger.info("trying to get node key and certificate from certificate server %s..." % (cert_url))
+            try:
+                response = urllib2.urlopen(cert_url)
+                html = response.read()
+            except Exception as e:
+                logger.error('Could not connect to certificate server: '+str(e))
+                time.sleep(5)
+                continue
+    
+            split_region = html.find("-----END RSA PRIVATE KEY-----\n-----BEGIN CERTIFICATE-----")
+            if split_region == -1:
+                logger.error("Could not parse PEM data from server.")
+                time.sleep(5)
+                continue
+            
+            logger.info("Found split: "+str(split_region))
+        
+            CLIENT_KEY_string = html[0:split_region+30]
+            CLIENT_CERT_string = html[split_region+30:]
+        
+            logger.debug("CLIENT_KEY_FILE: "+CLIENT_KEY_string)
+            logger.debug("CLIENT_CERT_FILE: "+CLIENT_CERT_string)
+        
+            with open(CLIENT_KEY_FILE, 'w') as f:
+                f.write(CLIENT_KEY_string)
+        
+            with open(CLIENT_CERT_FILE, 'w') as f:
+                f.write(CLIENT_CERT_string)
+        
+            logger.info("Files '%s' and '%s' have been written" % (CLIENT_KEY_FILE, CLIENT_CERT_FILE))
+
+def get_queuename():
+    sleep_duration = 10
+    #checks if the queuename has been established yet
+    #The default file is empty. So, if it is empty, make an initial connection to get a unique queuename.
+    while not conf['QUEUENAME']:
+        logger.debug('QUEUENAME is empty')
+        #get the connection parameters
+        
+        #make the connection
+        connection = None
+        try:
+            connection = pika.BlockingConnection(pika_params)
+        except Exception as e:
+            logger.error("Could not connect to Beehive server (%s): %s" % (pika_params.host, str(e)))
+            time.sleep(sleep_duration)
+            continue
+    
+        logger.info("Connected to Beehive server (%s): " % (pika_params.host))
+            
+        #create the channel
+        channel = connection.channel()
+        #queue_declare is left empty so RabbitMQ assigns a unique queue name
+        
+        
+        new_queuename = 'node_'+id_generator()
+        try:
+            result = channel.queue_declare(queue=new_queuename)
+        except Exception as e:
+            logger.error("channel.queue_declare: "+str(e))
+            time.sleep(sleep_duration)
+            continue
+        #get the name of the randomly assigned queue
+        queuename = result.method.queue
+        #close the connection
+        connection.close()
+        
+        if not queuename:
+            logger.debug('got no queuename')
+            time.sleep(sleep_duration)
+            continue
+        
+        logger.info("Reported queuename: " + queuename)
+        #strip 'amq.gen-' from queuename 
+        #junk, queuename = queuename.split('-', 1)
+        
+        #write the queuename to a file
+        with open('/etc/waggle/queuename', 'w') as file_: 
+            file_.write(queuename)
+
+        logger.debug('wrote new queuename "' + queuename+  '" to /etc/waggle/queuename')
+        
+        conf['QUEUENAME'] = queuename
+        break
+        
+
 #TODO if the pika_push and pika_pull clients can be combined into one process, add an if statement to that process that checks for initial contact with the cloud
 """
 
@@ -86,56 +246,15 @@ if __name__ == "__main__":
     root_logger.handlers = []
     root_logger.addHandler(handler)
     
-   # sys.stderr.write('hello world')
-        
-    try:
-        #checks if the queuename has been established yet
-        #The default file is empty. So, if it is empty, make an initial connection to get a unique queuename.
-        connection = None
-        if not conf['QUEUENAME']:
-            logger.debug('QUEUENAME is empty')
-            #get the connection parameters
-            
-            
-            
-            
-            #make the connection
-            try:
-                connection = pika.BlockingConnection(pika_params)
-            except Exception as err:
-                logger.error("Could not connect to Beehive server (%s): " % (pika_params.host))
-                logger.error(err)
-                sys.exit(1)
-            
-            logger.info("Connected to Beehive server (%s): " % (pika_params.host))
-                
-            #create the channel
-            channel = connection.channel()
-            #queue_declare is left empty so RabbitMQ assigns a unique queue name
-            
-            
-            new_queuename = 'node_'+id_generator()
-            result = channel.queue_declare(queue=new_queuename)
-            #get the name of the randomly assigned queue
-            queuename = result.method.queue
-            #close the connection
-            connection.close()
-            logger.info("Reported queuename: " + queuename)
-            #strip 'amq.gen-' from queuename 
-            #junk, queuename = queuename.split('-', 1)
-            
-            #write the queuename to a file
-            with open('/etc/waggle/queuename', 'w') as file_: 
-                file_.write(queuename)
     
-            logger.debug('wrote new queuename "' + queuename+  '" to /etc/waggle/queuename')
-            
-            conf['QUEUENAME'] = queuename
+    get_certificates()
         
-        
-        logger.debug('QUEUENAME: "' + conf['QUEUENAME'] + '"')
-       
-        
+    get_queuename()
+    
+    
+    logger.debug('QUEUENAME: "' + conf['QUEUENAME'] + '"')
+   
+    try:
         
         name2process={}
         
