@@ -53,7 +53,9 @@ RABBITMQ_HOST=<IP> ./configure
 
 ### SSL certificates
 
-The nodecontroller needs SSL certificates to be able to talk to the RabbitMQ component of the beehive server. 
+The nodecontroller needs SSL certificates to be able to talk to the RabbitMQ component of the beehive server. Those files are not installed on the Waggle image.
+
+SSL related files expected by the nodecontroller:
 ```text
 Private key of the node:                   /usr/lib/waggle/SSL/node/key.pem
 Public certificate of the node:            /usr/lib/waggle/SSL/node/cert.pem
