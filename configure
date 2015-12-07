@@ -97,37 +97,21 @@ mkdir -p /var/log/comms
 
 
 
-#set processes to start at boot
+# add init.d scripts
 
-#add communication processes to autostart
-ln -sf  ${waggled_dir}/communications.sh /etc/init.d/
-update-rc.d communications.sh defaults 
+#missing: heartbeat_start.sh
+for script in communications.sh data_cache.sh waggle_core_sense.sh WagMan_start.sh heartbeat_setup_start.sh  ; do
+  ln -sf  ${waggled_dir}/init.d/${script} /etc/init.d/
+  update-rc.d communications.sh defaults
+done
 
-#add data cache process to autostart
-ln -sf  ${waggled_dir}/data_cache.sh /etc/init.d/
-update-rc.d data_cache.sh defaults 
-
-#add core sensor script to autostart
-ln -sf  ${waggled_dir}/start_sensor.sh /etc/init.d/
-update-rc.d start_sensor.sh defaults 
-
-#add WagMan script to autostart
-ln -sf  ${waggled_dir}/WagMan_start.sh /etc/init.d/
-update-rc.d WagMan_start.sh defaults 
-
-#add heart beat script to autostart
-ln -sf  ${waggled_dir}/heartbeat_setup_start.sh /etc/init.d/
-
-#add node controller heart beat to autostart
-ln -sf  ${waggled_dir}/heartbeat_start.sh /etc/init.d/
-#update-rc.d heartbeat_start.sh defaults 
 
 #creates udev rule to attach Wagman to /dev/wagman
-#cp ${waggled_dir}/99-usb-serial.rules /etc/udev/rules.d
-ln -sf  ${waggled_dir}/99-usb-serial.rules /etc/udev/rules.d/
+ln -sf  ${waggled_dir}/init.d/99-usb-serial.rules /etc/udev/rules.d/
 
 #cd ${waggled_dir}/WagMan
 #chmod +x heartbeat_setup.sh
+
 
 rm -f /usr/local/bin/nodecontroller 
 ln -s ${waggle_dir}/scripts/nodecontroller.sh /usr/local/bin/nodecontroller
