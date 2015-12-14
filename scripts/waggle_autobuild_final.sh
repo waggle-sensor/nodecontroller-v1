@@ -13,6 +13,21 @@ fi
 
 export DIR="/root"
 
+
+ODROID_MODEL=$(head -n 1 /media/boot/boot.ini | cut -d '-' -f 1)
+MODEL=""
+if [ "${ODROID_MODEL}_"  == "ODROIDXU_" ] ; then
+  echo "Detected device: ${ODROID_MODEL}"
+  export MODEL="odroid-xu"
+elif [ "${ODROID_MODEL}_"  == "ODROIDC1_" ] ; then
+  echo "Detected device: ${ODROID_MODEL}"
+  export MODEL="odroid-c1"
+else
+  echo "Could not detect ODROID model. (${ODROID_MODEL})"
+  exit 1
+fi
+
+
 set -e
 set -x
 
@@ -75,7 +90,7 @@ if [ $(df -h | grep -c /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ) == 1 ] ; then
 fi
 
 export DATE=`date +"%Y%m%d"` ; echo "DATE: ${DATE}"
-export NEW_IMAGE="${DIR}/waggle-odroid-c1-${DATE}.img" ; echo "NEW_IMAGE: ${NEW_IMAGE}"
+export NEW_IMAGE="${DIR}/waggle-${MODEL}-${DATE}.img" ; echo "NEW_IMAGE: ${NEW_IMAGE}"
 
 # extract the report.txt from the new waggle image
 export WAGGLE_ROOT="/media/waggleroot/"
