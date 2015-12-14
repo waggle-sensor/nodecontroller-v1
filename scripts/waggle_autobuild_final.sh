@@ -223,10 +223,25 @@ dd if=/dev/${OTHER_DEVICE} bs=1M count=${BLOCKS_TO_WRITE} | xz -1 --stdout - > $
 
 mv ${NEW_IMAGE}.xz_part ${NEW_IMAGE}.xz
 
+# create second dd with different UUIDs
+if [ -e /usr/lib/waggle/nodecontroller/scripts/change_partition_uuid.sh  ] ; then
+  /usr/lib/waggle/nodecontroller/scripts/change_partition_uuid.sh /dev/${OTHER_DEVICE}
+  
+  dd if=/dev/${OTHER_DEVICE} bs=1M count=${BLOCKS_TO_WRITE} | xz -1 --stdout - > ${NEW_IMAGE}_B.xz_part
+  mv ${NEW_IMAGE}_B.xz_part ${NEW_IMAGE}_B.xz
+fi
+
 
 if [ -e ${DIR}/waggle-id_rsa ] ; then
   md5sum ${NEW_IMAGE}.xz > ${NEW_IMAGE}.xz.md5sum 
   scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}.xz ${NEW_IMAGE}.xz.md5sum waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/unstable
+  
+  if [ -e ${NEW_IMAGE}_B.xz ] ; then
+    # upload second image with different UUID's
+    md5sum ${NEW_IMAGE}_B.xz > ${NEW_IMAGE}_B.xz.md5sum
+    scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}_B.xz ${NEW_IMAGE}_B.xz.md5sum waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/unstable
+  fi
+  
   
   if [ -e ${NEW_IMAGE}.report.txt ] ; then 
     scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}.report.txt waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/unstable
