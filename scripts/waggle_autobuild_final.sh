@@ -18,7 +18,13 @@ ODROID_MODEL=$(head -n 1 /media/boot/boot.ini | cut -d '-' -f 1)
 MODEL=""
 if [ "${ODROID_MODEL}_"  == "ODROIDXU_" ] ; then
   echo "Detected device: ${ODROID_MODEL}"
-  export MODEL="odroid-xu"
+  if [ -e /media/boot/exynos5422-odroidxu3.dtb ] ; then
+    export MODEL="odroid-xu3"
+  else
+    export MODEL="odroid-xu"
+    echo "Did not find the XU3/4-specific file /media/boot/exynos5422-odroidxu3.dtb."
+    exit 1
+  fi
 elif [ "${ODROID_MODEL}_"  == "ODROIDC1_" ] ; then
   echo "Detected device: ${ODROID_MODEL}"
   export MODEL="odroid-c1"
