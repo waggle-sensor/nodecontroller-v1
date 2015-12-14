@@ -6,7 +6,7 @@
 
 
 export URL="http://odroid.in/ubuntu_14.04lts/"
-export IMAGE="ubuntu-14.04.3lts-lubuntu-odroid-c1-20151020.img"
+
 
 export DIR="/root"
 
@@ -17,6 +17,25 @@ if [ $# -eq 0 ] ; then
   blkid
   exit 1
 fi
+
+if [ ! -e /media/boot/boot.ini ] ; then
+  echo "error: /media/boot/boot.ini not found"
+  exit 1
+fi
+
+ODROID_MODEL=$(head -n 1 /media/boot/boot.ini | cut -d '-' -f 1)
+if [ "${ODROID_MODEL}_"  == "ODROIDXU" ] ; then
+  echo "Detected device: ${ODROID_MODEL}"
+  export IMAGE="ubuntu-14.04lts-server-odroid-xu3-20150725.img"
+elif [ "${ODROID_MODEL}_"  == "ODROIDC1" ] ; then
+  echo "Detected device: ${ODROID_MODEL}"
+  export IMAGE="ubuntu-14.04.3lts-lubuntu-odroid-c1-20151020.img"
+else
+  echo "Could not detect ODROID model. (${ODROID_MODEL})"
+  exit 1
+fi
+
+
 
 
 export OTHER_DEVICE=$1
