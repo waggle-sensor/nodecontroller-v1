@@ -4,7 +4,7 @@ sys.path.append('../../../')
 from waggle_protocol.utilities import packetmaker
 sys.path.append('../Communications/')
 from internal_communicator import send
-import time
+
 
 
 def unix_time(dt):
