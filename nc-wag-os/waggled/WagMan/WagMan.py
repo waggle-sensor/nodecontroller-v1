@@ -349,6 +349,8 @@ while True:
         break
     except Exception as e:
         print e
+        time.sleep(5)
+        
 ########################################################################
 #           DO NOT TOUCH ANYTHING BELOW HERE
 ########################################################################

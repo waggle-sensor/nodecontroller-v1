@@ -13,6 +13,27 @@ fi
 
 export DIR="/root"
 
+
+ODROID_MODEL=$(head -n 1 /media/boot/boot.ini | cut -d '-' -f 1)
+MODEL=""
+if [ "${ODROID_MODEL}_"  == "ODROIDXU_" ] ; then
+  echo "Detected device: ${ODROID_MODEL}"
+  if [ -e /media/boot/exynos5422-odroidxu3.dtb ] ; then
+    export MODEL="odroid-xu3"
+  else
+    export MODEL="odroid-xu"
+    echo "Did not find the XU3/4-specific file /media/boot/exynos5422-odroidxu3.dtb."
+    exit 1
+  fi
+elif [ "${ODROID_MODEL}_"  == "ODROIDC1_" ] ; then
+  echo "Detected device: ${ODROID_MODEL}"
+  export MODEL="odroid-c1"
+else
+  echo "Could not detect ODROID model. (${ODROID_MODEL})"
+  exit 1
+fi
+
+
 set -e
 set -x
 
@@ -75,7 +96,7 @@ if [ $(df -h | grep -c /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ) == 1 ] ; then
 fi
 
 export DATE=`date +"%Y%m%d"` ; echo "DATE: ${DATE}"
-export NEW_IMAGE="${DIR}/waggle-odroid-c1-${DATE}.img" ; echo "NEW_IMAGE: ${NEW_IMAGE}"
+export NEW_IMAGE="${DIR}/waggle-${MODEL}-${DATE}.img" ; echo "NEW_IMAGE: ${NEW_IMAGE}"
 
 # extract the report.txt from the new waggle image
 export WAGGLE_ROOT="/media/waggleroot/"
@@ -223,10 +244,25 @@ dd if=/dev/${OTHER_DEVICE} bs=1M count=${BLOCKS_TO_WRITE} | xz -1 --stdout - > $
 
 mv ${NEW_IMAGE}.xz_part ${NEW_IMAGE}.xz
 
+# create second dd with different UUIDs
+if [ -e /usr/lib/waggle/nodecontroller/scripts/change_partition_uuid.sh  ] ; then
+  /usr/lib/waggle/nodecontroller/scripts/change_partition_uuid.sh /dev/${OTHER_DEVICE}
+  
+  dd if=/dev/${OTHER_DEVICE} bs=1M count=${BLOCKS_TO_WRITE} | xz -1 --stdout - > ${NEW_IMAGE}_B.xz_part
+  mv ${NEW_IMAGE}_B.xz_part ${NEW_IMAGE}_B.xz
+fi
+
 
 if [ -e ${DIR}/waggle-id_rsa ] ; then
   md5sum ${NEW_IMAGE}.xz > ${NEW_IMAGE}.xz.md5sum 
   scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}.xz ${NEW_IMAGE}.xz.md5sum waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/unstable
+  
+  if [ -e ${NEW_IMAGE}_B.xz ] ; then
+    # upload second image with different UUID's
+    md5sum ${NEW_IMAGE}_B.xz > ${NEW_IMAGE}_B.xz.md5sum
+    scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}_B.xz ${NEW_IMAGE}_B.xz.md5sum waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/unstable
+  fi
+  
   
   if [ -e ${NEW_IMAGE}.report.txt ] ; then 
     scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}.report.txt waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/unstable

@@ -58,24 +58,25 @@ if ! $(hash uuidgen 2>/dev/null) ; then
   apt-get install -y uuid-runtime
 fi
 
-export NEWUUID_1=`cat /dev/urandom | tr -dc 'A-Z0-9' | fold -w 4 | head -n 1 | tr -d '\n'` ; echo "NEWUUID_1: ${NEWUUID_1}"
+export NEWUUID_1=`cat /dev/urandom | tr -dc 'A-F0-9' | fold -w 4 | head -n 1 | tr -d '\n'` ; echo "NEWUUID_1: ${NEWUUID_1}"
 export NEWUUID_2=`uuidgen` ; echo "NEWUUID_2: ${NEWUUID_2}"
 
 # turn ASCII into HEX representation, eg: "5A51-334D"
 export NEWUUID_1_HEX=`echo -n "${NEWUUID_1}" | od -t x2 | head -n 1 | sed "s/^0000000 \([^ ]*\) \([^ ]*\)/\2-\1/" | tr '[a-z]' '[A-Z]' | tr -d '\n'` ; echo "NEWUUID_1_HEX: ${NEWUUID_1_HEX}"
 
 
+# umount does not work reliable as it it is confused by th euuid !!!!
 
 #unmount the other partitions
-set +e
-if [ $(df -h | grep -c /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}1 ) == 1 ] ; then
-  while ! $(umount /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}1) ; do sleep 3 ; done
-fi
-if [ $(df -h | grep -c /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ) == 1 ] ; then
-  while ! $(umount /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2) ; do sleep 3 ; done
-fi
-set -e
-sleep 2
+#set +e
+#if [ $(df -h | grep -c /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}1 ) == 1 ] ; then
+#  while ! $(umount /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}1) ; do sleep 3 ; done
+#fi
+#if [ $(df -h | grep -c /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ) == 1 ] ; then
+#  while ! $(umount /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2) ; do sleep 3 ; done
+#fi
+#set -e
+#sleep 2
 
 ###  change UUID on other devices
 tune2fs -U ${NEWUUID_2} /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2
