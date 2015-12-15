@@ -118,6 +118,26 @@ def get_config():
     This function sends all of the stored information to the cloud.
     
     """
+    #  node_id ascii PRIMARY KEY,
+    #                        timestamp timestamp,
+    #                        queue ascii,
+    #                        config_file ascii,
+    #                        extra_notes list<ascii>,
+    #                        sensor_names list<ascii>,
+    #                        height double,
+    #                        latitude double,
+    #                        longitude double,
+    #                        name ascii
+    config_dict = { 'node_id': NODE_ID,
+                    'queue' : conf['QUEUENAME'],
+                    'name': NODE_ID,
+                    'device_dict' : DEVICE_DICT,
+                    'priority_order' : PRIORITY_ORDER
+                    }
+                    
+    return str(config_dict)
+    
+    #deprecated stuff below
     #add all the configuration
     config ='Node ID: ' + NODE_ID + '\n'
     config = config + 'Queuename: ' + conf['QUEUENAME'] + '\n'
