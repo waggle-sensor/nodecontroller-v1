@@ -271,41 +271,42 @@ def send_registrations():
         Sends registration message for NC and GNs and configuration file for node controller.
     """
     #loops through the list of nodes and send a registration for each one
-    logger.debug("number of devices: "+str(len(DEVICE_DICT.keys())))
+    #logger.debug("number of devices: "+str(len(DEVICE_DICT.keys())))
     
-    for device in DEVICE_DICT.keys():
-        logger.debug("try to send registration for device "+device)
-        header_dict = {
-            "msg_mj_type" : ord('r'),
-            "msg_mi_type" : ord('r'),
-            "s_uniqid"    : int("0x" + device, 0)
-            }
-        msg = str(conf['QUEUENAME'])
-        try: 
-            packet = pack(header_dict, message_data = msg)
-        except Exception as e: 
-            logger.error("pack failed: "+str(e))
-            raise
-                
-        
-        try:
-            for pack_ in packet:
-                try:
-                    send(pack_)
-                except Exception as e: 
-                    logger.error("send(pack_) failed: "+str(e))
-                    raise
-                    
-        except Exception as e: 
-            logger.error("for loop send(pack_) failed: "+str(e))
-            raise
-            
-        logger.debug("sent registration for device "+device)
+    #for device in DEVICE_DICT.keys():
+    #    logger.debug("try to send registration for device "+device)
+    #    header_dict = {
+    #        "msg_mj_type" : ord('r'),
+    #        "msg_mi_type" : ord('r'),
+    #        "s_uniqid"    : int("0x" + device, 0)
+    #        }
+    #    msg = str(conf['QUEUENAME'])
+    #    try: 
+    #        packet = pack(header_dict, message_data = msg)
+    #    except Exception as e: 
+    #        logger.error("pack failed: "+str(e))
+    #        raise
+    #            
+    #    
+    #    try:
+    #        for pack_ in packet:
+    #            try:
+    #                send(pack_)
+    #            except Exception as e: 
+    #                logger.error("send(pack_) failed: "+str(e))
+    #                raise
+    #                
+    #    except Exception as e: 
+    #        logger.error("for loop send(pack_) failed: "+str(e))
+    #        raise
+    #        
+    #    logger.debug("sent registration for device "+device)
             
     #send nodecontroller configuration file
     config = get_config() #this function is in NC_configuration
+    logger.info("Sending config for registration: "+config)
     try:
-        packet = make_config_reg(config)
+        packet = make_config_reg(config) # this is major, minor: "rn"
         for pack_ in packet:
             send(pack_)
     except Exception as e:
