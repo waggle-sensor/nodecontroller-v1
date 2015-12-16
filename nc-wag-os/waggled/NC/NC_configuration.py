@@ -4,6 +4,7 @@ from waggle_protocol.utilities.packetmaker import *
 import string
 import random
 from multiprocessing import Manager
+import json
 
 """
     This file stores all of the configurable variables for the node controller. 
@@ -135,7 +136,7 @@ def get_config():
                     'priority_order' : PRIORITY_ORDER
                     }
                     
-    return str(config_dict)
+    return json.dumps(config_dict)
     
     #deprecated stuff below
     #add all the configuration
