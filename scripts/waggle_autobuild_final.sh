@@ -96,7 +96,9 @@ if [ $(df -h | grep -c /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ) == 1 ] ; then
 fi
 
 export DATE=`date +"%Y%m%d"` ; echo "DATE: ${DATE}"
-export NEW_IMAGE="${DIR}/waggle-${MODEL}-${DATE}.img" ; echo "NEW_IMAGE: ${NEW_IMAGE}"
+export NEW_IMAGE_PREFIX="${DIR}/waggle-${MODEL}-${DATE}" ; echo "NEW_IMAGE_PREFIX: ${NEW_IMAGE_PREFIX}"
+export NEW_IMAGE="${NEW_IMAGE_PREFIX}.img" ; echo "NEW_IMAGE: ${NEW_IMAGE}"
+export NEW_IMAGE_B="${NEW_IMAGE_PREFIX}_B.img" ; echo "NEW_IMAGE_B: ${NEW_IMAGE_B}"
 
 # extract the report.txt from the new waggle image
 export WAGGLE_ROOT="/media/waggleroot/"
@@ -248,8 +250,8 @@ mv ${NEW_IMAGE}.xz_part ${NEW_IMAGE}.xz
 if [ -e /usr/lib/waggle/nodecontroller/scripts/change_partition_uuid.sh  ] ; then
   /usr/lib/waggle/nodecontroller/scripts/change_partition_uuid.sh /dev/${OTHER_DEVICE}
   
-  dd if=/dev/${OTHER_DEVICE} bs=1M count=${BLOCKS_TO_WRITE} | xz -1 --stdout - > ${NEW_IMAGE}_B.xz_part
-  mv ${NEW_IMAGE}_B.xz_part ${NEW_IMAGE}_B.xz
+  dd if=/dev/${OTHER_DEVICE} bs=1M count=${BLOCKS_TO_WRITE} | xz -1 --stdout - > ${NEW_IMAGE_B}.xz_part
+  mv ${NEW_IMAGE_B}.xz_part ${NEW_IMAGE_B}.xz
 fi
 
 
@@ -257,10 +259,10 @@ if [ -e ${DIR}/waggle-id_rsa ] ; then
   md5sum ${NEW_IMAGE}.xz > ${NEW_IMAGE}.xz.md5sum 
   scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}.xz ${NEW_IMAGE}.xz.md5sum waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/unstable
   
-  if [ -e ${NEW_IMAGE}_B.xz ] ; then
+  if [ -e ${NEW_IMAGE_B}.xz ] ; then
     # upload second image with different UUID's
-    md5sum ${NEW_IMAGE}_B.xz > ${NEW_IMAGE}_B.xz.md5sum
-    scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE}_B.xz ${NEW_IMAGE}_B.xz.md5sum waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/unstable
+    md5sum ${NEW_IMAGE_B}.xz > ${NEW_IMAGE_B}.xz.md5sum
+    scp -o "StrictHostKeyChecking no" -v -i ${DIR}/waggle-id_rsa ${NEW_IMAGE_B}.xz ${NEW_IMAGE_B}.xz.md5sum waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/unstable
   fi
   
   
