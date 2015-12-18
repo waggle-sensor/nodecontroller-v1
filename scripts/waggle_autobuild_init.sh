@@ -181,23 +181,6 @@ mkdir -p ${WAGGLEROOT}
 sleep 2
 mount /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 ${WAGGLEROOT}
 
-rm -f ${WAGGLEROOT}/etc/udev/rules.d/70-persistent-net.rules
-
-# Set up static IP
-cat << EOF > ${WAGGLEROOT}/etc/network/interfaces
-# created by Waggle autobuild
-
-auto lo eth0
-iface lo inet loopback
-
-iface eth0 inet static
-        address 10.31.81.10
-        netmask 255.255.255.0
-        gateway 10.31.81.10
-        
-EOF
-
-
 # download nodecontroller repo
 mkdir -p ${WAGGLEROOT}/usr/lib/waggle
 rm -rf ${WAGGLEROOT}/usr/lib/waggle/nodecontroller
