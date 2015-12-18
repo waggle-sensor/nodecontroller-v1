@@ -62,7 +62,7 @@ fi
 
 
 # this is the device where we will build the waggle image
-export CURRENT_DEVICE=$(df --output=source / | grep "^/") ; echo "CURRENT_DEVICE: ${CURRENT_DEVICE}" 
+export CURRENT_DEVICE=$(df | grep " \/$" | cut -f 1 -d ' ') ; echo "CURRENT_DEVICE: ${CURRENT_DEVICE}" 
 
 CURRENT_DEVICE=`basename ${CURRENT_DEVICE}`
 
