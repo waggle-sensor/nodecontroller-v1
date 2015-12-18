@@ -140,6 +140,22 @@ EOF
 
 chmod +x ${WAGGLE_ROOT}/etc/rc.local
 
+rm -f ${WAGGLEROOT}/etc/udev/rules.d/70-persistent-net.rules
+
+# Set up static IP
+cat << EOF > ${WAGGLEROOT}/etc/network/interfaces
+# created by Waggle autobuild
+
+auto lo eth0
+iface lo inet loopback
+
+iface eth0 inet static
+        address 10.31.81.10
+        netmask 255.255.255.0
+        gateway 10.31.81.10
+        
+EOF
+
 
 
 export ESTIMATED_FS_SIZE_BLOCKS=$(resize2fs -P /dev/${OTHER_DEVICE}${OTHER_DEV_SUFFIX}2 | grep -o "[0-9]*") ; echo "ESTIMATED_FS_SIZE_BLOCKS: ${ESTIMATED_FS_SIZE_BLOCKS}"
