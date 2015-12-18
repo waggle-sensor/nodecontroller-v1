@@ -32,7 +32,7 @@ if [ "${ODROID_MODEL}_"  == "ODROIDXU_" ] ; then
     echo "Did not find the XU3/4-specific file /media/boot/exynos5422-odroidxu3.dtb."
     exit 1
   fi
-elif [ "${ODROID_MODEL}_"  == "ODROIDC1_" ] ; then
+elif [ "${ODROID_MODEL}_"  == "ODROIDC_" ] ; then
   echo "Detected device: ${ODROID_MODEL}"
   export IMAGE="ubuntu-14.04.3lts-lubuntu-odroid-c1-20151020.img"
 else
