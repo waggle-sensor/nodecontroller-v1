@@ -43,7 +43,9 @@ conf['QUEUENAME'] = read_file('/etc/waggle/queuename')
 RABBITMQ_HOST=read_file('/etc/waggle/server_host')
 
 # the certificate server is optional and may only be accessible in an internal network
-CERT_SERVER='http://' + RABBITMQ_HOST + ':80'
+CERT_SERVER_PORT=24181
+CERT_SERVER_HOST = RABBITMQ_HOST
+CERT_SERVER='http://' + CERT_SERVER_HOST + ':' + CERT_SERVER_PORT
 
     
 def create_dev_dict():
