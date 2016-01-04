@@ -8,8 +8,9 @@
 
 
 #example: IMAGE="waggle-odroid-c1-20151105.img"
-USB_NAME="Transcend"
-
+#// Transcend
+USB_NAME="         Manufacturer: TS-RDF5"
+#USB_NAME="          Serial Number: 000000000820"
 
 if [ "${1}x" != "x" ] ; then
   IMAGE=${1}
@@ -55,7 +56,7 @@ if [[ "$unamestr" == 'Darwin' ]]; then
     DEVICE_NAME=""
     while [ "${DEVICE_NAME}_" == "_" ] ; do
       sleep 2
-      DEVICE_NAME=$(system_profiler SPUSBDataType | grep -A 20  "${USB_NAME}"  | grep -m 1 "BSD Name" | cut -d ':' -f 2 | tr -d ' ' | tr -d '\n')
+      DEVICE_NAME=$(system_profiler SPUSBDataType | grep -A 100  "${USB_NAME}" | grep -B 100 -m 1 "^$" | grep -m 1 "BSD Name" | cut -d ':' -f 2 | tr -d ' ' | tr -d '\n')
 
       if [ "${DEVICE_NAME}_" != "_" ] ;then
         if [ ! -e /dev/r${DEVICE_NAME} ] ; then
@@ -99,8 +100,7 @@ else
 
   hash pv &> /dev/null
   if [ $? -eq 1 ]; then
-    echo >&2 "Please install pv (Pipe Viewer), e.g. \"apt-get install pv\"."
-    exit 1
+    apt-get install -y pv
   fi
 
 
