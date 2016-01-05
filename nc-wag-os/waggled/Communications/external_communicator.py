@@ -106,8 +106,9 @@ def pika_push():
                 comm.cloud_connected.value = 0
                 time.sleep(5)
                 break
-                
-        connection.close(0)
+        
+        if connection:        
+            connection.close(0)
 
 
 
