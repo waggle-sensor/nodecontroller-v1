@@ -67,8 +67,9 @@ def createDirForFile(file):
 
 def get_certificates():
     
-    complained=0
+    loop=-1
     while True:
+        loop=(loop+1)%20
         CA_ROOT_FILE_exists = os.path.isfile(CA_ROOT_FILE)
         CLIENT_KEY_FILE_exists = os.path.isfile(CLIENT_KEY_FILE)
         CLIENT_CERT_FILE_exists = os.path.isfile(CLIENT_CERT_FILE)
@@ -76,27 +77,29 @@ def get_certificates():
         #check if cert server is available
         if not (CA_ROOT_FILE_exists and CLIENT_KEY_FILE_exists and CLIENT_CERT_FILE_exists):
         
-            if not CA_ROOT_FILE_exists:
-                logger.info("File '%s' not found." % (CA_ROOT_FILE))
-            if not CLIENT_KEY_FILE_exists:
-                logger.info("File '%s' not found." % (CLIENT_KEY_FILE))
-            if not CLIENT_CERT_FILE_exists:
-                logger.info("File '%s' not found." % (CLIENT_CERT_FILE))
+            if (loop == 0):
+                if not CA_ROOT_FILE_exists:
+                    logger.info("File '%s' not found." % (CA_ROOT_FILE))
+                if not CLIENT_KEY_FILE_exists:
+                    logger.info("File '%s' not found." % (CLIENT_KEY_FILE))
+                if not CLIENT_CERT_FILE_exists:
+                    logger.info("File '%s' not found." % (CLIENT_CERT_FILE))
+                
             try:
                 response = urllib2.urlopen(CERT_SERVER)
                 html = response.read()
             except Exception as e:
-                if (complained == 0):
-                    logger.error('Have not found certificate files and can not connect to certificate server: '+str(e))
+                if (loop == 0):
+                    logger.error('Have not found certificate files and can not connect to certificate server (%s): %s' % (CERT_SERVER, str(e)))
                     logger.error('Either copy certificate files manually or activate certificate sever.')
                     logger.error('Will silently try to connect to certificate server in 30 second intervals from now on.')
-                    complained = 1
-                complained=(complained+1)%20
+                
                 time.sleep(30)
                 continue
             
             if html != 'This is the Waggle certificate server.':
-                logger.error("Did not find certificate server.")
+                if (loop == 0):
+                    logger.error("Did not find certificate server.")
                 time.sleep(5)
                 continue
         else:
