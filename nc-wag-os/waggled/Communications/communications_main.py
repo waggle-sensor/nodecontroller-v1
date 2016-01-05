@@ -67,7 +67,7 @@ def createDirForFile(file):
 
 def get_certificates():
     
-    complained_yet=False
+    complained=0
     while True:
         CA_ROOT_FILE_exists = os.path.isfile(CA_ROOT_FILE)
         CLIENT_KEY_FILE_exists = os.path.isfile(CLIENT_KEY_FILE)
@@ -86,11 +86,12 @@ def get_certificates():
                 response = urllib2.urlopen(CERT_SERVER)
                 html = response.read()
             except Exception as e:
-                if not complained_yet:
+                if (complained == 0):
                     logger.error('Have not found certificate files and can not connect to certificate server: '+str(e))
                     logger.error('Either copy certificate files manually or activate certificate sever.')
                     logger.error('Will silently try to connect to certificate server in 30 second intervals from now on.')
-                    complained_yet = True
+                    complained = 1
+                complained=(complained+1)%20
                 time.sleep(30)
                 continue
             
