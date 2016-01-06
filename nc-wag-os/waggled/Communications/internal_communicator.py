@@ -246,7 +246,7 @@ def pull_server():
             try:
                 data = client_sock.recv(4028) #Guest nodes connect and send their uniq_ID
                 if not data:
-                    break
+                    logger.error("(pull_server) Did not receive data !?")
                 else:
                     for i in range(2): 
                         try:
@@ -273,6 +273,10 @@ def pull_server():
                 
                 server.close()
                 break
+            except Exception as e:
+                logger.error("(pull_server) error receiving data: %s" % (str(e)))
+                
+                    
     server.close()
 
 
