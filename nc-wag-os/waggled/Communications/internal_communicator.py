@@ -174,8 +174,7 @@ def internal_client_pull():
 def push_server():
     
     comm = internal_communicator()
-    #HOST = NCIP 
-    HOST = socket.gethostname()
+    HOST = NCIP 
     PORT = 9090
     try:
       server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -226,8 +225,7 @@ def push_server():
 def pull_server():
    
     comm = internal_communicator()
-    #HOST = NCIP
-    HOST = socket.gethostname()
+    HOST = NCIP
     PORT = 9091
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     logger.debug("try to bind host=%s port=%s"%(HOST,PORT))
