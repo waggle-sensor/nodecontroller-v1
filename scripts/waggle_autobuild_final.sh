@@ -143,6 +143,7 @@ chmod +x ${WAGGLE_ROOT}/etc/rc.local
 rm -f ${WAGGLEROOT}/etc/udev/rules.d/70-persistent-net.rules
 
 # Set up static IP
+echo "10.31.81.10" > ${WAGGLEROOT}/etc/waggle/NCIP
 cat << EOF > ${WAGGLEROOT}/etc/network/interfaces
 # created by Waggle autobuild
 
