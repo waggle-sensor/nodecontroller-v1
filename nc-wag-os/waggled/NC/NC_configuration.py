@@ -36,7 +36,7 @@ conf['QUEUENAME'] = read_file('/etc/waggle/queuename')
 
 
 #Get node controller IP
-#NCIP = read_file('/etc/waggle/NCIP')
+NCIP = read_file('/etc/waggle/NCIP')
 
 #get server IP from file
 #CLOUD_IP = read_file('/etc/waggle/server_ip') #TODO: deprecate this
