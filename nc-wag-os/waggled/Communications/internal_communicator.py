@@ -244,9 +244,10 @@ def pull_server():
         client_sock, addr = server.accept()
         while True:
             try:
-                data = client_sock.recv(4028) #Guest nodes connect and send their uniq_ID
+                data = client_sock.recv(4028) #Guest nodes connect and send their uniq_ID (non-blocking call)
                 if not data:
-                    logger.error("(pull_server) Did not receive data !?")
+                    time.sleep(1)
+                    continue
                 else:
                     for i in range(2): 
                         try:
