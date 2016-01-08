@@ -51,7 +51,7 @@ cd /usr/lib/waggle/nodecontroller/
 RABBITMQ_HOST=<IP> ./configure
 ```
 
-Inside of a Docker container communication with the guest node may require overwriting NCIP:
+Inside of a Docker container communication with the guest node may require overwriting NCIP. Access to ports 9090 and 9091 is restricted by only exposing them instead of publishing them. 
 ```bash
 echo "0.0.0.0" > /etc/waggle/NCIP
 ```
