@@ -113,5 +113,5 @@ ln -sf  ${waggled_dir}/init.d/99-usb-serial.rules /etc/udev/rules.d/
 #chmod +x heartbeat_setup.sh
 
 
-rm -f /usr/local/bin/nodecontroller 
-ln -s ${waggle_dir}/scripts/nodecontroller.sh /usr/local/bin/nodecontroller
+rm -f /usr/local/bin/waggle 
+ln -s ${waggle_dir}/scripts/waggle.py /usr/local/bin/waggle
