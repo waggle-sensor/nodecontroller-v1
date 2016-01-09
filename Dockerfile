@@ -8,3 +8,6 @@ ADD . /usr/lib/waggle/nodecontroller/
 RUN cd /usr/lib/waggle/nodecontroller/ && ./scripts/install_dependencies.sh
 
 WORKDIR /usr/lib/waggle/nodecontroller/
+
+# ports for internal communication with guest nodes
+EXPOSE 9090 9091 

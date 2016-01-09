@@ -25,14 +25,13 @@ scripts/install_dependencies.sh
 
 ### Installation with Docker (only x86)
 
-A docker image is available for testing and developing purposes. Currently this is x86, thus it will not run on the ODROID which has an ARM architecture. We will provide ARM Docker images soon I hope.
+A docker image is available for testing and developing purposes. Currently this is x86, thus it will not run on the ODROID which has an ARM architecture. We will provide ARM Docker images hopefully soon.
 
 ```bash
 docker rm -f nc
 docker pull waggle/nodecontroller
 docker run -ti --name nc --rm waggle/nodecontroller
 cd /usr/lib/waggle/nodecontroller/
-RABBITMQ_HOST=<IP> ./configure
 ```
 
 For developing purposes mounting the git repo from the host can be helpful:
@@ -45,10 +44,16 @@ docker run -ti --name nc --rm -v ${HOME}/git/nodecontroller/:/usr/lib/waggle/nod
 
 ## Configuration
 
-You can use the environment variable RABBITMQ_HOST to tell the node controller where to send the sensor data. Run the configure script.
+The environment variable RABBITMQ_HOST can be used to tell the node controller where to send the sensor data. Run the configure script.
 
 ```bash
+cd /usr/lib/waggle/nodecontroller/
 RABBITMQ_HOST=<IP> ./configure
+```
+
+Inside of a Docker container communication with the guest node may require overwriting NCIP. Access to ports 9090 and 9091 is restricted by only exposing them instead of publishing them. 
+```bash
+echo "0.0.0.0" > /etc/waggle/NCIP
 ```
 
 ### SSL certificates
@@ -64,7 +69,7 @@ Public certificate of the RabbitMQ server: /usr/lib/waggle/SSL/waggleca/cacert.p
 
 The certificate files have to be created by the certificate authority on the beehive server. In principle there are two ways for the nodecontroller to get theses files. 
 
-1. Manual: The beehive administrator creates keys for you and you have to copy them onto your node, e.g. using ssh.
+1. Manual: The beehive administrator creates keys for the node and the node user has to copy them onto the node, e.g. using ssh.
 2. Automatic: In some circumstances it can be an option to use a certificate server. If the certificate server is running, the nodecontroller software can automatically download the required files. Note that for security reasons this option might be available only in internal networks or with other special restrictions to avoid abuse. 
 
 
