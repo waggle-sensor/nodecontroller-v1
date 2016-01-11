@@ -25,7 +25,7 @@ class Service:
         result = commands.getstatusoutput("/etc/init.d/"+self.id+" status")
         #print result, "\n"
         if "Stopped" in result:
-            return 0
+            return 1
         
         if "Running" in result:
             return 0
