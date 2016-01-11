@@ -3,7 +3,8 @@
 
 
 from subprocess import call
-import commands
+import commands, os.path, sys
+
 
 
 class Service:
@@ -17,6 +18,10 @@ class Service:
     def status(self):
         #print "/etc/init.d/"+self.id, "status"
         #call(["/etc/init.d/"+self.id, "status"])
+        
+        if not os.path.isfile("/etc/init.d/"+self.id):
+            return -10
+        
         result = commands.getstatusoutput("/etc/init.d/"+self.id+" status")
         #print result, "\n"
         if "Stopped" in result:
@@ -38,18 +43,24 @@ class Service:
         call(["/etc/init.d/"+self.id, "restart"])
     
 
+def status_code_2_text(status_int):
+    if (status_int == 0):
+        status = 'active'
+    elif (status_int == 1):
+        status = 'inactive'
+    elif (status_int == -10):
+        status = 'not found'    
+    else:
+        status = 'unknown'
+    return status
+    
 
 def overview(services):
     for i, s in enumerate(services):
         
         status_int = s.status()
         
-        if (status_int == 0):
-            status = 'active'
-        elif (status_int == 1):
-            status = 'inactive'
-        else:
-            status = 'unknown'
+        status = status_code_2_text(status_int)
         
         print "(%d) %s  %s\n" % (i, s.id.ljust(max_length+4, ' '), status.ljust(10, ' '))
 
@@ -72,13 +83,14 @@ if __name__ == "__main__":
             
             
             command = raw_input('\nMain menu\nEnter your command: ')
+            #print "got '%s' \n" % (command)
             print ''
             if (not command):
                 continue
             if (command == "l"):
                 overview(services)
-                    
-                    
+            elif (command == "q"):        
+                 sys.exit(0)  
             elif (command in "0123456789"):
                 index = int(command)
                 s=services[index]
@@ -92,8 +104,10 @@ if __name__ == "__main__":
                 elif (subcommand == '3'):
                     s.restart()    
                 elif (subcommand == '4'):
-                    s.status()
-                
+                    status_int = s.status()
+                    status = status_code_2_text(status_int)
+                    print "(%d) %s  %s\n" % (index, s.id.ljust(max_length+4, ' '), status.ljust(10, ' '))
+                    
                 continue
         
     except KeyboardInterrupt:
