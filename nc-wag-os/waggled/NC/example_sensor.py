@@ -24,7 +24,7 @@ if os.path.isfile(temperature_file):
     count = 0
     while 1:
         tempC = int(open(temperature_file).read()) / 1e3
-        timestamp_utc = datetime.utcnow()
+        timestamp_utc = datetime.datetime.utcnow()
         timestamp_date = timestamp_utc.date()
         timestamp_epoch =  int(float(timestamp_utc.strftime("%s.%f"))) * 1000
         #old: sendData=['CPU temperature', int(unix_time_millis(datetime.datetime.now())), ['Temperature']  , ['i'], [tempC], ['Celsius'], ['count='+str(count)]]
