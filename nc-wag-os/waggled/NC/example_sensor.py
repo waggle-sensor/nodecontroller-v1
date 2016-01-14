@@ -30,7 +30,7 @@ if os.path.isfile(temperature_file):
         #old: sendData=['CPU temperature', int(unix_time_millis(datetime.datetime.now())), ['Temperature']  , ['i'], [tempC], ['Celsius'], ['count='+str(count)]]
         # node_id, date, plugin_id, plugin_version, timestamp, sensor_id, data, meta
         #old: sendData=['CPU temperature', int(unix_time_millis(datetime.datetime.now())), ['Temperature']  , ['i'], [tempC], ['Celsius'], ['count='+str(count)]]
-        sendData=[str(timestamp_date), 'test_plugin_cpu_temp', 1, str(timestamp_epoch), ['cpu_temperature'], [tempC], ['meta.txt'] ]
+        sendData=[str(timestamp_date), 'test_plugin_cpu_temp', '1', str(timestamp_epoch), ['cpu_temperature'], [tempC], ['meta.txt'] ]
         print 'Sending data: ',sendData
         #packs and sends the data
         packet = packetmaker.make_data_packet(sendData)
@@ -45,7 +45,7 @@ else:
     while 1:
         rint = random.randint(1, 100)
         # old: sendData=['RandomNumber', int(unix_time_millis(datetime.datetime.now())), ['Random']  , ['i'], [rint], ['NA'], ['count='+str(count)]]
-        sendData=[str(timestamp_date), 'test_plugin_random', 1, str(timestamp_epoch), ['random'], [rint], ['meta.txt'] ]
+        sendData=[str(timestamp_date), 'test_plugin_random', '1', str(timestamp_epoch), ['random'], [rint], ['meta.txt'] ]
         print 'Sending data: ',sendData
         #packs and sends the data
         packet = packetmaker.make_data_packet(sendData)
