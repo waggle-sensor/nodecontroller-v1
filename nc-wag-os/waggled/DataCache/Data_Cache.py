@@ -52,7 +52,7 @@ root_logger.addHandler(handler)
     
 def signal_term_handler(signal, frame):
     logger.debug('got SIGTERM')
-    stop()
+    #stop()
     sys.exit(0)
  
 # this would interrupt IO. Need to run everything in separate thread/process 
