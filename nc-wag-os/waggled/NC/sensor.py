@@ -144,7 +144,8 @@ try:
                             currentSensor = sensorsData[i+1].split(':')
                             if currentSensor[0] <> 'D6T_44L_06_1_T_C':
                                 try:
-                                    temp_values = float(currentSensor[1])
+                                    #temp_values = float(currentSensor[1])
+                                    temp_values = currentSensor[1]
                                     which_row = sensor_array_index[Sensor_Index.index(currentSensor[0])]
                                     sensorReading_bucket[which_row][0].append(reading_names[Sensor_Index.index(currentSensor[0])])
                                     sensorReading_bucket[which_row][1].append(reading_type[Sensor_Index.index(currentSensor[0])])
@@ -157,8 +158,8 @@ try:
                                 pass
                                 try:
                                     temp_values=currentSensor[1].split(',')
-                                    for k in range(len(temp_values)):
-                                        temp_values[k] = float(temp_values[k])
+                                    #for k in range(len(temp_values)):
+                                    #    temp_values[k] = float(temp_values[k])
                                     which_row = sensor_array_index[Sensor_Index.index(currentSensor[0])]
                                     sensorReading_bucket[which_row][0]=list(reading_names[Sensor_Index.index(currentSensor[0])])
                                     sensorReading_bucket[which_row][1]=list(reading_type[Sensor_Index.index(currentSensor[0])])
