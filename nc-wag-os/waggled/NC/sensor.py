@@ -173,7 +173,7 @@ try:
                                 timestamp_utc = datetime.datetime.utcnow()
                                 timestamp_date = timestamp_utc.date()
                                 timestamp_epoch =  int(float(timestamp_utc.strftime("%s.%f"))* 1000)
-                                sendData=[str(timestamp_date), 'env_sense', '1', 'default', str(timestamp_epoch), sensorReading_bucket[all][0], sensorReading_bucket[all][2], [] ]
+                                sendData=[str(timestamp_date), 'env_sense', '1', 'default', str(timestamp_epoch), sensor_names[all], sensorReading_bucket[all][2], [] ]
                                 #sendData=[str(timestamp_date), sensor_names[all],int(unix_time_millis(datetime.datetime.now())),sensorReading_bucket[all][0],sensorReading_bucket[all][1],sensorReading_bucket[all][2],sensorReading_bucket[all][3],sensorReading_bucket[all][4]]
                                 print 'Sending data: ',sendData
                                 #packs and sends the data
