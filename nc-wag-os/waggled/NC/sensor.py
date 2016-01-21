@@ -167,7 +167,7 @@ try:
                         
                         
                         # extract sensor name    
-                        output_array = sensorsData[0].split(':')
+                        output_array = sensorsData[1].split(':')
                         output_name = output_array[0]
                        
                         
