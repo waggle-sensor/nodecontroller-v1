@@ -9,17 +9,11 @@ from internal_communicator import send
    
    
 """
-def unix_time(dt):
-    epoch = datetime.datetime.utcfromtimestamp(0)
-    delta = dt - epoch
-    return delta.total_seconds()
-
-def unix_time_millis(dt):
-    return long(unix_time(dt) * 1000.0)
-
 
 print 'Beginning sensor script...'
 
+
+# TODO this sensor description is deprecated. See sensor hash below.
 Sensor_Index=["D6T_44L_06_1_T_C","MMA8452_1_A_X_Units","MMA8452_1_A_Y_Units",
               "MMA8452_1_A_Z_Units","MMA8452_1_A_RMS_Units","SHT15_1_T_C","SHT15_1_H_%","SHT75_1_T_C",
               "SHT75_1_H_%","MAX4466_1_Units","AMBI_1_Units","PhoRes_10K4.7K_Units","HIH4030_Units",
@@ -98,6 +92,34 @@ sensor_names = ["PDV_P8104.API.2006", "MLX90614ESF-DAA.Melexis.008-2013", "D6T-4
         "HIH6130.Honeywell.2011", "SHT15.Sensirion.4_3-2010", "BMP180.Bosch.2_5-2013", "MMA8452Q.Freescale.8_1-2013", 
         "DS18B20.Maxim.2008", "TMP421.Texas_Instruments.2012", "RHT03.Maxdetect.2011", "TMP102.Texas_Instruments.2008", 
         "SHT75.Sensirion.5_2011", "HIH4030.Honeywell.2008", "GA1A1S201WP.Sharp.2007", "MAX4466.Maxim.1_2001"]
+        
+        
+
+# convert above tables into hash
+output2sensor={}
+
+sensors={}
+for i in range(len(Sensor_Index)):
+    sensor_name=sensor_names[sensor_array_index[i]]
+    if not sensor_name in sensors:
+        sensors[sensor_name]={}
+
+    s_output = Sensor_Index[i]
+    print "s_output: ", s_output
+    output2sensor[s_output]=sensor_name
+    sensors[sensor_name][s_output]={}
+    sensors[sensor_name][s_output]['measurement']=reading_names[i]
+    sensors[sensor_name][s_output]['data_type']=reading_type[i]
+    sensors[sensor_name][s_output]['unit']=reading_unit[i]
+    sensors[sensor_name][s_output]['reading_note']=reading_note[i]
+    
+   
+pp = pprint.PrettyPrinter(indent=4)
+pp.pprint(sensors)
+
+
+
+
 try:
     while True:
         wxconnection = False
@@ -119,6 +141,7 @@ try:
             wxsensor.close()
             wxconnection = False
         while wxconnection == True:
+            time.sleep(1)
             try:
                 readData = ' '
                 readData=wxsensor.readline()
@@ -137,52 +160,40 @@ try:
 
                 if sensorDataAvail == True:
                     if sensorsData[0] == 'WXSensor' and sensorsData[-1]=='WXSensor\r\n':
+                        
+                        timestamp_utc = datetime.datetime.utcnow()
+                        timestamp_date = timestamp_utc.date()
+                        timestamp_epoch =  int(float(timestamp_utc.strftime("%s.%f"))* 1000)
+                        
                         #print sensorsData[1:-1]
-                        sensorReading_bucket = [[[] for col in range(5)] for row in range(16)]
-                        for i in range(len(sensorsData)-2):
-                            #print sensorsData[i+1]
-                            currentSensor = sensorsData[i+1].split(':')
-                            if currentSensor[0] <> 'D6T_44L_06_1_T_C':
-                                try:
-                                    #temp_values = float(currentSensor[1])
-                                    temp_values = currentSensor[1]
-                                    which_row = sensor_array_index[Sensor_Index.index(currentSensor[0])]
-                                    sensorReading_bucket[which_row][0].append(reading_names[Sensor_Index.index(currentSensor[0])])
-                                    sensorReading_bucket[which_row][1].append(reading_type[Sensor_Index.index(currentSensor[0])])
-                                    sensorReading_bucket[which_row][2].append(temp_values)
-                                    sensorReading_bucket[which_row][3].append(reading_unit[Sensor_Index.index(currentSensor[0])])
-                                    sensorReading_bucket[which_row][4].append(reading_note[Sensor_Index.index(currentSensor[0])])
-                                except:
-                                    pass
-                            else:
-                                pass
-                                try:
-                                    temp_values=currentSensor[1].split(',')
-                                    #for k in range(len(temp_values)):
-                                    #    temp_values[k] = float(temp_values[k])
-                                    which_row = sensor_array_index[Sensor_Index.index(currentSensor[0])]
-                                    sensorReading_bucket[which_row][0]=list(reading_names[Sensor_Index.index(currentSensor[0])])
-                                    sensorReading_bucket[which_row][1]=list(reading_type[Sensor_Index.index(currentSensor[0])])
-                                    sensorReading_bucket[which_row][2]=list(temp_values)
-                                    sensorReading_bucket[which_row][3]=list(reading_unit[Sensor_Index.index(currentSensor[0])])
-                                    sensorReading_bucket[which_row][4]=list(reading_note[Sensor_Index.index(currentSensor[0])])
-                                except:
-                                    pass
-                        for all in range(len(sensorReading_bucket)):
-                            if (sensorReading_bucket[all] <> [[],[],[],[],[]]):
-                                timestamp_utc = datetime.datetime.utcnow()
-                                timestamp_date = timestamp_utc.date()
-                                timestamp_epoch =  int(float(timestamp_utc.strftime("%s.%f"))* 1000)
-                                sendData=[str(timestamp_date), 'env_sense', '1', 'default', str(timestamp_epoch), sensor_names[all], sensorReading_bucket[all][2], [] ]
-                                #sendData=[str(timestamp_date), sensor_names[all],int(unix_time_millis(datetime.datetime.now())),sensorReading_bucket[all][0],sensorReading_bucket[all][1],sensorReading_bucket[all][2],sensorReading_bucket[all][3],sensorReading_bucket[all][4]]
-                                print 'Sending data: ',sendData
+                        # iterate over outputs
+                        for i in range(1,len(sensorsData)-1):
+                            
+                            output_array = sensorsData[i].split(':')
+                            output_name = output_array[0]
+                            output_value = output_array[1]
+                            try:
+                                sensor_name = output2sensor[output_name]
+                            except Exception as e:
+                                print "Output %s unknown" % (output_name)
+                                sensor_name = ''
+                            
+                            if sensor_name:
+                                sendData=[str(timestamp_date), 'env_sense', '1', 'default', str(timestamp_epoch), sensor_name, "meta.txt", output_value]
+                                print 'Sending data: ', str(sendData)
                                 #packs and sends the data
                                 packet = packetmaker.make_data_packet(sendData)
                                 for pack in packet:
                                     send(pack)
-                        time.sleep(1)
+                            
+                                
+                       
+                        
 except KeyboardInterrupt, k:
     try:
         wxsensor.close()
     except: 
         pass
+
+
+
