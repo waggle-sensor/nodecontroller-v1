@@ -165,26 +165,25 @@ try:
                         timestamp_date = timestamp_utc.date()
                         timestamp_epoch =  int(float(timestamp_utc.strftime("%s.%f"))* 1000)
                         
-                        #print sensorsData[1:-1]
-                        # iterate over outputs
-                        for i in range(1,len(sensorsData)-1):
-                            
-                            output_array = sensorsData[i].split(':')
-                            output_name = output_array[0]
-                            output_value = output_array[1]
-                            try:
-                                sensor_name = output2sensor[output_name]
-                            except Exception as e:
-                                print "Output %s unknown" % (output_name)
-                                sensor_name = ''
-                            
-                            if sensor_name:
-                                sendData=[str(timestamp_date), 'env_sense', '1', 'default', str(timestamp_epoch), sensor_name, "meta.txt", output_name, output_value]
-                                print 'Sending data: ', str(sendData)
-                                #packs and sends the data
-                                packet = packetmaker.make_data_packet(sendData)
-                                for pack in packet:
-                                    send(pack)
+                        
+                        # extract sensor name    
+                        output_array = sensorsData[0].split(':')
+                        output_name = output_array[0]
+                       
+                        
+                        try:
+                            sensor_name = output2sensor[output_name]
+                        except Exception as e:
+                            print "Output %s unknown" % (output_name)
+                            sensor_name = ''
+                        
+                        if sensor_name:
+                            sendData=[str(timestamp_date), 'env_sense', '1', 'default', str(timestamp_epoch), sensor_name, "meta.txt", sensorsData[1:-1]]
+                            print 'Sending data: ', str(sendData)
+                            #packs and sends the data
+                            packet = packetmaker.make_data_packet(sendData)
+                            for pack in packet:
+                                send(pack)
                             
                                 
                        
