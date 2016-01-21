@@ -179,7 +179,7 @@ try:
                                 sensor_name = ''
                             
                             if sensor_name:
-                                sendData=[str(timestamp_date), 'env_sense', '1', 'default', str(timestamp_epoch), sensor_name, "meta.txt", output_value]
+                                sendData=[str(timestamp_date), 'env_sense', '1', 'default', str(timestamp_epoch), sensor_name, "meta.txt", output_name, output_value]
                                 print 'Sending data: ', str(sendData)
                                 #packs and sends the data
                                 packet = packetmaker.make_data_packet(sendData)
