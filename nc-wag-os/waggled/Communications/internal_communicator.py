@@ -102,10 +102,11 @@ def internal_client_push():
                         #print e
                         client_sock.close()
                         time.sleep(1)
-                    
+                        continue
+                    logger.debug("Sending GN data from DC-push to Data_Cache")    
                 else: 
+                    logger.error('Internal client push unable to connect to DC...')
                     time.sleep(1)
-                    sys.stderr.write('Internal client push unable to connect to DC...\n')
             else: 
                 time.sleep(1) #else, wait until messages are in queue
         except KeyboardInterrupt, k:
@@ -206,6 +207,7 @@ def push_server():
                     client_sock.sendall('Hi') #NC sends 'Hi' to verify that it is the NC that the guest node is looking for.
                     client_sock.sendall(HOSTNAME)#sends unique ID to GN can send messages to NC if needed
                 else:
+                    logger.debug("Sending data from GN into DC-push")
                     comm.DC_push.put(data)
                 
             except KeyboardInterrupt, k:
