@@ -188,7 +188,7 @@ class DataCache:
                             time.sleep(1)
                         
                         else:
-                            logger.debug("datacache got: \""+str(data)+"\"")
+                            #logger.debug("datacache got: \""+str(data)+"\"")
                             try:
                                 header = get_header(data) #uses the packet handler function get_header to unpack the header data from the message
                                 flags = header['flags'] #extracts priorities
