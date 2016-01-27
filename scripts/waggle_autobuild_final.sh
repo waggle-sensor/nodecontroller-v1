@@ -153,7 +153,6 @@ iface lo inet loopback
 iface eth0 inet static
         address 10.31.81.10
         netmask 255.255.255.0
-        gateway 10.31.81.10
         
 EOF
 
