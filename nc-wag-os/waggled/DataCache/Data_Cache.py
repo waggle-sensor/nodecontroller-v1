@@ -148,7 +148,7 @@ class DataCache:
                             logger.debug('External flush request made.')
                         
                             DC_flush(incoming_available_queues, outgoing_available_queues)
-                        #Indicates that it is a pull request 
+                        #Indicates that it is a pull request ( somebody want data from the DC)
                         elif data[0] == '|': #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
                             data, dest = data.split('|', 1) #splits to get either 'o' for outgoing request or the device location for incoming request
                             if dest != 'o':
@@ -188,6 +188,7 @@ class DataCache:
                             time.sleep(1)
                         
                         else:
+                            # somebody sends data to the DataCache
                             #logger.debug("datacache got: \""+str(data)+"\"")
                             try:
                                 header = get_header(data) #uses the packet handler function get_header to unpack the header data from the message
@@ -201,11 +202,13 @@ class DataCache:
                                 recipient = nodeid_int2hexstr(recipient_int)
                                 logger.debug("sender: %s recipient: %s NODE_ID: %s" % (sender, recipient, NODE_ID))
                                 for i in range(2): #loops in case device dictionary is not up-to-date
+                                    # message for the cloud
                                     if recipient_int == 0: #0 is the default ID for the cloud. Indicates an outgoing push.
                                         try: 
-                                            dev_loc = DEVICE_DICT[sender] #looks up the location of the sender device
+                                            dev_loc = DEVICE_DICT[sender] #looks up the location of the sender device ("location" refers to priority!)
                                         except KeyError as e: 
-                                            logger.error("outgoing_push KeyError: "+str(e)) 
+                                            logger.error("Rejecting message. Sender %s is unknown: %s" % ( sender, str(e)) )
+                                            continue  # do not send message from unknown sender
                                         
                                         try:     
                                             if order==False: #indicates lifo. lifo has highest message priority
@@ -221,6 +224,7 @@ class DataCache:
                                             update_dev_dict() #this function is in NC_configuration.py
                                         
                                     #indicates an incoming push
+                                    # message for the nodecontroller
                                     elif recipient == NODE_ID:
                                         try:
                                             #An error will occur if a guestnode registers and then tries to deregister before the device dictionary has been updated
@@ -231,6 +235,7 @@ class DataCache:
                                         except Exception as e:
                                             logger.error(e)
                                             update_dev_dict()
+                                    # message for a guestnode ?
                                     else:
                                         try:
                                             dev_loc = DEVICE_DICT[recipient] #looks up the location of the recipient device
