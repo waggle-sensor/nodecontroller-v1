@@ -138,7 +138,7 @@ class DataCache:
                     data = client_sock.recv(2048) #arbitrary
                     if logger.isEnabledFor(logging.DEBUG):
                         if data != '|o':
-                         logger.debug('Server received: %s' % (data))
+                            logger.debug('(DataCache) received data.')
                     if not data:
                         break
                     else:
@@ -172,7 +172,7 @@ class DataCache:
                                 if msg == None: 
                                     msg = 'False'
                                 if msg !='False':
-                                    logger.debug("send message to cloud: %s" % (msg))
+                                    logger.debug("send message to cloud, length %d" % (len(msg)))
                                 try:
                                     client_sock.sendall(msg) #sends the message
                                 except Exception as e:
@@ -299,7 +299,7 @@ class DataCache:
             :param int flush: Value indicating if the data cache needs to flush the buffers into files.
             :param list incoming_available_queues: A list of tuples that specify the location of incoming queues that currently have stored messages
         """ 
-        logger.debug("outgoing_push: dev=%d msg_p=%d msg=%s" % (dev, msg_p, msg))
+        logger.debug("outgoing_push: dev=%d msg_p=%d" % (dev, msg_p))
         #If the msg counter is greater than or equal to the available memory, flush the outgoing queues into a file
         if self.msg_counter>= AVAILABLE_MEM:
         
