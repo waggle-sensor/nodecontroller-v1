@@ -225,7 +225,7 @@ class DataCache:
                                         
                                     #indicates an incoming push
                                     # message for the nodecontroller
-                                    elif recipient == NODE_ID:
+                                    elif recipient == NODE_ID or recipient_int == 1:
                                         try:
                                             #An error will occur if a guestnode registers and then tries to deregister before the device dictionary has been updated
                                             #This may be unlikely but is still possible
