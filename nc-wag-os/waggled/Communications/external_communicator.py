@@ -181,7 +181,7 @@ def pika_pull():
 #pulls the message from the cloud and puts it into incoming queue 
 def callback(ch, method, properties, body):
     comm = external_communicator()
-    logger.debug('Callback received message from cloud: '+ body)
+    logger.debug('Callback received message from cloud, length %d ' % (len(body)))
     comm.incoming.put(body) 
     ch.basic_ack(delivery_tag=method.delivery_tag) #RabbitMQ will not delete message until ack received
                 
