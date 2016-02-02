@@ -7,7 +7,7 @@ sys.path.append('../../../')
 from waggle_protocol.protocol.PacketHandler import *
 sys.path.append('../NC/')
 from NC_configuration import *
-
+from crcmod.predefined import mkCrcFun
 
 #logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s', stream=sys.stdout)
 logger = logging.getLogger(__name__)
@@ -167,6 +167,46 @@ def internal_client_pull():
     client_sock.close()
     
 
+
+
+# TODO move into protocol library
+"""
+    (bytearray header) Sets header field in an bytearray. Value also has to be an bytearray.
+"""
+def set_header_field(header_ba, field, value):
+    try:
+        field_position = HEADER_LOCATIONS[field]
+        field_length = HEADER_BYTELENGTHS[field]
+    except Exception as e:
+        logger.error("Field name unknown: %s" % (str(e)) )
+        raise
+    
+    if len(value) != field_length:
+        logger.error("data length: %d bytes, but field is of szie: %d bytes (field: %s)" % (len(value), field_length, field) )
+        
+    
+    if (len(header_ba) != HEADER_LENGTH):
+        
+    
+    for (i = 0 ; i < field_position; ++i) {
+        header_ba[field_position+i] = value[i]
+    }
+
+"""
+    (bytearray header) Calculates the header crc and accordingly sets the crc-16 field.
+"""
+def write_header_crc(header_ba):
+    
+    #TODO: make crc16 a global function
+    crc16 = mkCrcFun('crc-16')
+    
+    new_crc = crc16(str(header_bytearray[:crc16_position]))
+    
+    new_crc_packed = _bin_pack(new_crc,HEADER_BYTELENGTHS['crc-16'])
+
+    set_header_field(header_bytearray, 'crc-16', new_crc_packed)
+
+
 """ 
     Server process that listens for connections from GNs. Once a GN connects and sends the message, the push server puts the message into the DC_Push queue, 
     where it will be pulled out and sent by the push client and pushed into the data cache.
@@ -194,6 +234,11 @@ def push_server():
       logger.info( "(server.listen) Socket Error: %s\n" % msg )
       return 1
       
+    
+    nc_node_id_packed   = _bin_pack(nodeid_hexstr2int(NODE_ID),s_uniqid_length)
+     
+    
+    
     logger.info('Internal push server process started...\n')
 
     while True:
@@ -207,8 +252,26 @@ def push_server():
                     client_sock.sendall('Hi') #NC sends 'Hi' to verify that it is the NC that the guest node is looking for.
                     client_sock.sendall(HOSTNAME)#sends unique ID to GN can send messages to NC if needed
                 else:
+                    # push data from guest node into data cache.
+                    
+                    # here we inject the nodecontroller ID as sender, overwriting the guestnode ID.
+                    
+                    # extract header so we can modify it
+                    header_bytearray = bytearray(data[:HEADER_LENGTH])
+                    
+                    # TODO: check crc
+                    
+                    # overwrite sender
+                    set_header_field(header_bytearray, 's_uniqid', nc_node_id_packed)
+                    
+                    #recompute header crc
+                    write_header_crc(header_bytearray)
+                    
+                    # concatenate new header with old data
+                    new_data = str(header_bytearray)+data[HEADER_LENGTH:]
+                    
                     logger.debug("Sending data from GN into DC-push")
-                    comm.DC_push.put(data)
+                    comm.DC_push.put(new_data)
                 
             except KeyboardInterrupt, k:
                 logger.info("Internal push server shutting down.")
