@@ -85,8 +85,8 @@ def pika_push():
             
         while True:
             
-            while comm.outgoing.empty(): #sleeps until there are messages to send
-                time.sleep(1)
+            #while comm.outgoing.empty(): #sleeps until there are messages to send
+            #    time.sleep(1)
             
             msg = comm.outgoing.get() # gets the first item in the outgoing queue
             logger.debug('Pika_push: sending message to cloud.')
