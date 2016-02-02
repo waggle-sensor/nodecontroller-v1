@@ -155,9 +155,8 @@ def set_header_field(header_ba, field, value):
         logger.error(str(e))
         raise e
         
-    for (i = 0 ; i < field_position; ++i) {
+    for i in range(field_position:
         header_ba[field_position+i] = value[i]
-    }
     
     
 
