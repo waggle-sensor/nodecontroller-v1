@@ -3,7 +3,8 @@ import time, serial, sys, datetime, os, random
 sys.path.append('../../../')
 from waggle_protocol.utilities import packetmaker
 sys.path.append('../Communications/')
-from internal_communicator import send
+sys.path.append('../DataCache/')
+from send2dc import send
 
 
 

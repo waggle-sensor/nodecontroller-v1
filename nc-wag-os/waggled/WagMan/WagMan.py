@@ -1,8 +1,8 @@
 import collections, time, datetime, serial, sys
 sys.path.append('../../../')
 from waggle_protocol.utilities import packetmaker
-sys.path.append('../Communications/')
-from internal_communicator import send
+sys.path.append('../DataCache/')
+from send2dc import send
 
 """
     This is where parameters for SysMon are defined and communication between node controller and SysMon occurs. 
