@@ -184,6 +184,11 @@ def push_server():
                     # here we inject the nodecontroller ID as sender, overwriting the guestnode ID.
                     
                     # extract header so we can modify it
+                    
+                    if len(data) < HEADER_LENGTH:
+                        logger.error("data fragment shorter than HEADER_LENGTH")
+                        break
+                    
                     header_bytearray = bytearray(data[:HEADER_LENGTH])
                     
                     # TODO: check crc
@@ -191,13 +196,15 @@ def push_server():
                     # overwrite sender
                     try:
                         set_header_field(header_bytearray, 's_uniqid', nc_node_id_packed)
-                    except:
+                    except Exception as e:
+                        logger.error("set_header_field failed: %s" % (str(e)))
                         break
                         
                     #recompute header crc
                     try:
                         write_header_crc(header_bytearray)
-                    except:
+                    except Exception as e:
+                        logger.error("write_header_crc failed: %s" % (str(e)))
                         break
                         
                     # concatenate new header with old data
