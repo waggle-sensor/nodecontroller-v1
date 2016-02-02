@@ -182,15 +182,20 @@ def set_header_field(header_ba, field, value):
         raise
     
     if len(value) != field_length:
-        logger.error("data length: %d bytes, but field is of szie: %d bytes (field: %s)" % (len(value), field_length, field) )
-        
+        e = ValueError("data length: %d bytes, but field is of size: %d bytes (field: %s)" % (len(value), field_length, field) )
+        logger.error(str(e))
+        raise e
     
     if (len(header_ba) != HEADER_LENGTH):
+        e = ValueError("header length is not correct: %d vs HEADER_LENGTH=%d" %(len(header_ba), HEADER_LENGTH) )
+        logger.error(str(e))
+        raise e
         
-    
     for (i = 0 ; i < field_position; ++i) {
         header_ba[field_position+i] = value[i]
     }
+    
+    
 
 """
     (bytearray header) Calculates the header crc and accordingly sets the crc-16 field.
@@ -262,11 +267,17 @@ def push_server():
                     # TODO: check crc
                     
                     # overwrite sender
-                    set_header_field(header_bytearray, 's_uniqid', nc_node_id_packed)
-                    
+                    try:
+                        set_header_field(header_bytearray, 's_uniqid', nc_node_id_packed)
+                    except:
+                        break
+                        
                     #recompute header crc
-                    write_header_crc(header_bytearray)
-                    
+                    try:
+                        write_header_crc(header_bytearray)
+                    except:
+                        break
+                        
                     # concatenate new header with old data
                     new_data = str(header_bytearray)+data[HEADER_LENGTH:]
                     
