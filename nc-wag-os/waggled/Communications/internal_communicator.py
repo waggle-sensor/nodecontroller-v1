@@ -162,7 +162,7 @@ def push_server():
       return 1
       
     
-    nc_node_id_packed   = _bin_pack(nodeid_hexstr2int(NODE_ID),s_uniqid_length)
+    nc_node_id_packed = bin_pack(nodeid_hexstr2int(NODE_ID),s_uniqid_length)
      
     
     
