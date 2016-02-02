@@ -133,47 +133,6 @@ def internal_client_pull():
 
 
 
-# TODO move into protocol library
-"""
-    (bytearray header) Sets header field in an bytearray. Value also has to be an bytearray.
-"""
-def set_header_field(header_ba, field, value):
-    try:
-        field_position = HEADER_LOCATIONS[field]
-        field_length = HEADER_BYTELENGTHS[field]
-    except Exception as e:
-        logger.error("Field name unknown: %s" % (str(e)) )
-        raise
-    
-    if len(value) != field_length:
-        e = ValueError("data length: %d bytes, but field is of size: %d bytes (field: %s)" % (len(value), field_length, field) )
-        logger.error(str(e))
-        raise e
-    
-    if (len(header_ba) != HEADER_LENGTH):
-        e = ValueError("header length is not correct: %d vs HEADER_LENGTH=%d" %(len(header_ba), HEADER_LENGTH) )
-        logger.error(str(e))
-        raise e
-        
-    for i in range(field_position):
-        header_ba[field_position+i] = value[i]
-    
-    
-
-"""
-    (bytearray header) Calculates the header crc and accordingly sets the crc-16 field.
-"""
-def write_header_crc(header_ba):
-    
-    #TODO: make crc16 a global function
-    crc16 = mkCrcFun('crc-16')
-    
-    new_crc = crc16(str(header_bytearray[:crc16_position]))
-    
-    new_crc_packed = _bin_pack(new_crc,HEADER_BYTELENGTHS['crc-16'])
-
-    set_header_field(header_bytearray, 'crc-16', new_crc_packed)
-
 
 """ 
     Server process that listens for connections from GNs. Once a GN connects and sends the message, the push server puts the message into the DC_Push queue, 
