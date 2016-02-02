@@ -9,9 +9,9 @@ sys.path.append('../../../')
 from waggle_protocol.utilities import packetmaker
 sys.path.append('../NC/')
 from NC_configuration import *
-sys.path.append('../NC/')
-from internal_communicator import send
 
+sys.path.append('../DataCache/')
+from send2dc import send
 
 
 #logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', stream=sys.stdout)
