@@ -6,8 +6,11 @@ from waggle_protocol.protocol.PacketHandler import *
 sys.path.append('../../../')
 from waggle_protocol.utilities import packetmaker
 sys.path.append('../Communications/')
-from internal_communicator import send
 from NC_configuration import conf
+
+sys.path.append('../DataCache/')
+from send2dc import send
+
 
 
 logger = logging.getLogger(__name__)
