@@ -93,6 +93,7 @@ class DataCache:
         #make outgoing buffer 
         self.outgoing_bffr = self.make_bffr(len(PRIORITY_ORDER))
     
+        socket_file = '/tmp/Data_Cache_server'
         #the main server loop
         while True:
         
@@ -100,13 +101,13 @@ class DataCache:
             while self.flush ==1:
                 logger.debug("Cache is in flush state")
                 time.sleep(1)
-            if os.path.exists('/tmp/Data_Cache_server'): #checking for the file
-                os.remove('/tmp/Data_Cache_server')
+            if os.path.exists(socket_file): #checking for the file
+                os.remove(socket_file)
             logger.debug("Opening server socket...")
         
             #creates a UNIX, STREAMing socket
             server_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) # TODO should this not be a class variable ?
-            server_sock.bind('/tmp/Data_Cache_server') #binds to this file path
+            server_sock.bind(socket_file) #binds to this file path
         
             #become a server socket and start listening for clients
             server_sock.listen(6)
@@ -117,7 +118,7 @@ class DataCache:
                     logger.debug('Server flush!')
                 
                     server_sock.close()
-                    os.remove('/tmp/Data_Cache_server')
+                    os.remove(socket_file)
                     logger.debug('Server flush closed socket')
                 
                     break
