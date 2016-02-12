@@ -14,6 +14,7 @@ Alternatively you can do a git clone on any Linux:
 ```bash
 mkdir -p /usr/lib/waggle/
 cd /usr/lib/waggle/
+git clone https://github.com/waggle-sensor/waggle_image.git
 git clone --recursive https://github.com/waggle-sensor/nodecontroller.git
 cd nodecontroller
 ```
@@ -47,6 +48,7 @@ docker run -ti --name nc --rm -v ${HOME}/git/nodecontroller/:/usr/lib/waggle/nod
 The environment variable RABBITMQ_HOST can be used to tell the node controller where to send the sensor data. Run the configure script.
 
 ```bash
+
 cd /usr/lib/waggle/nodecontroller/
 RABBITMQ_HOST=<IP> ./configure
 ```
