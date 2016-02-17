@@ -5,6 +5,8 @@ RUN apt-get update ; apt-get install -y git
 
 ADD . /usr/lib/waggle/nodecontroller/
 
+RUN cd /usr/lib/waggle/ && git clone https://github.com/waggle-sensor/waggle_image.git
+
 RUN cd /usr/lib/waggle/nodecontroller/ && ./scripts/install_dependencies.sh
 
 WORKDIR /usr/lib/waggle/nodecontroller/
