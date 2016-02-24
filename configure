@@ -100,17 +100,25 @@ mkdir -p /var/log/comms
 # add init.d scripts
 
 #missing: heartbeat_start.sh
-for script in communications.sh data_cache.sh waggle_core_sense.sh WagMan_start.sh heartbeat_setup_start.sh  ; do
-  ln -sf  ${waggled_dir}/init.d/${script} /etc/init.d/
-  update-rc.d communications.sh defaults
+#for script in communications.sh data_cache.sh waggle_core_sense.sh WagMan_start.sh heartbeat_setup_start.sh  ; do
+#  ln -sf  ${waggled_dir}/init.d/${script} /etc/init.d/
+#  update-rc.d communications.sh defaults
+#done
+
+for script in waggle_communications.conf waggle_data_cache.conf waggle_wagman.conf ; do
+    ln -sf ${waggled_dir}/supervisor/${script} /etc/supervisor/conf.d/${script}
 done
+
+
+# TODO: with newer OS start using systemd
+service supervisor restart
+
+
 
 
 #creates udev rule to attach Wagman to /dev/wagman
 ln -sf  ${waggled_dir}/init.d/99-usb-serial.rules /etc/udev/rules.d/
 
-#cd ${waggled_dir}/WagMan
-#chmod +x heartbeat_setup.sh
 
 
 rm -f /usr/local/bin/waggle 
