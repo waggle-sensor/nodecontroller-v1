@@ -13,6 +13,9 @@ from glob import glob
 import logging, logging.handlers
 import signal
 
+from waggle_protocol.utilities.pidfile import PidFile, AlreadyRunning
+
+
 
 """ 
     The Data Cache stores messages between the nodes and the cloud. The main function is a unix socket server. The internal and external facing communication classes connect to
@@ -630,10 +633,23 @@ if __name__ == "__main__":
    
         
     
+    try:
+        
+        with PidFile(pid_file):
+            dc = DataCache()
     
-    dc = DataCache()
-    
-    dc.run()
+            dc.run()
+            
+    except AlreadyRunning as e:
+        logger.error(str(e))
+        logger.error("Please use supervisorctl to start and stop this script.")    
+    except KeyboardInterrupt, k:
+        #terminate the external communication processes
+        for name, subhash in name2func.iteritems():
+            logger.info( '(KeyboardInterrupt) shutting down ' + name)
+            name2process[name].terminate()
+    except Exception as e:
+        logger.error("Error (%s): %s" % ( str(type(e)), str(e)))
   
     #lists keeping track of which queues currently have messages stored in them
     

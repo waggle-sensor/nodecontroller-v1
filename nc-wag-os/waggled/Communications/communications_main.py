@@ -9,6 +9,12 @@ from external_communicator import *
 from internal_communicator import *
 import urllib2
 
+from waggle_protocol.utilities.pidfile import PidFile, AlreadyRunning
+
+
+
+
+
 #pika is a bit too verbose...
 logging.getLogger('pika').setLevel(logging.ERROR)
 
@@ -256,64 +262,72 @@ if __name__ == "__main__":
     root_logger.addHandler(handler)
     
     
-    get_certificates()
-        
-    get_queuename()
     
-    
-    logger.debug('QUEUENAME: "' + conf['QUEUENAME'] + '"')
    
     try:
         
-        name2process={}
+        with PidFile(pid_file):
         
-        name2func = dict(external_communicator_name2func.items() + internal_communicator_name2func.items())
+            get_certificates()
         
-        for name, function in name2func.iteritems():
-            new_process = multiprocessing.Process(target=function, name=name)
-            new_process.start()
-            name2process[name]=new_process
-            logger.info(name+' has started.')
+            get_queuename()
+    
+    
+            logger.debug('QUEUENAME: "' + conf['QUEUENAME'] + '"')
         
-        time.sleep(3)
+            name2process={}
+        
+            name2func = dict(external_communicator_name2func.items() + internal_communicator_name2func.items())
+        
+            for name, function in name2func.iteritems():
+                new_process = multiprocessing.Process(target=function, name=name)
+                new_process.start()
+                name2process[name]=new_process
+                logger.info(name+' has started.')
+        
+            time.sleep(3)
         
   
         
         
-        while True:
+            while True:
             
-            for name, function in name2func.iteritems():
-                if not name2process[name].is_alive():
-                    logger.warning( 'Process "%s" has crashed. Restarting...' % (name) )
-                    new_process = multiprocessing.Process(target=function, name=name)
-                    new_process.start()
-                    name2process[name]=new_process
-                    logger.info(name+' has started.')
+                for name, function in name2func.iteritems():
+                    if not name2process[name].is_alive():
+                        logger.warning( 'Process "%s" has crashed. Restarting...' % (name) )
+                        new_process = multiprocessing.Process(target=function, name=name)
+                        new_process.start()
+                        name2process[name]=new_process
+                        logger.info(name+' has started.')
                    
                 
                 
-            time.sleep(3)
+                time.sleep(3)
 
-        #terminate the external communication processes
-        for name, subhash in name2func.iteritems():
-            logger.info( 'shutting down ' + name)
-            name2process[name].terminate()
+            #terminate the external communication processes
+            for name, subhash in name2func.iteritems():
+                logger.info( 'shutting down ' + name)
+                name2process[name].terminate()
        
       
-        logger.info( 'External communications shut down.')
+            logger.info( 'External communications shut down.')
 
         
-        internal_push_client.terminate()
-        internal_pull_client.terminate()
-        logger.info( 'Internal communications shut down.' )
+            internal_push_client.terminate()
+            internal_pull_client.terminate()
+            logger.info( 'Internal communications shut down.' )
        
                 
-        
+    except AlreadyRunning as e:
+        logger.error(str(e))
+        logger.error("Please use supervisorctl to start and stop this script.")    
     except KeyboardInterrupt, k:
         #terminate the external communication processes
         for name, subhash in name2func.iteritems():
             logger.info( '(KeyboardInterrupt) shutting down ' + name)
             name2process[name].terminate()
+    except Exception as e:
+        logger.error("Error (%s): %s" % ( str(type(e)), str(e)))
        
 
         
