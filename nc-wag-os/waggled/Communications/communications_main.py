@@ -9,6 +9,7 @@ from external_communicator import *
 from internal_communicator import *
 import urllib2
 
+sys.path.append('../../..')
 from waggle_protocol.utilities.pidfile import PidFile, AlreadyRunning
 
 
@@ -30,6 +31,7 @@ logging.getLogger('internal_communicator').setLevel(loglevel)
 
 LOG_FILENAME="/var/log/waggle/communications.log"
 LOG_FORMAT='%(asctime)s - %(name)s - %(levelname)s - line=%(lineno)d - %(message)s'
+pid_file = "/var/run/waggle/communications.pid"
 
 #logging.basicConfig(level=loglevel, format=, filename=LOG_FILENAME)
 #logging.basicConfig(level=loglevel, format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s', stream=sys.stdout)

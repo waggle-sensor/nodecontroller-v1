@@ -28,7 +28,7 @@ from waggle_protocol.utilities.pidfile import PidFile, AlreadyRunning
 loglevel=logging.DEBUG
 LOG_FILENAME="/var/log/waggle/data_cache_logging.log"
 LOG_FORMAT='%(asctime)s - %(name)s - %(levelname)s - line=%(lineno)d - %(message)s'
-
+pid_file = "/var/run/waggle/data_cache.pid"
 
 logger = logging.getLogger("py")
 logger.setLevel(logging.DEBUG)
