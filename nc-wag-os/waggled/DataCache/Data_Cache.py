@@ -74,6 +74,9 @@ signal.signal(signal.SIGTERM, signal_term_handler)
 class DataCache:
     def __init__(self):
         #self.data = []
+        
+        self.socket_file = '/tmp/Data_Cache_server'
+        
         self.incoming_bffr = []
 
         self.outgoing_bffr = []
@@ -96,7 +99,7 @@ class DataCache:
         #make outgoing buffer 
         self.outgoing_bffr = self.make_bffr(len(PRIORITY_ORDER))
     
-        socket_file = '/tmp/Data_Cache_server'
+        
         #the main server loop
         while True:
         
@@ -104,13 +107,13 @@ class DataCache:
             while self.flush ==1:
                 logger.debug("Cache is in flush state")
                 time.sleep(1)
-            if os.path.exists(socket_file): #checking for the file
-                os.remove(socket_file)
+            if os.path.exists(self.socket_file): #checking for the file
+                os.remove(self.socket_file)
             logger.debug("Opening server socket...")
         
             #creates a UNIX, STREAMing socket
             server_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) # TODO should this not be a class variable ?
-            server_sock.bind(socket_file) #binds to this file path
+            server_sock.bind(self.socket_file) #binds to this file path
         
             #become a server socket and start listening for clients
             server_sock.listen(6)
@@ -121,7 +124,7 @@ class DataCache:
                     logger.debug('Server flush!')
                 
                     server_sock.close()
-                    os.remove(socket_file)
+                    os.remove(self.socket_file)
                     logger.debug('Server flush closed socket')
                 
                     break
@@ -260,11 +263,11 @@ class DataCache:
                     logger.info("Data Cache server shutting down...")
                     break
             #server_sock.close()
-            #os.remove('/tmp/Data_Cache_server')
+            #os.remove(self.socket_file)
             #break
-        if os.path.exists('/tmp/Data_Cache_server'): #checking for the file for a smooth shutdown
+        if os.path.exists(self.socket_file): #checking for the file for a smooth shutdown
             server_sock.close()
-            os.remove('/tmp/Data_Cache_server')
+            os.remove(self.socket_file)
 
 
     def stop(self):
@@ -283,10 +286,10 @@ class DataCache:
             It connects to the server socket of the data cache to request a flush. 
         """
          #connect to DC and send 'Flush'
-        if os.path.exists('/tmp/Data_Cache_server'):
+        if os.path.exists(self.socket_file):
             client_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             try:
-                client_sock.connect('/tmp/Data_Cache_server')
+                client_sock.connect(self.socket_file)
                 client_sock.sendall('Flush')
                 client_sock.close()
             except Exception as e:
