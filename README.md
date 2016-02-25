@@ -78,16 +78,33 @@ The certificate files have to be created by the certificate authority on the bee
 
 ## Services
 
-For an overview of all waggle services run the script nodecontroller.
+At the moment waggle service are started by supervisor, a simple process control system. The configure script should set everything up that the service will be started automatically.
+
+Status of waggle services:
 ```bash
-nodecontroller
+supervisorctl status
 ```
 
-Individual services can be controlled like this.
-```bash
-/etc/init.d/data_cache.sh start
-/etc/init.d/communications.sh start
+The result could look like this:
+```text
+waggle_communications            RUNNING    pid 7241, uptime 3:30:13
+waggle_data_cache                RUNNING    pid 7243, uptime 3:30:13
+waggle_plugin_manager            STOPPED    Feb 25 05:27 PM
+waggle_wagman                    RUNNING    pid 7242, uptime 3:30:13
 ```
+
+
+Stop a service:
+```bash
+supervisorctl stop waggle_communications
+```
+
+Start a service:
+```bash
+supervisorctl start waggle_communications
+```
+
+
 
 ## Simple CPU temperature sensor
 
