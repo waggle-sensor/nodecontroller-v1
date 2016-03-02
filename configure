@@ -37,7 +37,13 @@ fi
 mkdir -p /etc/waggle/
 
 # set node controller IP for "internal" network
-echo "10.31.81.10" > /etc/waggle/NCIP
+if [ ! -e /etc/waggle/NCIP ] ; then
+  echo "10.31.81.10" > /etc/waggle/NCIP
+fi
+
+if [ ! -e /etc/waggle/node_controller_host ] ; then
+  echo "10.31.81.10" > /etc/waggle/node_controller_host
+fi
 
 if [ ! -e /etc/waggle/node_id ] ; then
  source /usr/lib/waggle/waggle_image/create_node_id.sh
@@ -51,8 +57,9 @@ if [ "${NODE_ID}x" == "x" ] ; then
 fi
 
 # this is only for backwards compatibility with PacketHandler.py
-echo ${NODE_ID} > /etc/waggle/hostname
-
+if [ ! -e /etc/waggle/hostname ] ; then
+  echo ${NODE_ID} > /etc/waggle/hostname
+fi
 
 if [ ${RABBITMQ_HOST}x == "x" ] ; then
   if [ -e /etc/waggle/server_host ] ; then
@@ -111,8 +118,7 @@ done
 
 
 # TODO: with newer OS start using systemd
-service supervisor restart
-
+/etc/init.d/supervisor restart
 
 
 
