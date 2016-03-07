@@ -286,14 +286,19 @@ class DataCache:
 
 
     def stop(self):
-        try:
-            logger.debug('Flushing data cache....')
-            self.external_flush()
+        DC_flush(incoming_available_queues, outgoing_available_queues)
+        
+        logger.info("DC has been flushed. Process will stop now.")
+        sys.exit(0)   
+        
+        #try:
+        #    logger.debug('Flushing data cache....')
+        #    self.external_flush()
             #The data cache needs time to flush the messages before stopping the process
             #time.sleep(5)
             #Daemon.stop(self) 
-        except Exception as e:
-            logger.error(e)
+        #except Exception as e:
+        #   logger.error(e)
 
     def external_flush(self):
         """
