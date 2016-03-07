@@ -93,10 +93,13 @@ class DataCache:
         self.outgoing_cur_file = '' #empty string if there are no files
         #If the data cache flushed messages to files, this stores a list of current files for each device 
         self.incoming_cur_file =  ['', '', '', '', ''] #empty string if there are no files
+        
+        self.outgoing_available_queues = list() 
+        self.incoming_available_queues = list()
     
     def run(self):
-        outgoing_available_queues = list() 
-        incoming_available_queues = list() 
+        outgoing_available_queues = self.outgoing_available_queues
+        incoming_available_queues = self.incoming_available_queues 
 
     
         #Each buffer is a matrix of queues for organization and indexing purposes.
@@ -160,7 +163,7 @@ class DataCache:
                             #flush all stored messages into files
                             logger.debug('External flush request made.')
                         
-                            DC_flush(incoming_available_queues, outgoing_available_queues)
+                            self.DC_flush(incoming_available_queues, outgoing_available_queues)
                             
                             
                             if stop_process:
@@ -286,7 +289,7 @@ class DataCache:
 
 
     def stop(self):
-        self.DC_flush(incoming_available_queues, outgoing_available_queues)
+        self.DC_flush(self.incoming_available_queues, self.outgoing_available_queues)
         
         logger.info("DC has been flushed. Process will stop now.")
         sys.exit(0)   
@@ -336,7 +339,7 @@ class DataCache:
         if self.msg_counter>= AVAILABLE_MEM:
         
             #Calls the data cache flush method and passes in the neccessary params
-            DC_flush(incoming_available_queues, outgoing_available_queues) #Flushes all messages into a file
+            self.DC_flush(incoming_available_queues, outgoing_available_queues) #Flushes all messages into a file
             self.msg_counter = 0 #resets the message counter after all buffers have been saved to a file
     
         #Increments the self.msg_counter by 1 each time a message is pushed into the data cache
