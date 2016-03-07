@@ -274,7 +274,7 @@ class DataCache:
                     
                 except KeyboardInterrupt, k:
                     logger.info("Data Cache server shutting down...")
-                    break
+                    raise k
             #server_sock.close()
             #os.remove(self.socket_file)
             #break
