@@ -289,6 +289,7 @@ class DataCache:
 
 
     def stop(self):
+        stop_process = True
         self.DC_flush(self.incoming_available_queues, self.outgoing_available_queues)
         
         logger.info("DC has been flushed. Process will stop now.")
@@ -576,9 +577,10 @@ class DataCache:
                     else:
                         #write the message to the file
                         f.write(msg + '\n')
-                    
-            self.flush = 0 #restart server
-            logger.debug('Data cache restarted')
+                        
+            if not stop_process:        
+                self.flush = 0 #restart server
+                logger.debug('Data cache restarted')
         except Exception as e:
             logger.error(e)
 
