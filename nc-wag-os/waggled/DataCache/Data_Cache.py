@@ -286,7 +286,7 @@ class DataCache:
 
 
     def stop(self):
-        DC_flush(incoming_available_queues, outgoing_available_queues)
+        self.DC_flush(incoming_available_queues, outgoing_available_queues)
         
         logger.info("DC has been flushed. Process will stop now.")
         sys.exit(0)   
