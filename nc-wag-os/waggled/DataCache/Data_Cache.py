@@ -661,9 +661,10 @@ if __name__ == "__main__":
         logger.error("Please use supervisorctl to start and stop this script.")    
     except KeyboardInterrupt, k:
         #terminate the external communication processes
-        for name, subhash in name2func.iteritems():
-            logger.info( '(KeyboardInterrupt) shutting down ' + name)
-            name2process[name].terminate()
+        #for name, subhash in name2func.iteritems():
+        #    logger.info( '(KeyboardInterrupt) shutting down ' + name)
+        #    name2process[name].terminate()
+        logger.info('exiting...')
     except Exception as e:
         logger.error("Error (%s): %s" % ( str(type(e)), str(e)))
   
