@@ -45,9 +45,11 @@ handler.setFormatter(formatter)
 root_logger.handlers = []
 root_logger.addHandler(handler)
 
-
+dc = None
 
    #dummy variables. These buffers are created when the data cache starts.
+
+stop_process = False
 
 
 
@@ -55,8 +57,12 @@ root_logger.addHandler(handler)
     
 def signal_term_handler(signal, frame):
     logger.debug('got SIGTERM')
-    #stop()
-    sys.exit(0)
+    
+    if dc:
+        logger.debug('execute dc.stop()')
+        dc.stop()
+    # Can't exit here, the flush fiunction has to exit using variable "stop_process" 
+    #sys.exit(0)
  
 # this would interrupt IO. Need to run everything in separate thread/process 
 def signal_info_handler(signal, frame):
@@ -155,6 +161,13 @@ class DataCache:
                             logger.debug('External flush request made.')
                         
                             DC_flush(incoming_available_queues, outgoing_available_queues)
+                            
+                            
+                            if stop_process:
+                                logger.info("DC has been flushed. Process will stop now.")
+                                sys.exit(0)
+                            
+                                
                         #Indicates that it is a pull request ( somebody want data from the DC)
                         elif data[0] == '|': #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
                             data, dest = data.split('|', 1) #splits to get either 'o' for outgoing request or the device location for incoming request
@@ -275,7 +288,7 @@ class DataCache:
             logger.debug('Flushing data cache....')
             self.external_flush()
             #The data cache needs time to flush the messages before stopping the process
-            time.sleep(5)
+            #time.sleep(5)
             #Daemon.stop(self) 
         except Exception as e:
             logger.error(e)
