@@ -88,8 +88,10 @@ def pika_push():
             #while comm.outgoing.empty(): #sleeps until there are messages to send
             #    time.sleep(1)
             
+            time_0 = time.time()
             msg = comm.outgoing.get() # gets the first item in the outgoing queue
-            logger.debug('Pika_push: sending message to cloud.')
+            time_1 = time.time()
+            logger.debug('Pika_push: sending message to cloud. (waited %d seconds)' % (time_1 - time_0))
             
             try:
                
@@ -102,11 +104,13 @@ def pika_push():
                 time.sleep(5)
                 break #need to break this loop to reconnect
             except Exception as e:
-                logger.error("Pika push encounterd some weired error: %s" % (str(e)))
+                logger.error("Pika push encounterd an unexpected error: %s" % (str(e)))
                 comm.cloud_connected.value = 0
                 time.sleep(5)
                 break
-        
+            time_2 = time.time()
+            logger.debug('Pika_push: sending message took %d seconds' % (time_2 - time_1))
+            
         if connection:        
             connection.close(0)
 
