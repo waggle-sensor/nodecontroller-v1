@@ -25,12 +25,12 @@ HEADER=`head -n 1 /media/boot/boot.ini`
 
 DEVICE=""
 
-if [ ${HEADER}x -eq "ODROIDXU-UBOOT-CONFIGx" ] ; then
+if [ ${HEADER}x == "ODROIDXU-UBOOT-CONFIGx" ] ; then
   if [ -e /media/boot/exynos5422-odroidxu3.dtb ] ; then
     # XU3 and XU4 are identical
     DEVICE="XU3"
   fi
-elif [ ${HEADER}x -eq "ODROIDC-UBOOT-CONFIGx" ] ; then
+elif [ ${HEADER}x == "ODROIDC-UBOOT-CONFIGx" ] ; then
 
   DEVICE="C"
 
@@ -38,16 +38,16 @@ elif [ ${HEADER}x -eq "ODROIDC-UBOOT-CONFIGx" ] ; then
 fi
 
 
-if [ ${DEVICE}x -eq "x" ] ; then
+if [ ${DEVICE}x == "x" ] ; then
   echo "Device not recognized"
   exit 1
 fi 
 
 
-if [ ${DEVICE}x -eq "XU4" ] ; then
+if [ ${DEVICE}x == "XU4" ] ; then
   GPIO_EXPORT=173
   PIN=4
-elif [ ${DEVICE}x -eq "C" ] ; then
+elif [ ${DEVICE}x == "C" ] ; then
   GPIO_EXPORT=205
   PIN=3
 else
