@@ -44,7 +44,7 @@ if [ ${DEVICE}x == "x" ] ; then
 fi 
 
 
-if [ ${DEVICE}x == "XU4" ] ; then
+if [ ${DEVICE}x == "XU3" ] ; then
   GPIO_EXPORT=173
   PIN=4
 elif [ ${DEVICE}x == "C" ] ; then
