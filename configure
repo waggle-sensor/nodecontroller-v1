@@ -117,15 +117,7 @@ for script in waggle_communications.conf waggle_data_cache.conf waggle_wagman.co
 done
 
 
-# TODO: with newer OS start using systemd
-/etc/init.d/supervisor restart
-
-
-
 #creates udev rule to attach Wagman to /dev/wagman
 ln -sf  ${waggled_dir}/init.d/99-usb-serial.rules /etc/udev/rules.d/
 
 
-
-rm -f /usr/local/bin/waggle 
-ln -s ${waggle_dir}/scripts/waggle.py /usr/local/bin/waggle
