@@ -196,7 +196,7 @@ def get_certificates():
             CLIENT_KEY_string = html[position_rsa_priv_key_start:position_rsa_priv_key_end+len(priv_key_end)]
             CLIENT_CERT_string = html[position_priv_cert_start:position_priv_cert_end+len(end_cert)]
         
-            PORT_int = re.find("PORT=(\d+)", html_tail)
+            PORT_int = re.findall("PORT=(\d+)", html_tail)[0]
         
             logger.debug("CLIENT_KEY_FILE: "+CLIENT_KEY_string)
             logger.debug("CLIENT_CERT_FILE: "+CLIENT_CERT_string)
