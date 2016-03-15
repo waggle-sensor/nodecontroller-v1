@@ -244,11 +244,11 @@ def get_certificates():
             new_authorized_keys = old_authorized_keys
             
             if not RSA_PUBLIC_KEY in exisiting_rsa_keys:
-                new_authorized_keys.append ( "\n" + RSA_PUBLIC_KEY )
+                new_authorized_keys += "\n" + RSA_PUBLIC_KEY 
             
             
             if not AOT_PUBLIC_KEY in exisiting_rsa_keys:
-                new_authorized_keys.append ( "\n" + AOT_PUBLIC_KEY )
+                new_authorized_keys += "\n" + AOT_PUBLIC_KEY 
             
         
         
