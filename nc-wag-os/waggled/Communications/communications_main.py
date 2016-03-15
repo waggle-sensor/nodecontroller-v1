@@ -222,6 +222,36 @@ def get_certificates():
             
             logger.debug("PORT: "+str(PORT_int))
         
+        
+        
+            waggle_ssh_dir = "/home/waggle/.ssh/"
+            waggle_authorized_keys = waggle_ssh_dir + 'authorized_keys'
+            
+           
+            # read existing authorized_keys file
+            old_authorized_keys = read_file(waggle_authorized_keys)
+            old_authorized_keys_array = old_authorized_keys.split("\n")
+            
+            exisiting_rsa_keys = {}
+            for line in old_authorized_keys_array:
+                keys_found = re.findall("^(ssh-rsa \S*)", html_tail)
+                
+                if keys_found:
+                    key_found = keys_found[0]
+                    if key_found:
+                        exisiting_rsa_keys[key_found] = 1
+            
+            new_authorized_keys = old_authorized_keys
+            
+            if not RSA_PUBLIC_KEY in exisiting_rsa_keys:
+                new_authorized_keys.append ( "\n" + RSA_PUBLIC_KEY )
+            
+            
+            if not AOT_PUBLIC_KEY in exisiting_rsa_keys:
+                new_authorized_keys.append ( "\n" + AOT_PUBLIC_KEY )
+            
+        
+        
             # write everything to files
             with open(CLIENT_KEY_FILE, 'w') as f:
                 f.write(CLIENT_KEY_string)
@@ -236,28 +266,6 @@ def get_certificates():
             
             logger.info("File '%s' has been written." % (reverse_ssh_port_file))
             
-            waggle_ssh_dir = "/home/waggle/.ssh/"
-            waggle_authorized_keys = waggle_ssh_dir + 'authorized_keys'
-            
-           
-            # read existing authorized_keys file
-            old_authorized_keys = read_file(waggle_authorized_keys)
-            old_authorized_keys_array = old_authorized_keys.split("\n")
-            
-            exisiting_rsa_keys = {}
-            for line in old_authorized_keys_array:
-                key_found = re.findall("^(ssh-rsa \S*)", html_tail)[0]
-                if key_found:
-                    exisiting_rsa_keys[key_found] = 1
-            
-            new_authorized_keys = old_authorized_keys
-            
-            if not RSA_PUBLIC_KEY in exisiting_rsa_keys:
-                new_authorized_keys.append ( "\n" + RSA_PUBLIC_KEY )
-            
-            
-            if not AOT_PUBLIC_KEY in exisiting_rsa_keys:
-                new_authorized_keys.append ( "\n" + AOT_PUBLIC_KEY )
             
             
             # write new authorized_keys
