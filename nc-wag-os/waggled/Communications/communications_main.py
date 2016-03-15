@@ -234,7 +234,7 @@ def get_certificates():
             
             exisiting_rsa_keys = {}
             for line in old_authorized_keys_array:
-                keys_found = re.findall("^(ssh-rsa \S*)", html_tail)
+                keys_found = re.findall("^(ssh-rsa \S*)", line)
                 
                 if keys_found:
                     key_found = keys_found[0]
