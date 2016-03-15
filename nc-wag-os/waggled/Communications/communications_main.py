@@ -8,6 +8,7 @@ from NC_configuration import *
 from external_communicator import *
 from internal_communicator import *
 import urllib2
+import subprocess
 
 sys.path.append('../../..')
 from waggle_protocol.utilities.pidfile import PidFile, AlreadyRunning
@@ -83,9 +84,10 @@ def get_certificates():
         CA_ROOT_FILE_exists = os.path.isfile(CA_ROOT_FILE)
         CLIENT_KEY_FILE_exists = os.path.isfile(CLIENT_KEY_FILE)
         CLIENT_CERT_FILE_exists = os.path.isfile(CLIENT_CERT_FILE)
+        reverse_ssh_port_file_exists = os.path.isfile(reverse_ssh_port_file)
     
         #check if cert server is available
-        if not (CA_ROOT_FILE_exists and CLIENT_KEY_FILE_exists and CLIENT_CERT_FILE_exists):
+        if not (CA_ROOT_FILE_exists and CLIENT_KEY_FILE_exists and CLIENT_CERT_FILE_exists and reverse_ssh_port_file_exists):
         
             if (loop == 0):
                 if not CA_ROOT_FILE_exists:
@@ -94,6 +96,8 @@ def get_certificates():
                     logger.info("File '%s' not found." % (CLIENT_KEY_FILE))
                 if not CLIENT_CERT_FILE_exists:
                     logger.info("File '%s' not found." % (CLIENT_CERT_FILE))
+                if not reverse_ssh_port_file_exists:
+                    logger.info("File '%s' not found." % (reverse_ssh_port_file))
                 
             try:
                 response = urllib2.urlopen(CERT_SERVER)
@@ -193,10 +197,13 @@ def get_certificates():
             
             
         
-            CLIENT_KEY_string = html[position_rsa_priv_key_start:position_rsa_priv_key_end+len(priv_key_end)]
-            CLIENT_CERT_string = html[position_priv_cert_start:position_priv_cert_end+len(end_cert)]
+            CLIENT_KEY_string = html[position_rsa_priv_key_start:position_rsa_priv_key_end+len(priv_key_end)]+"\n"
+            CLIENT_CERT_string = html[position_priv_cert_start:position_priv_cert_end+len(end_cert)]+"\n"
         
+            # find port for reverse ssh tunnel
             PORT_int = re.findall("PORT=(\d+)", html_tail)[0]
+        
+            RSA_PUBLIC_KEY = re.findall("(ssh-rsa .*)", html_tail)[0]
         
             logger.debug("CLIENT_KEY_FILE: "+CLIENT_KEY_string)
             logger.debug("CLIENT_CERT_FILE: "+CLIENT_CERT_string)
@@ -212,6 +219,16 @@ def get_certificates():
             
             with open(reverse_ssh_port_file, 'w') as f:
                 f.write(str(PORT_int))
+            
+            waggle_ssh_dir = "/home/waggle/.ssh/"
+            waggle_authorized_keys = waggle_ssh_dir + 'authorized_keys'
+            os.makedirs(waggle_ssh_dir)    
+            with open(swaggle_authorized_keys, 'w') as f:
+                f.write(RSA_PUBLIC_KEY)
+                
+            os.chmod(waggle_authorized_keys, 0600)
+            subprocess.call(['chown', 'waggle:waggle', waggle_authorized_keys])
+            
         
             logger.info("Files '%s' and '%s' have been written" % (CLIENT_KEY_FILE, CLIENT_CERT_FILE))
 
