@@ -244,12 +244,20 @@ def get_certificates():
             
             new_authorized_keys = old_authorized_keys
             
-            if not RSA_PUBLIC_KEY in exisiting_rsa_keys:
+            change_authorized_keys = 0
+            
+            if RSA_PUBLIC_KEY in exisiting_rsa_keys:
+                logger.debug("RSA_PUBLIC_KEY already in authorized_keys")
+            else:
                 new_authorized_keys += "\n" + RSA_PUBLIC_KEY + RSA_PUBLIC_KEY_COMMENT
+                change_authorized_keys = 1
             
             
-            if not AOT_PUBLIC_KEY in exisiting_rsa_keys:
+            if AOT_PUBLIC_KEY in exisiting_rsa_keys:
+                logger.debug("AOT_PUBLIC_KEY already in authorized_keys")
+            else:
                 new_authorized_keys += "\n" + AOT_PUBLIC_KEY + ' ' + AOT_PUBLIC_KEY_COMMENT
+                change_authorized_keys = 1
             
         
         
@@ -268,19 +276,21 @@ def get_certificates():
             logger.info("File '%s' has been written." % (reverse_ssh_port_file))
             
             
-            
-            # write new authorized_keys
-            try:
-                os.makedirs(waggle_ssh_dir)
-            except:
-                pass
+            if change_authorized_keys:
+                # write new authorized_keys
+                try:
+                    os.makedirs(waggle_ssh_dir)
+                except:
+                    pass
                 
-            with open(waggle_authorized_keys, 'w') as f:
-                f.write(new_authorized_keys)
+                with open(waggle_authorized_keys, 'w') as f:
+                    f.write(new_authorized_keys)
                 
-            os.chmod(waggle_authorized_keys, 0600)
-            subprocess.call(['chown', 'waggle:waggle', waggle_authorized_keys])
-            logger.info("File '%s' has been written." % (waggle_authorized_keys))
+                os.chmod(waggle_authorized_keys, 0600)
+                subprocess.call(['chown', 'waggle:waggle', waggle_authorized_keys])
+                logger.info("File '%s' has been written." % (waggle_authorized_keys))
+            else:
+                logger.debug("no chnages needed for authorized_keys file")
         
             
             
