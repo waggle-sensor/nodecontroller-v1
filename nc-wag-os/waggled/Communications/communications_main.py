@@ -239,6 +239,7 @@ def get_certificates():
                 if keys_found:
                     key_found = keys_found[0]
                     if key_found:
+                        logger.debug("key found: %s" % (key_found))
                         exisiting_rsa_keys[key_found] = 1
             
             new_authorized_keys = old_authorized_keys
@@ -248,7 +249,7 @@ def get_certificates():
             
             
             if not AOT_PUBLIC_KEY in exisiting_rsa_keys:
-                new_authorized_keys += "\n" + AOT_PUBLIC_KEY 
+                new_authorized_keys += "\n" + AOT_PUBLIC_KEY + " AoT key"
             
         
         
