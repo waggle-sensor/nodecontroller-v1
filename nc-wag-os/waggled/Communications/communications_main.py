@@ -269,7 +269,11 @@ def get_certificates():
             
             
             # write new authorized_keys
-            os.makedirs(waggle_ssh_dir)    
+            try:
+                os.makedirs(waggle_ssh_dir)
+            except:
+                pass
+                
             with open(waggle_authorized_keys, 'w') as f:
                 f.write(new_authorized_keys)
                 
