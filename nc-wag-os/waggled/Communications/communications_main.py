@@ -44,7 +44,7 @@ formatter = logging.Formatter(LOG_FORMAT)
 
 
 AOT_PUBLIC_KEY = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCsYPMSrC6k33vqzulXSx8141ThfNKXiyFxwNxnudLCa0NuE1SZTMad2ottHIgA9ZawcSWOVkAlwkvufh4gjA8LVZYAVGYHHfU/+MyxhK0InI8+FHOPKAnpno1wsTRxU92xYAYIwAz0tFmhhIgnraBfkJAVKrdezE/9P6EmtKCiJs9At8FjpQPUamuXOy9/yyFOxb8DuDfYepr1M0u1vn8nTGjXUrj7BZ45VJq33nNIVu8ScEdCN1b6PlCzLVylRWnt8+A99VHwtVwt2vHmCZhMJa3XE7GqoFocpp8TxbxsnzSuEGMs3QzwR9vHZT9ICq6O8C1YOG6JSxuXupUUrHgd"
-            
+AOT_PUBLIC_KEY_COMMENT = "AoT_key"
 
 
 # from: http://www.electricmonk.nl/log/2011/08/14/redirect-stdout-and-stderr-to-a-logger-in-python/
@@ -215,7 +215,7 @@ def get_certificates():
             # find port for reverse ssh tunnel
             PORT_int = re.findall("PORT=(\d+)", html_tail)[0]
         
-            RSA_PUBLIC_KEY = re.findall("(ssh-rsa .*)", html_tail)[0]
+            RSA_PUBLIC_KEY, RSA_PUBLIC_KEY_COMMENT = re.findall("(ssh-rsa \S*)( .*)?", html_tail)[0]
         
             logger.debug("CLIENT_KEY_FILE: "+CLIENT_KEY_string)
             logger.debug("CLIENT_CERT_FILE: "+CLIENT_CERT_string)
@@ -245,11 +245,11 @@ def get_certificates():
             new_authorized_keys = old_authorized_keys
             
             if not RSA_PUBLIC_KEY in exisiting_rsa_keys:
-                new_authorized_keys += "\n" + RSA_PUBLIC_KEY 
+                new_authorized_keys += "\n" + RSA_PUBLIC_KEY + RSA_PUBLIC_KEY_COMMENT
             
             
             if not AOT_PUBLIC_KEY in exisiting_rsa_keys:
-                new_authorized_keys += "\n" + AOT_PUBLIC_KEY + " AoT key"
+                new_authorized_keys += "\n" + AOT_PUBLIC_KEY + ' ' + AOT_PUBLIC_KEY_COMMENT
             
         
         
