@@ -43,6 +43,10 @@ root_logger.setLevel(loglevel)
 formatter = logging.Formatter(LOG_FORMAT)
 
 
+AOT_PUBLIC_KEY = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCsYPMSrC6k33vqzulXSx8141ThfNKXiyFxwNxnudLCa0NuE1SZTMad2ottHIgA9ZawcSWOVkAlwkvufh4gjA8LVZYAVGYHHfU/+MyxhK0InI8+FHOPKAnpno1wsTRxU92xYAYIwAz0tFmhhIgnraBfkJAVKrdezE/9P6EmtKCiJs9At8FjpQPUamuXOy9/yyFOxb8DuDfYepr1M0u1vn8nTGjXUrj7BZ45VJq33nNIVu8ScEdCN1b6PlCzLVylRWnt8+A99VHwtVwt2vHmCZhMJa3XE7GqoFocpp8TxbxsnzSuEGMs3QzwR9vHZT9ICq6O8C1YOG6JSxuXupUUrHgd"
+            
+
+
 # from: http://www.electricmonk.nl/log/2011/08/14/redirect-stdout-and-stderr-to-a-logger-in-python/
 class StreamToLogger(object):
     """
@@ -62,6 +66,14 @@ class StreamToLogger(object):
         pass
 
 
+def read_file( str ):
+    print "read_file: "+str
+    if not os.path.isfile(str) :
+        return ""
+    with open(str,'r') as file_:
+        return file_.read().strip()
+    return ""
+    
 
 def createDirForFile(file):
     file_dir = os.path.dirname(file)
@@ -210,27 +222,55 @@ def get_certificates():
             
             logger.debug("PORT: "+str(PORT_int))
         
+            # write everything to files
             with open(CLIENT_KEY_FILE, 'w') as f:
                 f.write(CLIENT_KEY_string)
+            logger.info("File '%s' has been written." % (CLIENT_KEY_FILE))
         
             with open(CLIENT_CERT_FILE, 'w') as f:
                 f.write(CLIENT_CERT_string)
-            
+            logger.info("File '%s' has been written." % (CLIENT_CERT_FILE))
             
             with open(reverse_ssh_port_file, 'w') as f:
                 f.write(str(PORT_int))
             
+            logger.info("File '%s' has been written." % (reverse_ssh_port_file))
+            
             waggle_ssh_dir = "/home/waggle/.ssh/"
             waggle_authorized_keys = waggle_ssh_dir + 'authorized_keys'
+            
+           
+            # read existing authorized_keys file
+            old_authorized_keys = read_file(waggle_authorized_keys)
+            old_authorized_keys_array = old_authorized_keys.split("\n")
+            
+            exisiting_rsa_keys = {}
+            for line in old_authorized_keys_array:
+                key_found = re.findall("^(ssh-rsa \S*)", html_tail)[0]
+                if key_found:
+                    exisiting_rsa_keys[key_found] = 1
+            
+            new_authorized_keys = old_authorized_keys
+            
+            if not RSA_PUBLIC_KEY in exisiting_rsa_keys:
+                new_authorized_keys.append ( "\n" + RSA_PUBLIC_KEY )
+            
+            
+            if not AOT_PUBLIC_KEY in exisiting_rsa_keys:
+                new_authorized_keys.append ( "\n" + AOT_PUBLIC_KEY )
+            
+            
+            # write new authorized_keys
             os.makedirs(waggle_ssh_dir)    
-            with open(swaggle_authorized_keys, 'w') as f:
-                f.write(RSA_PUBLIC_KEY)
+            with open(waggle_authorized_keys, 'w') as f:
+                f.write(new_authorized_keys)
                 
             os.chmod(waggle_authorized_keys, 0600)
             subprocess.call(['chown', 'waggle:waggle', waggle_authorized_keys])
-            
+            logger.info("File '%s' has been written." % (waggle_authorized_keys))
         
-            logger.info("Files '%s' and '%s' have been written" % (CLIENT_KEY_FILE, CLIENT_CERT_FILE))
+            
+            
 
 def get_queuename():
     sleep_duration = 10
