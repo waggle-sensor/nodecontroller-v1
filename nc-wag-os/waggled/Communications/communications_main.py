@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, os.path, pika, datetime, sys, logging, argparse
+import os, os.path, pika, datetime, sys, logging, argparse, re
 import logging.handlers
 sys.path.append('../NC/')
 #from multiprocessing import Process
@@ -74,6 +74,8 @@ def createDirForFile(file):
 
 
 def get_certificates():
+    reverse_ssh_port_file = '/etc/waggle/reverse_ssh_port'
+    
     
     loop=-1
     while True:
@@ -153,25 +155,63 @@ def get_certificates():
                 time.sleep(5)
                 continue
     
-            split_region = html.find("-----END RSA PRIVATE KEY-----\n-----BEGIN CERTIFICATE-----")
-            if split_region == -1:
-                logger.error("Could not parse PEM data from server.")
+    
+            priv_key_start = "-----BEGIN RSA PRIVATE KEY-----"
+            position_rsa_priv_key_start = html.find(priv_key_start)
+            if position_rsa_priv_key_start == -1:
+                logger.error("Could not parse PEM data from server. (position_rsa_priv_key_start)")
                 time.sleep(5)
                 continue
+            logger.info("position_rsa_priv_key_start: "+str(position_rsa_priv_key_start))
             
-            logger.info("Found split: "+str(split_region))
+            priv_key_end = "-----END RSA PRIVATE KEY-----"
+            position_rsa_priv_key_end = html.find(priv_key_end)
+            if position_rsa_priv_key_end == -1:
+                logger.error("Could not parse PEM data from server. (position_rsa_priv_key_end)")
+                time.sleep(5)
+                continue
+            logger.info("position_rsa_priv_key_end: "+str(position_rsa_priv_key_end))
+                
+            position_priv_cert_start = html.find("-----BEGIN CERTIFICATE-----")
+            if position_priv_cert_start == -1:
+                logger.error("Could not parse PEM data from server. (position_priv_cert_start)")
+                time.sleep(5)
+                continue
+            logger.info("position_priv_cert_start: "+str(position_priv_cert_start))
+            
+            end_cert = "-----END CERTIFICATE-----"
+            position_priv_cert_end = html.find(end_cert)
+            if position_priv_cert_end == -1:
+                logger.error("Could not parse PEM data from server. (position_priv_cert_end)")
+                time.sleep(5)
+                continue
+            logger.info("position_priv_cert_end: "+str(position_priv_cert_end))
+            
+            
+            html_tail = html[position_priv_cert_end+len(end_cert):]
+            
+            
+            
         
-            CLIENT_KEY_string = html[0:split_region+30]
-            CLIENT_CERT_string = html[split_region+30:]
+            CLIENT_KEY_string = html[position_rsa_priv_key_start:position_rsa_priv_key_end+len(priv_key_end)]
+            CLIENT_CERT_string = html[position_priv_cert_start:position_priv_cert_end+len(end_cert)]
+        
+            PORT_int = re.find("PORT=(\d+)", html_tail)
         
             logger.debug("CLIENT_KEY_FILE: "+CLIENT_KEY_string)
             logger.debug("CLIENT_CERT_FILE: "+CLIENT_CERT_string)
+            
+            logger.debug("PORT: "+str(PORT_int))
         
             with open(CLIENT_KEY_FILE, 'w') as f:
                 f.write(CLIENT_KEY_string)
         
             with open(CLIENT_CERT_FILE, 'w') as f:
                 f.write(CLIENT_CERT_string)
+            
+            
+            with open(reverse_ssh_port_file, 'w') as f:
+                f.write(str(PORT_int))
         
             logger.info("Files '%s' and '%s' have been written" % (CLIENT_KEY_FILE, CLIENT_CERT_FILE))
 
