@@ -287,6 +287,7 @@ def get_certificates():
                     f.write(new_authorized_keys)
                 
                 os.chmod(waggle_authorized_keys, 0600)
+                os.chmod(waggle_ssh_dir, 0700)
                 subprocess.call(['chown', 'waggle:waggle', waggle_authorized_keys])
                 logger.info("File '%s' has been written." % (waggle_authorized_keys))
             else:
