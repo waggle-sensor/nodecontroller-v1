@@ -290,7 +290,7 @@ def get_certificates():
                 subprocess.call(['chown', 'waggle:waggle', waggle_authorized_keys])
                 logger.info("File '%s' has been written." % (waggle_authorized_keys))
             else:
-                logger.debug("no chnages needed for authorized_keys file")
+                logger.debug("no changes needed for authorized_keys file")
         
             
             
