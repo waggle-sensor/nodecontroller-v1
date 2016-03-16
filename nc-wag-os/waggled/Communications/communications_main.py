@@ -390,7 +390,7 @@ if __name__ == "__main__":
    
     try:
         
-        with PidFile(pid_file, force=args.force, name='communications_main.py'):
+        with PidFile(pid_file, force=args.force, name=os.path.basename(__file__)):
         
             get_certificates()
         
