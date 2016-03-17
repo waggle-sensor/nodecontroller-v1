@@ -265,9 +265,14 @@ def get_certificates():
             with open(CLIENT_KEY_FILE, 'w') as f:
                 f.write(CLIENT_KEY_string)
             logger.info("File '%s' has been written." % (CLIENT_KEY_FILE))
+            subprocess.call(['chown', 'waggle:waggle', CLIENT_KEY_FILE])
+            os.chmod(CLIENT_KEY_FILE, 0600)
         
             with open(CLIENT_CERT_FILE, 'w') as f:
                 f.write(CLIENT_CERT_string)
+            subprocess.call(['chown', 'waggle:waggle', CLIENT_CERT_FILE])
+            os.chmod(CLIENT_CERT_FILE, 0600)
+            
             logger.info("File '%s' has been written." % (CLIENT_CERT_FILE))
             
             with open(reverse_ssh_port_file, 'w') as f:
