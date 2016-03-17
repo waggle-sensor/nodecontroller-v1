@@ -115,7 +115,7 @@ mkdir -p /var/log/comms
 # just in case:
 mkdir -p /etc/supervisor/conf.d/
 
-for script in waggle_communications.conf waggle_data_cache.conf waggle_wagman.conf ; do
+for script in waggle_communications.conf waggle_data_cache.conf waggle_wagman.conf waggle_reverse_ssh_tunnel.conf ; do
     ln -sf ${waggled_dir}/supervisor/${script} /etc/supervisor/conf.d/${script}
 done
 
