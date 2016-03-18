@@ -119,6 +119,8 @@ for script in waggle_communications.conf waggle_data_cache.conf waggle_wagman.co
     ln -sf ${waggled_dir}/supervisor/${script} /etc/supervisor/conf.d/${script}
 done
 
+ln -sf ${waggle_dir}/scripts/waggle-service.py /usr/bin/waggle-service
+
 
 #creates udev rule to attach Wagman to /dev/wagman
 ln -sf  ${waggled_dir}/init.d/99-usb-serial.rules /etc/udev/rules.d/
