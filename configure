@@ -128,10 +128,6 @@ for script in $(ls -1 ${waggle_dir}/nc-wag-os/waggled/upstart/) ; do
 done
 
 
-ln -sf ${waggle_dir}/scripts/waggle-service.py /usr/bin/waggle-service
-
-
-
 
 #creates udev rule to attach Wagman to /dev/wagman
 ln -sf  ${waggled_dir}/init.d/99-usb-serial.rules /etc/udev/rules.d/
