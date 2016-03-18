@@ -123,7 +123,11 @@ rm -f /etc/supervisor/conf.d/waggle_*
 
 
 # upstart
-cp ${waggled_dir}/upstart/*.conf /etc/init/
+for script in $(basename $(ls -1 ${waggle_dir}/nc-wag-os/waggled/upstart/*.conf)) ; do 
+  ln -sf ${waggled_dir}/upstart/${script} /etc/init/${script} 
+done
+
+
 ln -sf ${waggle_dir}/scripts/waggle-service.py /usr/bin/waggle-service
 
 
