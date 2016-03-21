@@ -124,7 +124,7 @@ rm -f /etc/supervisor/conf.d/waggle_*
 
 # upstart
 for script in $(ls -1 ${waggle_dir}/nc-wag-os/waggled/upstart/) ; do 
-  cp ${waggled_dir}/upstart/${script} /etc/init/ 
+  cp ${waggle_dir}/upstart/${script} /etc/init/ 
 done
 
 
