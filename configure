@@ -130,7 +130,7 @@ done
 
 
 #creates udev rule to attach Wagman to /dev/wagman
-ln -sf  ${waggled_dir}/init.d/99-usb-serial.rules /etc/udev/rules.d/
+ln -sf  ${waggled_dir}/99-usb-serial.rules /etc/udev/rules.d/
 
 echo "done"
 
