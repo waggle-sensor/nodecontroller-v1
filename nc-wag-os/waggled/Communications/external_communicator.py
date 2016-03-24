@@ -14,9 +14,8 @@ sys.path.append('../DataCache/')
 from send2dc import send
 
 
-#logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', stream=sys.stdout)
+logging.basicConfig()
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.ERROR)
 
 
 """ 

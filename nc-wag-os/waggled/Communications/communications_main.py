@@ -13,22 +13,16 @@ import subprocess
 sys.path.append('../../..')
 from waggle_protocol.utilities.pidfile import PidFile, AlreadyRunning
 
-
-
-
-
 #pika is a bit too verbose...
 logging.getLogger('pika').setLevel(logging.ERROR)
-
-
 
 
 loglevel=logging.DEBUG
 #loglevel=logging.ERROR
 
 
-logging.getLogger('external_communicator').setLevel(loglevel)
-logging.getLogger('internal_communicator').setLevel(loglevel)
+#logging.getLogger('external_communicator').setLevel(loglevel)
+#logging.getLogger('internal_communicator').setLevel(loglevel)
 
 LOG_FILENAME="/var/log/waggle/communications.log"
 LOG_FORMAT='%(asctime)s - %(name)s - %(levelname)s - line=%(lineno)d - %(message)s'
@@ -36,7 +30,8 @@ pid_file = "/var/run/waggle/communications.pid"
 
 #logging.basicConfig(level=loglevel, format=, filename=LOG_FILENAME)
 #logging.basicConfig(level=loglevel, format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s', stream=sys.stdout)
-logger = logging.getLogger("communications_main.py") #__name__
+#ogger = logging.getLogger("communications_main.py") #__name__
+logger = logging.getLogger(__name__)
 
 root_logger = logging.getLogger()
 root_logger.setLevel(loglevel)
