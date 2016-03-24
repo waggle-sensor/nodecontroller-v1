@@ -98,8 +98,7 @@ class DataCache:
         self.incoming_available_queues = list()
     
     def run(self):
-        outgoing_available_queues = self.outgoing_available_queues
-        incoming_available_queues = self.incoming_available_queues 
+        
 
     
         #Each buffer is a matrix of queues for organization and indexing purposes.
@@ -163,7 +162,7 @@ class DataCache:
                             #flush all stored messages into files
                             logger.debug('External flush request made.')
                         
-                            self.DC_flush(incoming_available_queues, outgoing_available_queues)
+                            self.DC_flush()
                             
                             
                             if stop_process:
@@ -175,7 +174,7 @@ class DataCache:
                         elif data[0] == '|': #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
                             data, dest = data.split('|', 1) #splits to get either 'o' for outgoing request or the device location for incoming request
                             if dest != 'o':
-                                msg = self.incoming_pull(int(dest), incoming_available_queues) #pulls a message from that device's queue
+                                msg = self.incoming_pull(int(dest)) #pulls a message from that device's queue
                                 if msg == 'None':
                                     logger.debug("no message")
                                     msg = 'False'
@@ -187,11 +186,11 @@ class DataCache:
                                     #pushes it back into the incoming queue if the client disconnects before the message is sent
                                     try: #Will pass if data is a pull request instead of a full message 
                                         #TODO default msg_p is 5 for messages pushed back into queue. Improvement recommended.
-                                        incoming_push(int(dest),5, msg, incoming_available_queues, outgoing_available_queues) 
+                                        incoming_push(int(dest),5, msg) 
                                     except: 
                                         pass
                             else:
-                                msg = self.outgoing_pull(outgoing_available_queues) #pulls the highest priority message
+                                msg = self.outgoing_pull() #pulls the highest priority message
                                 if msg == None: 
                                     msg = 'False'
                                 if msg !='False':
@@ -203,7 +202,7 @@ class DataCache:
                                     #pushes it back into the outgoing queue if the client disconnects before the message is sent
                                     try:#Will pass if data is a pull request instead of a full message
                                         #TODO default msg_p is 5 for messages pushed back into queue. Improvement recommended.
-                                        self.outgoing_push(int(dest),5,msg, outgoing_available_queues, incoming_available_queues)
+                                        self.outgoing_push(int(dest),5,msg)
                                     except Exception as e: 
                                         logger.error("outgoing_push: "+str(e))
                                         pass
@@ -237,7 +236,7 @@ class DataCache:
                                             if order==False: #indicates lifo. lifo has highest message priority
                                                 msg_p=5
                                             #pushes the message into the outgoing buffer to the queue corresponding to the device location and message priority
-                                            self.outgoing_push(int(dev_loc), msg_p, data, outgoing_available_queues, incoming_available_queues)
+                                            self.outgoing_push(int(dev_loc), msg_p, data)
                                             #If the device is registered and the push is successful, no need to try again, break the loop
                                             break 
                                         except Exception as e: 
@@ -263,7 +262,7 @@ class DataCache:
                                         try:
                                             dev_loc = DEVICE_DICT[recipient] #looks up the location of the recipient device
                                             #If the device is registered and the push is successful, no need to try again, break the loop
-                                            self.incoming_push(int(dev_loc),msg_p,data, incoming_available_queues, outgoing_available_queues)
+                                            self.incoming_push(int(dev_loc),msg_p,data)
                                             break
                                         except Exception as e: 
                                             #The device dictionary may not be up to date. Need to update and try again.
@@ -290,7 +289,7 @@ class DataCache:
 
     def stop(self):
         stop_process = True
-        self.DC_flush(self.incoming_available_queues, self.outgoing_available_queues)
+        self.DC_flush()
         
         logger.info("DC has been flushed. Process will stop now.")
         sys.exit(0)   
@@ -324,23 +323,21 @@ class DataCache:
             logger.debug('Data cache running?')
     
 
-    def outgoing_push(self,dev, msg_p, msg, outgoing_available_queues, incoming_available_queues): 
+    def outgoing_push(self,dev, msg_p, msg): 
         """
             Function that pushes outgoing messages into the outgoing buffer.
         
             :param int dev: Specifies the device location in the matrix.
             :param int msg_p: Specifies the message priority location in the matrix
-            :param list outgoing_available_queues: A list of tuples that specify the location of outgoing queues that currently have stored messages
             :param int self.msg_counter: Keeps track of the number of total messags currently being stored in the buffers.
             :param int flush: Value indicating if the data cache needs to flush the buffers into files.
-            :param list incoming_available_queues: A list of tuples that specify the location of incoming queues that currently have stored messages
         """ 
         logger.debug("outgoing_push: dev=%d msg_p=%d" % (dev, msg_p))
         #If the msg counter is greater than or equal to the available memory, flush the outgoing queues into a file
         if self.msg_counter>= AVAILABLE_MEM:
         
             #Calls the data cache flush method and passes in the neccessary params
-            self.DC_flush(incoming_available_queues, outgoing_available_queues) #Flushes all messages into a file
+            self.DC_flush() #Flushes all messages into a file
             self.msg_counter = 0 #resets the message counter after all buffers have been saved to a file
     
         #Increments the self.msg_counter by 1 each time a message is pushed into the data cache
@@ -352,29 +349,27 @@ class DataCache:
         
             #adds the queue to the list of available queues
             try:
-                outgoing_available_queues.index((dev, msg_p)) #throws an error if this is not already in the list
+                self.outgoing_available_queues.index((dev, msg_p)) #throws an error if this is not already in the list
             except: 
-                outgoing_available_queues.append((dev, msg_p)) #prevents duplicates
+                self.outgoing_available_queues.append((dev, msg_p)) #prevents duplicates
         except:
             logger.error('Outgoing push unable to store in data cache...') #TODO Should an error message be sent back to the recipient?
        
-    def incoming_push(self,device, msg_p, msg, incoming_available_queues, outgoing_available_queues):
+    def incoming_push(self,device, msg_p, msg):
         """ 
             Function that pushes incoming messages to the incoming buffer.
         
             :param int dev: Specifies the device location in the matrix.
             :param int msg_p: Specifies the message priority location in the matrix
-            :param list outgoing_available_queues: A list of tuples that specify the location of outgoing queues that currently have stored messages
             :param int self.msg_counter: Keeps track of total messages in the data cache.
             :param int flush: Value indicating if the data cache needs to flush the buffers into files.
-            :param list incoming_available_queues: A list of tuples that specify the location of incoming queues that currently have stored messages
         """ 
         #print 'msg counter: ',self.msg_counter
         #print 'available mem: ', AVAILABLE_MEM
         #if the msg counter is greater than or equal to the available memory, flush the buffers into files
         if self.msg_counter >= AVAILABLE_MEM: 
             #Calls the data cache flush method
-            self.DC_flush(incoming_available_queues, outgoing_available_queues)
+            self.DC_flush()
             self.msg_counter = 0 #resets the message counter after all buffers have been saved to a file
         else:
             pass 
@@ -386,15 +381,14 @@ class DataCache:
     
         #adds the queue to the list of available queues
         try:
-            incoming_available_queues.index(device) #checks if the device is already in the list #TODO improve this
+            self.incoming_available_queues.index(device) #checks if the device is already in the list #TODO improve this
         except:
-            incoming_available_queues.append(device) #adds it to the list if it is not already there
+            self.incoming_available_queues.append(device) #adds it to the list if it is not already there
 
-    def outgoing_pull(self,outgoing_available_queues):
+    def outgoing_pull(self):
         """ 
             Function that retrieves and removes outgoing messages from the outgoing buffer. Retrieves the highest priority messages first. Highest priority messages are determined based on message priority and device priority.
         
-            :param list outgoing_available_queues: The list of outgoing queues that currently have messages stored in them.
             :param int self.msg_counter: Keeps track of total messages in the data cache.
             :rtype string: Returns a packed message or 'False' if no messages are available. 
         """ 
@@ -444,31 +438,30 @@ class DataCache:
             #If there are no messages stored as files, pull messages from the queues
             else:
                 #Are there any messages available?
-                if len(outgoing_available_queues) == 0: #no messages available
+                if len(self.outgoing_available_queues) == 0: #no messages available
                     #logger.debug('No messages available.')
                     return 'False' 
                     break
                 else:
                     #Calls the function that returns the highest priority tuple in the list
-                    cache_index = self.get_priority(outgoing_available_queues) #returns the index of the highest priority queue in fifo buffer
+                    cache_index = self.get_priority() #returns the index of the highest priority queue in fifo buffer
                     sender_p, msg_p = cache_index
                     current_q = self.outgoing_bffr[sender_p - 1][msg_p - 1]
                 
                     #checks if the queue is empty
                     if current_q.empty():
                         #removes it from the list of available queues 
-                        outgoing_available_queues.remove(cache_index) 
+                        self.outgoing_available_queues.remove(cache_index) 
                     else: 
                         self.msg_counter -= 1 #decrements the counter by 1
                         return current_q.get()    
                         break
         
-    def incoming_pull(self,dev, incoming_available_queues):
+    def incoming_pull(self,dev):
         """ 
             Function that retrieves and removes incoming messages from the incoming buffer. Searches through all of the message priority queues for the specified device to return the highest priority message first. 
         
             :param int dev: Specifies the device location in the matrix.
-            :param list incoming_available_queues: The list of incoming queues that currently have messages stored in them.
         """ 
     
         #continues until something is returned. 
@@ -508,7 +501,7 @@ class DataCache:
                 try: 
                     #checks to see if there are messages for the device
                     #results in an error if that dev isn't in the list
-                    incoming_available_queues.index(dev) #TODO Probably need a better way to do this
+                    self.incoming_available_queues.index(dev) #TODO Probably need a better way to do this
                     msg = 'False' #default 
                     for i in range(4,-1,-1): # loop to search for messages starting with highest priority
                         if self.incoming_bffr[dev - 1][i].empty(): #checks for an empty queue 
@@ -520,7 +513,7 @@ class DataCache:
                             break
                     #if the message is still false (i.e. no messages are actually available for that device), remove dev from list
                     if msg == 'False':
-                        incoming_available_queues.remove(dev)
+                        self.incoming_available_queues.remove(dev)
                     return msg
                     break
                 except:
@@ -528,13 +521,10 @@ class DataCache:
                     return 'None'
                     break
            
-    def DC_flush(self, incoming_available_queues, outgoing_available_queues):
+    def DC_flush(self):
         """ 
             Function that temporary closes the Data Cache server to write the outgoing and incoming queues into files.
             This function is called when the data cache reaches its maximum number of messages it can store in RAM or before the NC is shutdown by WagMan
-        
-            :param list incoming_available_queues: The list of incoming queues that currently have messages stored in them.
-            :param list outgoing_available_queues: The list of outgoing queues that currently have messages stored in them.
         """ 
         self.flush = 1
         cur_date = str(datetime.datetime.now().strftime('%Y%m%d%H:%M:%S'))
@@ -546,7 +536,7 @@ class DataCache:
             logger.debug('Flushing outgoing')
             while True: #write all outgoing messages to outgoing file
                 #messages are written to file with highest priority at the top
-                msg = self.outgoing_pull(outgoing_available_queues) #returns false when all queues are empty
+                msg = self.outgoing_pull() #returns false when all queues are empty
                 if msg=='False': #no more messages available. break and close file
                     break
                 else:
@@ -565,7 +555,7 @@ class DataCache:
                 f = open(filename, 'w')
                 while True:
                     #for each device, messages are stored with highest priority on the top of the file
-                    msg = self.incoming_pull(i, incoming_available_queues)
+                    msg = self.incoming_pull(i)
                     if msg=='False':  #No more messages available. break and close file.
                         f.close()
                         break
@@ -613,21 +603,20 @@ class DataCache:
         return buff
                 
 
-    def get_priority(self, outgoing_available_queues):
+    def get_priority(self):
         """ 
             Function that finds the highest priority queue in the list. Highest priority is determined by comparing message priority and device priority.
         
-            :param list outgoing_available_queues: The list of outgoing queues that currently have messages stored in them.
             :rtype: tuple(device_priority, message_priority) or string 'False'
         """ 
         #returns False if there are no messages available
-        if len(outgoing_available_queues) == 0:
+        if len(self.outgoing_available_queues) == 0:
             return 'False'
         else:
             highest_de_p = PRIORITY_ORDER[(len(PRIORITY_ORDER)-1)] #sets it to the lowest priority as default
             highest_msg_p = 0 #default
-            for i in range(len(outgoing_available_queues)): #i has to be an int
-                device_p, msg_p = outgoing_available_queues[i]
+            for i in range(len(self.outgoing_available_queues)): #i has to be an int
+                device_p, msg_p = self.outgoing_available_queues[i]
                 if msg_p >= highest_msg_p: #if the msg_p is higher or equal to the current highest
                     if PRIORITY_ORDER.index(device_p) < PRIORITY_ORDER.index(highest_de_p): #and the device_p is higher
                         highest_de_p = device_p #then that element becomes the new highest_p
