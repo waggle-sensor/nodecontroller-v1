@@ -173,8 +173,10 @@ class DataCache:
                                 
                         #Indicates that it is a pull request ( somebody want data from the DC)
                         elif data[0] == '|': #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
+                            logger.debug('Somebody wants data')
                             data, dest = data.split('|', 1) #splits to get either 'o' for outgoing request or the device location for incoming request
                             if dest != 'o':
+                                logger.debug('Somebody wants data, without o')
                                 msg = self.incoming_pull(int(dest)) #pulls a message from that device's queue
                                 if not msg:
                                     logger.debug("no message")
@@ -191,6 +193,7 @@ class DataCache:
                                     except: 
                                         pass
                             else:
+                                logger.debug('Somebody wants data, using o')
                                 msg = self.outgoing_pull() #pulls the highest priority message
                                 if not msg: 
                                     msg = 'False'
@@ -215,6 +218,7 @@ class DataCache:
                         else:
                             # somebody sends data to the DataCache
                             #logger.debug("datacache got: \""+str(data)+"\"")
+                            logger.debug('Somebody sends data')
                             try:
                                 header = get_header(data) #uses the packet handler function get_header to unpack the header data from the message
                                 flags = header['flags'] #extracts priorities
