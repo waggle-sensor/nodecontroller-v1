@@ -445,14 +445,19 @@ class DataCache:
                 else:
                     #Calls the function that returns the highest priority tuple in the list
                     cache_index = self.get_priority() #returns the index of the highest priority queue in fifo buffer
+                    
                     sender_p, msg_p = cache_index
+                    logger.debug("sender_p: %s msg_p: %s" % (str(sender_p), str(msg_p) ))
+                    
                     current_q = self.outgoing_bffr[sender_p - 1][msg_p - 1]
                 
                     #checks if the queue is empty
                     if current_q.empty():
+                        logger.debug("current_q.empty")
                         #removes it from the list of available queues 
                         self.outgoing_available_queues.remove(cache_index) 
-                    else: 
+                    else:
+                        logger.debug("getting message from current_q")
                         self.msg_counter -= 1 #decrements the counter by 1
                         return current_q.get()    
                         break
