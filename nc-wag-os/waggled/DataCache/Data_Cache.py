@@ -175,7 +175,7 @@ class DataCache:
                             data, dest = data.split('|', 1) #splits to get either 'o' for outgoing request or the device location for incoming request
                             if dest != 'o':
                                 msg = self.incoming_pull(int(dest)) #pulls a message from that device's queue
-                                if msg == 'None':
+                                if not msg:
                                     logger.debug("no message")
                                     msg = 'False'
                                 else:
@@ -191,10 +191,12 @@ class DataCache:
                                         pass
                             else:
                                 msg = self.outgoing_pull() #pulls the highest priority message
-                                if msg == None: 
+                                if not msg: 
                                     msg = 'False'
-                                if msg !='False':
-                                    logger.debug("send message to cloud, length %d" % (len(msg)))
+                                    logger.debug("have no message for external_client_pull")
+                                else:
+                                    logger.debug("sending message to external_client_pull, length %d" % (len(msg)))
+                                    
                                 try:
                                     client_sock.sendall(msg) #sends the message
                                 except Exception as e:
@@ -401,68 +403,71 @@ class DataCache:
     
         #continues until a message is sent. 
         #Neccessary to check for empty queues whose index has not yet been removed from the list or files whose messages have all been read and sent
-        while True:
+        #while True:
     
-            #are there outgoing messages stored as files?
-            #if so, those need to be sent to the cloud first without needing to load all messages from the file and taking up too much RAM
-            #so, send the messages one by one using a file generator object.
-            #when all messages have been read from file and sent to cloud, close and delete that file from the directory.
-            if len(glob('/var/dc/outgoing_msgs/*')) > 0 and self.flush == 0: #prevents the flush from pulling messages from files
-                logger.debug('Len(glob) outgoing_stored/* is greater than 0')
-                #is there a file generator object already stored as the current file?
-                if self.outgoing_cur_file == '':
-                    #print 'cur_file is empty string.'
-                    #set the first file in the outgoing_stored directory as the current file generator object
-                    self.outgoing_cur_file = open(glob('/var/dc/outgoing_msgs/*')[0]) 
-                    #print 'opened file'
-                    try: 
-                        #print 'trying to read from file'
-                        msg = self.outgoing_cur_file.next().strip() #reads the next message in file, strips the \n
-                        #print 'returning msg'
-                        return msg
-                        break
-                    except:
-                        self.outgoing_cur_file.close() #close the file if stop iterator error occurs
-                        if os.path.isfile(self.outgoing_cur_file.name): #make sure the file exists
-                            os.remove(self.outgoing_cur_file.name)#delete the file
-                        self.outgoing_cur_file = '' #reset to empty string
-                else:
-                    try: 
-                        msg = self.outgoing_cur_file.next().strip() #reads the next message in file, strips the \n
-                        return msg
-                        break
-                    except:
-                        self.outgoing_cur_file.close() #close the file if stop iterator error occurs
-                        if os.path.isfile(self.outgoing_cur_file.name): #make sure the file exists
-                            os.remove(self.outgoing_cur_file.name) #delete the file
-                        self.outgoing_cur_file = '' #reset to empty string
-                    
-            #If there are no messages stored as files, pull messages from the queues
+        #are there outgoing messages stored as files?
+        #if so, those need to be sent to the cloud first without needing to load all messages from the file and taking up too much RAM
+        #so, send the messages one by one using a file generator object.
+        #when all messages have been read from file and sent to cloud, close and delete that file from the directory.
+        outgoing_msg_files = glob('/var/dc/outgoing_msgs/*')
+        if len(outgoing_msg_files) > 0 and self.flush == 0: #prevents the flush from pulling messages from files
+            logger.debug('Getting messages from /var/dc/outgoing_msgs/')
+            #is there a file generator object already stored as the current file?
+            if self.outgoing_cur_file == '':
+                #print 'cur_file is empty string.'
+                #set the first file in the outgoing_stored directory as the current file generator object
+                logger.debug('opening file %s' % (outgoing_msg_files[0]))
+                self.outgoing_cur_file = open(outgoing_msg_files[0]) 
+                #print 'opened file'
+                try: 
+                    #print 'trying to read from file'
+                    msg = self.outgoing_cur_file.next().strip() #reads the next message in file, strips the \n
+                    #print 'returning msg'
+                    return msg
+                except:
+                    self.outgoing_cur_file.close() #close the file if stop iterator error occurs
+                    if os.path.isfile(self.outgoing_cur_file.name): #make sure the file exists
+                        os.remove(self.outgoing_cur_file.name)#delete the file
+                    self.outgoing_cur_file = '' #reset to empty string
             else:
-                #Are there any messages available?
-                if len(self.outgoing_available_queues) == 0: #no messages available
-                    #logger.debug('No messages available.')
-                    return 'False' 
-                    break
-                else:
-                    #Calls the function that returns the highest priority tuple in the list
-                    cache_index = self.get_priority() #returns the index of the highest priority queue in fifo buffer
-                    
-                    sender_p, msg_p = cache_index
-                    logger.debug("sender_p: %s msg_p: %s" % (str(sender_p), str(msg_p) ))
-                    
-                    current_q = self.outgoing_bffr[sender_p - 1][msg_p - 1]
+                logger.debug('reading from exsiting file handle (data from /var/dc/outgoing_msgs/*)')
+                try: 
+                    msg = self.outgoing_cur_file.next().strip() #reads the next message in file, strips the \n
+                    return msg
+                except:
+                    self.outgoing_cur_file.close() #close the file if stop iterator error occurs
+                    if os.path.isfile(self.outgoing_cur_file.name): #make sure the file exists
+                        os.remove(self.outgoing_cur_file.name) #delete the file
+                    self.outgoing_cur_file = '' #reset to empty string
                 
-                    #checks if the queue is empty
-                    if current_q.empty():
-                        logger.debug("current_q.empty")
-                        #removes it from the list of available queues 
-                        self.outgoing_available_queues.remove(cache_index) 
-                    else:
-                        logger.debug("getting message from current_q, size: %d" % (current_q.qsize()))
-                        self.msg_counter -= 1 #decrements the counter by 1
-                        return current_q.get()    
-                        break
+        #If there are no messages stored as files, pull messages from the queues
+        else:
+            logger.debug('trying to get message from queue...')
+            #Are there any messages available?
+            if len(self.outgoing_available_queues) == 0: #no messages available
+                #logger.debug('No messages available.')
+                return None 
+            else:
+                #Calls the function that returns the highest priority tuple in the list
+                cache_index = self.get_priority() #returns the index of the highest priority queue in fifo buffer
+                
+                sender_p, msg_p = cache_index
+                logger.debug("sender_p: %s msg_p: %s" % (str(sender_p), str(msg_p) ))
+                
+                current_q = self.outgoing_bffr[sender_p - 1][msg_p - 1]
+            
+                #checks if the queue is empty
+                if current_q.empty():
+                    logger.debug("current_q.empty")
+                    #removes it from the list of available queues 
+                    self.outgoing_available_queues.remove(cache_index) 
+                else:
+                    logger.debug("getting message from current_q, size: %d" % (current_q.qsize()))
+                    self.msg_counter -= 1 #decrements the counter by 1
+                    return current_q.get()
+                    
+        return None
+                        
         
     def incoming_pull(self,dev):
         """ 
@@ -478,15 +483,16 @@ class DataCache:
             #if so, those need to be sent first without needing to load all messages from the file and taking up too much RAM
             #so, send the messages one by one using a file generator object.
             #when all messages have been read from file and sent to device, close and delete that file from the directory.
-            if len(glob('/var/dc/incoming_msgs/' + str(dev) + '/*')) > 0 and self.flush == 0: #only pulls messages from file if DC is not flushing
+            incoming_msg_files = glob('/var/dc/incoming_msgs/' + str(dev) + '/*')
+            if len(incoming_msg_files) > 0 and self.flush == 0: #only pulls messages from file if DC is not flushing
                 #is there a file generator object already stored as the current file?
                 if self.incoming_cur_file[dev - 1] == '':
                     #set the first file in the incoming_stored/dev directory as the current file generator object
-                    self.incoming_cur_file[dev -1] = open(glob('/var/dc/incoming_msgs/' + str(dev) + '/*')[0]) 
+                    self.incoming_cur_file[dev -1] = open(incoming_msg_files[0]) 
                     try: 
                         msg = self.incoming_cur_file[dev -1].next().strip() #reads the next message in file, strips the \n
                         return msg
-                        break
+                        
                     except:
                         self.incoming_cur_file[dev -1].close() #close the file if stop iterator error occurs
                         if os.path.isfile(self.incoming_cur_file[dev -1].name): #make sure the file exists
@@ -496,7 +502,7 @@ class DataCache:
                     try: 
                         msg = self.incoming_cur_file[dev -1].next().strip() #reads the next message in file, strips the \n
                         return msg
-                        break
+                        
                     except:
                         self.incoming_cur_file[dev -1].close() #close the file if stop iterator error occurs
                         if os.path.isfile(self.incoming_cur_file[dev -1].name): #make sure the file exists
@@ -522,11 +528,11 @@ class DataCache:
                     if msg == 'False':
                         self.incoming_available_queues.remove(dev)
                     return msg
-                    break
+                    
                 except:
                     #returns false if no messages are available
-                    return 'None'
-                    break
+                    return None
+                    
            
     def DC_flush(self):
         """ 
@@ -544,7 +550,7 @@ class DataCache:
             while True: #write all outgoing messages to outgoing file
                 #messages are written to file with highest priority at the top
                 msg = self.outgoing_pull() #returns false when all queues are empty
-                if msg=='False': #no more messages available. break and close file
+                if not msg: #no more messages available. break and close file
                     break
                 else:
                     #write the message to the file
@@ -563,7 +569,7 @@ class DataCache:
                 while True:
                     #for each device, messages are stored with highest priority on the top of the file
                     msg = self.incoming_pull(i)
-                    if msg=='False':  #No more messages available. break and close file.
+                    if not msg:  #No more messages available. break and close file.
                         f.close()
                         break
                     elif msg =='None': #No messages currently available for device. Close and remove file

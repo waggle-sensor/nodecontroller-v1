@@ -214,9 +214,16 @@ def external_client_pull():
                         data = '|o' 
                         client_sock.send(data)
                         msg = client_sock.recv(4028) #can be changed 
-                        if msg and msg != 'False':
+                        if msg:
+                            if msg != 'False':
                                 logger.debug("put message from DC in outgoing queue")
                                 comm.outgoing.put(msg) #puts the message in the outgoing queue
+                            else:
+                                logger.debug("DC has no message for me.")
+                                time.sleep(1)
+                        else:
+                            logger.debug("DC has no message for me. (msg==None !?)")
+                            time.sleep(1)
                             
                         client_sock.close()
                     else:
