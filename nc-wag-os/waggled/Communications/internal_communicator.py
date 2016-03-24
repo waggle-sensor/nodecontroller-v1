@@ -212,6 +212,8 @@ def push_server():
                     
                     logger.debug("Sending data from GN into DC-push queue")
                     comm.DC_push.put(new_data)
+                    logger.debug("(push_server) DC_push size: %d " % (comm.DC_push.qsize()))
+                    
                 
             except KeyboardInterrupt, k:
                 logger.info("Internal push server shutting down.")
