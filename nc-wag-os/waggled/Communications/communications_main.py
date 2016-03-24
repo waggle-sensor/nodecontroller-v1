@@ -397,6 +397,11 @@ if __name__ == "__main__":
         
         with PidFile(pid_file, force=args.force, name=os.path.basename(__file__)):
         
+            while (datetime.datetime.now().year < 2016):
+                ## SSL connection to RabbitMQ would not work anyway with wrong time
+                logger.warning("We are in the wrong year. Waiting for the correct time.")
+                time.sleep(10)
+        
             get_certificates()
         
             get_queuename()
