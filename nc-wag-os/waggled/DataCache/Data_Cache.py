@@ -99,6 +99,7 @@ class DataCache:
     
     def run(self):
         
+        logger.info("Starting DataCache...")
 
     
         #Each buffer is a matrix of queues for organization and indexing purposes.
