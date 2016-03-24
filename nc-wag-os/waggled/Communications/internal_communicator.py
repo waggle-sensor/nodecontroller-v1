@@ -67,7 +67,7 @@ def internal_client_push():
                         client_sock.close()
                         time.sleep(1)
                         continue
-                    logger.debug("Sending GN data from DC-push to Data_Cache")    
+                    logger.debug("Sending data from DC-push queue to Data_Cache socket")    
                 else: 
                     logger.error('Internal client push unable to connect to DC...')
                     time.sleep(1)
@@ -210,7 +210,7 @@ def push_server():
                     # concatenate new header with old data
                     new_data = str(header_bytearray)+data[HEADER_LENGTH:]
                     
-                    logger.debug("Sending data from GN into DC-push")
+                    logger.debug("Sending data from GN into DC-push queue")
                     comm.DC_push.put(new_data)
                 
             except KeyboardInterrupt, k:

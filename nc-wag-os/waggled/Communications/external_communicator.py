@@ -214,14 +214,11 @@ def external_client_pull():
                         data = '|o' 
                         client_sock.send(data)
                         msg = client_sock.recv(4028) #can be changed 
-                        if not msg:
-                            break
-                        else:
-                            if msg != 'False':
+                        if msg and msg != 'False':
+                                logger.debug("put message from DC in outgoing queue")
                                 comm.outgoing.put(msg) #puts the message in the outgoing queue
-                                client_sock.close() #closes socket after each message is sent #TODO is there a better way to do this?
-                            else: 
-                                client_sock.close()
+                            
+                        client_sock.close()
                     else:
                         logger.warning('External client pull unable to connect to the data cache... path does not exist!\n')
                         time.sleep(5)
