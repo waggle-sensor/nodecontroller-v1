@@ -337,6 +337,7 @@ class DataCache:
         if self.msg_counter>= AVAILABLE_MEM:
         
             #Calls the data cache flush method and passes in the neccessary params
+            logger.debug("(outgoing_push) flush because of self.msg_counter>= AVAILABLE_MEM")
             self.DC_flush() #Flushes all messages into a file
             self.msg_counter = 0 #resets the message counter after all buffers have been saved to a file
     
@@ -369,6 +370,7 @@ class DataCache:
         #if the msg counter is greater than or equal to the available memory, flush the buffers into files
         if self.msg_counter >= AVAILABLE_MEM: 
             #Calls the data cache flush method
+            logger.debug("(incoming_push) flush because of (self.msg_counter >= AVAILABLE_MEM)")
             self.DC_flush()
             self.msg_counter = 0 #resets the message counter after all buffers have been saved to a file
         else:
@@ -457,7 +459,7 @@ class DataCache:
                         #removes it from the list of available queues 
                         self.outgoing_available_queues.remove(cache_index) 
                     else:
-                        logger.debug("getting message from current_q")
+                        logger.debug("getting message from current_q, size: %d" % (current_q.qsize()))
                         self.msg_counter -= 1 #decrements the counter by 1
                         return current_q.get()    
                         break
