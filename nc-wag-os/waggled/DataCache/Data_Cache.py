@@ -152,7 +152,7 @@ class DataCache:
                     sys.exit(1)
                     
                 
-                logger.debug( "first time: %s" % (str((t_start-t_first).total_seconds()*1000)))
+                
                 try:
                     data = client_sock.recv(2048) #arbitrary
                     
