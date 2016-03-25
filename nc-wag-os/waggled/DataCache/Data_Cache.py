@@ -250,9 +250,9 @@ class DataCache:
                                             self.outgoing_push(int(dev_loc), msg_p, data)
                                             #If the device is registered and the push is successful, no need to try again, break the loop
                                             
-                                            t_processed = datetime.datetime.now()
+                                           
                                             logger.debug( "waiting time   : %s" % (str((t_waiting-t_start).total_seconds()*1000)))
-                                            logger.debug( "processing time: %s" % (str((t_processed-t_waiting).total_seconds()*1000)))
+                                            logger.debug( "processing time: %s" % (str((datetime.datetime.now()-t_waiting).total_seconds()*1000)))
                                             break 
                                         except Exception as e: 
                                             logger.error("outgoing_push2: "+str(e))
@@ -283,6 +283,7 @@ class DataCache:
                                             #The device dictionary may not be up to date. Need to update and try again.
                                             #If the device is still not found after first try, move on.
                                             update_dev_dict()
+                                logger.debug( "processing time2: %s" % (str((datetime.datetime.now()-t_waiting).total_seconds()*1000)))
                             except Exception as e:
                                 logger.error('Message corrupt. Will not store in data cache.')
                                 logger.error(e)
