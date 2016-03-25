@@ -112,7 +112,7 @@ class DataCache:
        
         #the main server loop
         while True:
-            t_out1 = datetime.datetime.now()
+            
             #indicates that the server is flushing the buffers. Shuts down the server until the all queues have been written to a file
             while self.flush ==1:
                 logger.debug("Cache is in flush state")
@@ -127,9 +127,9 @@ class DataCache:
         
             #become a server socket and start listening for clients
             server_sock.listen(6)
-            logger.debug( "outer loop time: %s" % (str((datetime.datetime.now()-t_out1).total_seconds()*1000)))
+            
             while True:
-                t_first = datetime.datetime.now()
+               
                 if self.flush==1: #shuts down the server until the all queues have been written to a file
                     logger.debug('Server flush!')
                 
@@ -151,11 +151,11 @@ class DataCache:
                     self.stop()
                     sys.exit(1)
                     
-                t_start = datetime.datetime.now()
+                
                 logger.debug( "first time: %s" % (str((t_start-t_first).total_seconds()*1000)))
                 try:
                     data = client_sock.recv(2048) #arbitrary
-                    t_waiting = datetime.datetime.now()
+                    
                     if logger.isEnabledFor(logging.DEBUG):
                         if data != '|o':
                             logger.debug('(DataCache) received data.')
@@ -250,9 +250,6 @@ class DataCache:
                                             self.outgoing_push(int(dev_loc), msg_p, data)
                                             #If the device is registered and the push is successful, no need to try again, break the loop
                                             
-                                           
-                                            logger.debug( "waiting time   : %s" % (str((t_waiting-t_start).total_seconds()*1000)))
-                                            logger.debug( "processing time: %s" % (str((datetime.datetime.now()-t_waiting).total_seconds()*1000)))
                                             break 
                                         except Exception as e: 
                                             logger.error("outgoing_push2: "+str(e))
@@ -283,7 +280,6 @@ class DataCache:
                                             #The device dictionary may not be up to date. Need to update and try again.
                                             #If the device is still not found after first try, move on.
                                             update_dev_dict()
-                                logger.debug( "processing time2: %s" % (str((datetime.datetime.now()-t_waiting).total_seconds()*1000)))
                             except Exception as e:
                                 logger.error('Message corrupt. Will not store in data cache.')
                                 logger.error(e)
