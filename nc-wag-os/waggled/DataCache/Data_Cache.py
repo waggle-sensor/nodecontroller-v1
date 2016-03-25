@@ -129,7 +129,7 @@ class DataCache:
             server_sock.listen(6)
 
             while True:
-        
+                t_first = datetime.datetime.now()
                 if self.flush==1: #shuts down the server until the all queues have been written to a file
                     logger.debug('Server flush!')
                 
@@ -152,6 +152,7 @@ class DataCache:
                     sys.exit(1)
                     
                 t_start = datetime.datetime.now()
+                logger.debug( "first time: %s" % (str((t_start-t_first).total_seconds()*1000)))
                 try:
                     data = client_sock.recv(2048) #arbitrary
                     t_waiting = datetime.datetime.now()
@@ -250,8 +251,8 @@ class DataCache:
                                             #If the device is registered and the push is successful, no need to try again, break the loop
                                             
                                             t_processed = datetime.datetime.now()
-                                            logger.debug( "waiting time   : %s" % (str((t_waiting-t_start).total_seconds())))
-                                            logger.debug( "processing time: %s" % (str((t_processed-t_waiting).total_seconds())))
+                                            logger.debug( "waiting time   : %s" % (str((t_waiting-t_start).total_seconds()*1000)))
+                                            logger.debug( "processing time: %s" % (str((t_processed-t_waiting).total_seconds()*1000)))
                                             break 
                                         except Exception as e: 
                                             logger.error("outgoing_push2: "+str(e))
