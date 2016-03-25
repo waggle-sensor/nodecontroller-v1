@@ -109,10 +109,10 @@ class DataCache:
         #make outgoing buffer 
         self.outgoing_bffr = self.make_bffr(len(PRIORITY_ORDER))
     
-        
+       
         #the main server loop
         while True:
-        
+            t_out1 = datetime.datetime.now()
             #indicates that the server is flushing the buffers. Shuts down the server until the all queues have been written to a file
             while self.flush ==1:
                 logger.debug("Cache is in flush state")
@@ -127,7 +127,7 @@ class DataCache:
         
             #become a server socket and start listening for clients
             server_sock.listen(6)
-
+            logger.debug( "outer loop time: %s" % (str((datetime.datetime.now()-t_out1).total_seconds()*1000)))
             while True:
                 t_first = datetime.datetime.now()
                 if self.flush==1: #shuts down the server until the all queues have been written to a file
