@@ -217,7 +217,7 @@ class DataCache:
                                         logger.error("outgoing_push: "+str(e))
                                         pass
                     
-                            time.sleep(1)
+                            
                         
                         else:
                             # somebody sends data to the DataCache
