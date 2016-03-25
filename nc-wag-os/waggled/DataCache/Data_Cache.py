@@ -287,8 +287,6 @@ class DataCache:
                             except Exception as e:
                                 logger.error('Message corrupt. Will not store in data cache.')
                                 logger.error(e)
-                            time.sleep(1)
-
                     
                 except KeyboardInterrupt, k:
                     logger.info("Data Cache server shutting down...")
