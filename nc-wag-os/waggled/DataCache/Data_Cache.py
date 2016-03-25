@@ -151,7 +151,7 @@ class DataCache:
                     self.stop()
                     sys.exit(1)
                     
-                    t_start = datetime.datetime.now()
+                t_start = datetime.datetime.now()
                 try:
                     data = client_sock.recv(2048) #arbitrary
                     t_waiting = datetime.datetime.now()
