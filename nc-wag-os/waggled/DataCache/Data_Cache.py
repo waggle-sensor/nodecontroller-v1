@@ -12,6 +12,7 @@ from msg_handler import msg_handler
 from glob import glob
 import logging, logging.handlers
 import signal
+from datetime import datetime
 
 from waggle_protocol.utilities.pidfile import PidFile, AlreadyRunning
 
@@ -150,8 +151,10 @@ class DataCache:
                     self.stop()
                     sys.exit(1)
                     
+                    t_start = datetime.now()
                 try:
                     data = client_sock.recv(2048) #arbitrary
+                    t_waiting = datetime.now()
                     if logger.isEnabledFor(logging.DEBUG):
                         if data != '|o':
                             logger.debug('(DataCache) received data.')
@@ -245,6 +248,10 @@ class DataCache:
                                             #pushes the message into the outgoing buffer to the queue corresponding to the device location and message priority
                                             self.outgoing_push(int(dev_loc), msg_p, data)
                                             #If the device is registered and the push is successful, no need to try again, break the loop
+                                            
+                                            t_processed = datetime.now()
+                                            logger.debug( "waiting time   : %s" % (str((t_waiting-t_start).total_seconds())))
+                                            logger.debug( "processing time: %s" % (str((t_processed-t_waiting).total_seconds())))
                                             break 
                                         except Exception as e: 
                                             logger.error("outgoing_push2: "+str(e))
