@@ -110,9 +110,11 @@ def pika_push():
             time_2 = time.time()
             logger.debug('Pika_push: sending message took %d seconds' % (time_2 - time_1))
             
-        if connection:        
-            connection.close(0)
-
+        if connection:
+            try:
+                connection.close(0)
+            except:
+                pass
 
 
 
