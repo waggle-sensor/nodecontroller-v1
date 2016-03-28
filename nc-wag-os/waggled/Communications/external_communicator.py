@@ -220,7 +220,7 @@ def external_client_pull():
                                 logger.debug("put message from DC in outgoing queue")
                                 comm.outgoing.put(msg) #puts the message in the outgoing queue
                             else:
-                                logger.debug("DC has no message for me.")
+                                #logger.debug("DC has no message for me.")
                                 time.sleep(1)
                         else:
                             logger.debug("DC has no message for me. (msg==None !?)")
