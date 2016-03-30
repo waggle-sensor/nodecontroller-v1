@@ -128,9 +128,5 @@ for script in $(ls -1 ${waggle_dir}/upstart/) ; do
 done
 
 
-
-#creates udev rule to attach Wagman to /dev/wagman
-ln -sf  ${waggled_dir}/99-usb-serial.rules /etc/udev/rules.d/
-
 echo "done"
 
