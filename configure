@@ -122,11 +122,9 @@ mkdir -p /var/log/comms
 rm -f /etc/supervisor/conf.d/waggle_*
 
 
-# upstart
-for script in $(ls -1 ${waggle_dir}/upstart/) ; do 
-  cp ${waggle_dir}/upstart/${script} /etc/init/ 
-done
-
+# copy upstart scripts
+cp ${waggle_dir}/upstart/waggle-* /etc/init/
+rm -f ${waggle_dir}/upstart/waggle_*
 
 echo "done"
 
