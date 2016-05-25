@@ -36,7 +36,7 @@ import pika
 import ssl
 import pickle
 import zlib
-from waggle_protocol.protocol.PacketHandler import pack
+from packet import pack
 
 
 class Connection(object):
