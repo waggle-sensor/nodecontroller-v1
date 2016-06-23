@@ -23,6 +23,7 @@ usage_dict={
     'cu'        : [['cu', 'current usage']],
     'hb'        : [['hb', 'last heartbeat times']],
     'therm'     : [['therm', 'thermistor values (though none are connected right now)']]
+    'help'      : [['help', '']]
     }
 
 
@@ -61,19 +62,20 @@ if __name__ == "__main__":
 
     theader = ['syntax', 'description']
     data=[]
+    
+    if len(sys.argv) > 0:    
+        if sys.argv[1] == 'help' or sys.argv[1] == '?':
+            for cmd in wagman_client(['help']):
+                if cmd in usage_dict:
+                    for syntax in usage_dict[cmd]:
+                        #print "\n".join(variant)
+                        data.append(syntax)
+                else:
+                    data.append([cmd, ''])
         
-    if sys.argv[1] == 'help' or sys.argv[1] == '?':
-        for cmd in wagman_client(['help']):
-            if cmd in usage_dict:
-                for syntax in usage_dict[cmd]:
-                    #print "\n".join(variant)
-                    data.append(syntax)
-            else:
-                data.append([cmd, ''])
         
-        
-        print tabulate(data, theader, tablefmt="psql")        
-        sys.exit(0)
+            print tabulate(data, theader, tablefmt="psql")        
+            sys.exit(0)
 
     for line in wagman_client(sys.argv[1:]):
         print line
