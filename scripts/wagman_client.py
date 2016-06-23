@@ -22,7 +22,7 @@ usage_dict={
                     ['date <year> <month> <day> <hour> <minute> <second>', 'sets rtc date and time']],
     'cu'        : [['cu', 'current usage']],
     'hb'        : [['hb', 'last heartbeat times']],
-    'therm'     : [['therm', 'thermistor values (though none are connected right now)']]
+    'therm'     : [['therm', 'thermistor values (though none are connected right now)']],
     'help'      : [['help', '']]
     }
 
