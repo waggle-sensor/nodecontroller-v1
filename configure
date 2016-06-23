@@ -116,7 +116,7 @@ rm -f ${waggle_dir}/upstart/waggle_*
 
 
 
-ln -sf ${current_dir}/scripts/wagman-client.py /usr/bin/wagman-client
+ln -sf ${current_dir}/scripts/wagman_client.py /usr/bin/wagman-client
 
 # bash_completion scripts
 cp ${current_dir}/scripts/wagman-client.bash_completion /etc/bash_completion.d/wagman-client
