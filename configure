@@ -7,6 +7,7 @@ set -x
 export waggle_dir="$(pwd)"
 export waggled_dir="${waggle_dir}/nc-wag-os/waggled"
 
+export current_dir="$(pwd)"
 
 if [ "$EUID" -ne 0 ]
   then echo "Please run as root"
@@ -104,19 +105,6 @@ mkdir -p /var/log/comms
 
 
 
-# add init.d scripts
-
-#missing: heartbeat_start.sh
-#for script in communications.sh data_cache.sh waggle_core_sense.sh WagMan_start.sh heartbeat_setup_start.sh  ; do
-#  ln -sf  ${waggled_dir}/init.d/${script} /etc/init.d/
-#  update-rc.d communications.sh defaults
-#done
-
-# just in case:
-#mkdir -p /etc/supervisor/conf.d/
-#for script in waggle_communications.conf waggle_data_cache.conf waggle_wagman.conf waggle_reverse_ssh_tunnel.conf ; do
-#    ln -sf ${waggled_dir}/supervisor/${script} /etc/supervisor/conf.d/${script}
-#done
 
 # transition from supervisor to upstart
 rm -f /etc/supervisor/conf.d/waggle_*
@@ -125,6 +113,14 @@ rm -f /etc/supervisor/conf.d/waggle_*
 # copy upstart scripts
 cp ${waggle_dir}/upstart/waggle-* /etc/init/
 rm -f ${waggle_dir}/upstart/waggle_*
+
+
+
+ln -sf ${current_dir}/scripts/wagman-client.py /usr/bin/wagman-client
+
+# bash_completion scripts
+cp ${current_dir}/scripts/wagman-client.bash_completion /etc/bash_completion.d/wagman-client
+
 
 echo "done"
 

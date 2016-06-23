@@ -1,0 +1,16 @@
+_have wagman-client &&
+_wagman_complete()
+{
+  local cur prev
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+
+  if [ $COMP_CWORD -eq 1 ]; then
+    COMPREPLY=( $(compgen -W "start stop stop! info eedump date cu hb therm" -- $cur) )
+  fi
+
+  return 0
+} &&
+complete -F _wagman_complete wagman-client
