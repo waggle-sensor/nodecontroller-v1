@@ -33,7 +33,7 @@ def wagman_client(args):
     if not os.path.islink(wagman_device):
         raise Exception('Symlink %s not found' % (wagman_device))
     
-    serial = Serial(wagman_device, 115200)
+    serial = Serial(wagman_device, 115200, timeout=5)
 
     command = ' '.join(args)
     serial.write(command.encode('ascii'))
