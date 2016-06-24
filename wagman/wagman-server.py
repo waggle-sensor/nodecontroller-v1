@@ -29,7 +29,7 @@ if __name__ == "__main__":
                 while True:
                     #  Wait for next request from client
                     message = server_socket.recv()
-                    print "Received request: ", message
+                    print("Received request: ", message)
                     
                     try:
                         serial.write(message.encode('ascii'))
