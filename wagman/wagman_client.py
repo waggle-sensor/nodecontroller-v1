@@ -3,7 +3,9 @@
 import sys, os
 from serial import Serial
 from tabulate import tabulate
-
+import zmq
+import sys
+import uuid
 
 
 header_prefix = '<<<-'
@@ -33,36 +35,60 @@ def wagman_client(args):
     if not os.path.islink(wagman_device):
         raise Exception('Symlink %s not found' % (wagman_device))
     
-    serial = Serial(wagman_device, 115200, timeout=5, write_timeout=5)
-
     command = ' '.join(args)
-    try:
-        serial.write(command.encode('ascii'))
-        serial.write(b'\n')
-    except Exception as e:
-        raise Exception('Could not write to %s: %s' % (wagman_device, str(e)))
     
-
-    # header
-    header = serial.readline().decode().strip()
-
-    if header.startswith(header_prefix):
-        # TODO parse header line
-        pass
-    else:
-        serial.close()
-        raise Exception('header not found')
-
-
-    while (1):
-        line = serial.readline().decode().strip()
+    session_id = uuid.uuid4()
     
-        if line.startswith(footer_prefix):
-            break
+    with Serial(wagman_device, 115200, timeout=5, write_timeout=5) as serial:
+
         
-        yield line
+        try:
+            serial.write(command.encode('ascii'))
+            serial.write(b'\n')
+        except Exception as e:
+            raise Exception('Could not write to %s: %s' % (wagman_device, str(e)))
     
-    serial.close()   
+    
+    context = zmq.Context()
+    socket = context.socket(zmq.SUB)
+    socket.connect('ipc:///tmp/zeromq_wagman-pub')
+
+    # only waits for session response
+    socket.setsockopt_string(zmq.SUBSCRIBE, session_id)
+    
+    
+    response = socket.recv_string()
+    print(response)
+    prefix, _, content = response.partition(':')
+
+    if prefix.startswith('cmd'):
+        print('{}:'.format(prefix))
+        print(content.strip())
+    else:
+        print(content.strip())
+            
+
+def wagman_log():
+    
+    context = zmq.Context()
+    socket = context.socket(zmq.SUB)
+    socket.connect('ipc:///tmp/zeromq_wagman-pub')
+
+    # only waits for session response
+    socket.setsockopt_string(zmq.SUBSCRIBE, 'log:')
+    
+    while True:
+        response = socket.recv_string()
+        print(response)
+        prefix, _, content = response.partition(':')
+
+        if prefix.startswith('cmd'):
+            print('{}:'.format(prefix))
+            print(content.strip())
+        else:
+            print(content.strip())
+    
+    
     
 
 def usage():
@@ -94,6 +120,10 @@ if __name__ == "__main__":
     if len(sys.argv) > 1: 
         if sys.argv[1] == 'help' or sys.argv[1] == '?':
             usage()
+        if sys.argv[1] == 'log':
+            wagman_log()
+            sys.exit(0)
+            
 
     try:
         for line in wagman_client(sys.argv[1:]):
