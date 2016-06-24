@@ -37,6 +37,7 @@ usage_dict={
 def send_request(command):
     
     # connection to server to send request
+    context = zmq.Context()
     socket_client = context.socket(zmq.REQ)
     socket_client.connect('ipc:///tmp/zeromq_wagman-server')
     
@@ -72,7 +73,7 @@ def wagman_client(args):
     
 
     # only waits for session response
-    socket.setsockopt_string(zmq.SUBSCRIBE, bytes(session_id, encoding="latin-1"))
+    socket.setsockopt_string(zmq.SUBSCRIBE, str(session_id))
     
 
     # send request to server
