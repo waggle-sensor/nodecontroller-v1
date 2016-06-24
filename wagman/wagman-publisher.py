@@ -12,7 +12,7 @@ The WagMan publisher is responsible for distributing output of the WagMan-serial
 
 header_prefix = '<<<-'
 footer_prefix = '->>>'
-wagman_device = '/dev/waggle_sysmonX'
+wagman_device = '/dev/waggle_sysmon'
 
 
 
