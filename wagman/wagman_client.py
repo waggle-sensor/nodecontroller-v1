@@ -48,7 +48,7 @@ def send_request(command):
         raise Exception('error %s' % (str(e)))
         
         
-    message = socket.recv()
+    message = socket_client.recv()
     
     if not message == "OK":
         raise Exception(message)

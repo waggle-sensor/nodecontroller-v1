@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
             
         except Exception as e:
-            socket.send_string("not connected to wagman")
+            socket.send_string("error: not connected to wagman")
             if str(e) != previous_error:
                 print(e)
                 previous_error = str(e)

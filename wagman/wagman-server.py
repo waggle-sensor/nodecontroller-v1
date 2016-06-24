@@ -28,17 +28,17 @@ if __name__ == "__main__":
                 
                 while True:
                     #  Wait for next request from client
-                    message = socket.recv()
+                    message = server_socket.recv()
                     print "Received request: ", message
                     
                     try:
                         serial.write(message.encode('ascii'))
                         serial.write(b'\n')
                     except Exception as e:
-                        socket.send("error: %s" % str(e))
+                        server_socket.send("error: %s" % str(e))
                         raise Exception('Could not write to %s: %s' % (wagman_device, str(e)))
                     
-                    socket.send("OK")
+                    server_socket.send("OK")
         except Exception as e:
             print("error: %s" % str(e))
             
