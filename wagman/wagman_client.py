@@ -42,7 +42,7 @@ def send_request(command):
     socket_client.connect('ipc:///tmp/zeromq_wagman-server')
     
     try:
-        socket_client.send(command)
+        socket_client.send(command.encode('ascii'))
         #serial.write(command.encode('ascii'))
         #serial.write(b'\n')
     except Exception as e:
