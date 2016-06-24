@@ -4,7 +4,7 @@ import sys
 from serial import Serial
 import time
 
-wagman_device = '/dev/waggle_sysmonX'
+wagman_device = '/dev/waggle_sysmon'
 
 """
 The WagMan server accepts commands that can be send to the WagMan. A session ID (e.g. based on UUID) is used to identify the correct reply message.
