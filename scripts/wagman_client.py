@@ -29,6 +29,10 @@ usage_dict={
 
 
 def wagman_client(args):
+    
+    if not os.path.islink(wagman_device):
+        raise Exception('Symlink %s not found' % (wagman_device))
+    
     serial = Serial(wagman_device, 115200)
 
     command = ' '.join(args)
@@ -60,13 +64,17 @@ def wagman_client(args):
 def usage():
     theader = ['syntax', 'description']
     data=[]
-    for cmd in wagman_client(['help']):
-        if cmd in usage_dict:
-            for syntax in usage_dict[cmd]:
-                #print "\n".join(variant)
-                data.append(syntax)
-        else:
-            data.append([cmd, ''])
+    try:
+        for cmd in wagman_client(['help']):
+            if cmd in usage_dict:
+                for syntax in usage_dict[cmd]:
+                    #print "\n".join(variant)
+                    data.append(syntax)
+            else:
+                data.append([cmd, ''])
+    except Exception as e:
+        print "error: ", str(e)
+        sys.exit(1)
 
 
     print tabulate(data, theader, tablefmt="psql")        
@@ -83,9 +91,12 @@ if __name__ == "__main__":
         if sys.argv[1] == 'help' or sys.argv[1] == '?':
             usage()
 
-    for line in wagman_client(sys.argv[1:]):
-        print line
-
+    try:
+        for line in wagman_client(sys.argv[1:]):
+            print line
+    except Exception as e:
+        print "error: ", str(e)
+        sys.exit(1)
 
 
 
