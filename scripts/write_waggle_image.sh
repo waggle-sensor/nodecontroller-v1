@@ -9,8 +9,8 @@
 
 #example: IMAGE="waggle-odroid-c1-20151105.img"
 #// Transcend
-USB_NAME="         Manufacturer: TS-RDF5"
-#USB_NAME="          Serial Number: 000000000820"
+#USB_NAME="         Manufacturer: TS-RDF5"
+USB_NAME="          Serial Number: 000000000820"
 
 if [ "${1}x" != "x" ] ; then
   IMAGE=${1}
@@ -81,11 +81,18 @@ if [[ "$unamestr" == 'Darwin' ]]; then
       else
         pv -per --width 80 -f ${IMAGE} | dd of=/dev/r${DEVICE_NAME} bs=1m
       fi
+      echo "please wait..."
       set +x
-      sleep 2
       sync
+      sleep 5
+      if [ $(diskutil list | grep -c "^/dev/${DEVICE_NAME}") -eq 1 ] ; then      
+        diskutil unmountDisk /dev/${DEVICE_NAME}
+        sleep 2
+      fi
       diskutil eject /dev/r${DEVICE_NAME}
       set +x
+      sleep 1
+      echo "ejected, please remove memory card."
     fi
     sleep 2  
 
