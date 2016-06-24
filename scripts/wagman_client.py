@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys, os
 from serial import Serial
@@ -73,11 +73,11 @@ def usage():
             else:
                 data.append([cmd, ''])
     except Exception as e:
-        print "error: ", str(e)
+        print("error: ", str(e))
         sys.exit(1)
 
 
-    print tabulate(data, theader, tablefmt="psql")        
+    print(tabulate(data, theader, tablefmt="psql"))
     sys.exit(0)
     
 
@@ -93,9 +93,9 @@ if __name__ == "__main__":
 
     try:
         for line in wagman_client(sys.argv[1:]):
-            print line
+            print(line)
     except Exception as e:
-        print "error: ", str(e)
+        print("error: ", str(e))
         sys.exit(1)
 
 
