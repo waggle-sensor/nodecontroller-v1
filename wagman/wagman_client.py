@@ -89,7 +89,7 @@ def wagman_client(args):
     except Exception as e:
         raise Exception("Error receiving response: %s" % (str(e)))
         
-    print(response)
+    print("Response:", response)
     prefix, _, content = response.partition(':')
 
     if prefix.startswith('cmd'):
