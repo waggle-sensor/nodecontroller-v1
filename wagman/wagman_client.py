@@ -8,6 +8,11 @@ import sys
 import uuid
 
 
+"""
+Client script/library to talk to the WagMan. The library uses zeromq to talk with WagMan publisher and server. 
+"""
+
+
 header_prefix = '<<<-'
 footer_prefix = '->>>'
 wagman_device = '/dev/waggle_sysmon'
@@ -71,8 +76,10 @@ def wagman_client(args):
     
 
     # send request to server
-    send_request(command)
-    
+    try:
+        send_request(command)
+    except Exception as e:
+        raise Exception("Error sending request: %s" % (str(e)))
     
     
     # get response from publisher
@@ -124,6 +131,7 @@ def usage():
                 data.append([cmd, ''])
     except Exception as e:
         print("error: ", str(e))
+        print("Note: help is only available when the wagman is connected.")
         sys.exit(1)
 
 

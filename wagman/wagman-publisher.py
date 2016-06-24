@@ -6,7 +6,9 @@ import time
 import sys
 
 
-
+"""
+The WagMan publisher is responsible for distributing output of the WagMan-serial line to subscribers. Subscribers may need to use a session ID.
+"""
 
 header_prefix = '<<<-'
 footer_prefix = '->>>'

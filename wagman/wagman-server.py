@@ -2,11 +2,15 @@
 import zmq
 import sys
 from serial import Serial
-
+import time
 
 wagman_device = '/dev/waggle_sysmonX'
 
-
+"""
+The WagMan server accepts commands that can be send to the WagMan. A session ID (e.g. based on UUID) is used to identify the correct reply message.
+Returns: "OK" on success
+         "error"-prefixed error message in case of an error
+"""
 
 if __name__ == "__main__":
     
@@ -35,4 +39,8 @@ if __name__ == "__main__":
                         raise Exception('Could not write to %s: %s' % (wagman_device, str(e)))
                     
                     socket.send("OK")
+        except Exception as e:
+            print("error: %s" % str(e))
+            
+        time.sleep(5)
                     
