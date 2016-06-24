@@ -21,7 +21,7 @@ if __name__ == "__main__":
     socket = context.socket(zmq.PUB)
     socket.bind('tcp://*:5555')
 
-
+    previous_error=''
 
     while True:
         try:
@@ -60,7 +60,9 @@ if __name__ == "__main__":
 
             
         except Exception as e:
-            print(e)
+            if str(e) != previous_error:
+                print(e)
+                previous_error = str(e)
         
         time.sleep(5)
     
