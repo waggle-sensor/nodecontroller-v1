@@ -29,6 +29,25 @@ usage_dict={
     }
 
 
+def send_request(command):
+    
+    # connection to server to send request
+    socket_client = context.socket(zmq.REQ)
+    socket_client.connect('ipc:///tmp/zeromq_wagman-server')
+    
+    try:
+        socket_client.send(command.encode('ascii'))
+        #serial.write(command.encode('ascii'))
+        #serial.write(b'\n')
+    except Exception as e:
+        raise Exception('error %s' % (str(e)))
+        
+        
+    message = socket.recv()
+    
+    if not message == "OK":
+        raise Exception(message)
+    
 
 def wagman_client(args):
     
@@ -39,23 +58,24 @@ def wagman_client(args):
     
     session_id = uuid.uuid4()
     
-    with Serial(wagman_device, 115200, timeout=5, write_timeout=5) as serial:
-
-        
-        try:
-            serial.write(command.encode('ascii'))
-            serial.write(b'\n')
-        except Exception as e:
-            raise Exception('Could not write to %s: %s' % (wagman_device, str(e)))
-    
-    
+    # first subscribe, then send request
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
     socket.connect('ipc:///tmp/zeromq_wagman-pub')
+    
+    
+    
 
     # only waits for session response
     socket.setsockopt_string(zmq.SUBSCRIBE, session_id)
     
+
+    # send request to server
+    send_request(command)
+    
+    
+    
+    # get response from publisher
     
     response = socket.recv_string()
     print(response)
