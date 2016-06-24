@@ -10,7 +10,7 @@ import sys
 
 header_prefix = '<<<-'
 footer_prefix = '->>>'
-wagman_device = '/dev/waggle_sysmon'
+wagman_device = '/dev/waggle_sysmonX'
 
 
 
@@ -19,15 +19,16 @@ if __name__ == "__main__":
 
     context = zmq.Context()
     socket = context.socket(zmq.PUB)
-    socket.bind('tcp://*:5555')
+    #socket.bind('tcp://*:5555')
+    socket.bind('ipc:///tmp/zeromq_wagman-pub')
 
     previous_error=''
 
     while True:
         try:
             # connect to device
-            with Serial(wagman_device, 115200, timeout=5, writeTimeout=5) as serial:
-                print('connected!')
+            with Serial(wagman_device, 115200, timeout=8, writeTimeout=8) as serial:
+                print('connected to %s!' % (wagman_device))
 
                 output = []
                 incommand = False
@@ -60,6 +61,7 @@ if __name__ == "__main__":
 
             
         except Exception as e:
+            socket.send_string("not connected to wagman")
             if str(e) != previous_error:
                 print(e)
                 previous_error = str(e)
