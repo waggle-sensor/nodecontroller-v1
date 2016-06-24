@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys
+import sys, os
 from serial import Serial
 from tabulate import tabulate
 
