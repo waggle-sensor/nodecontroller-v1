@@ -21,3 +21,4 @@ apt-get install -y python3-pip
 
 pip3 install pyserial
 pip3 install tabulate
+pip3 install pyzmq
