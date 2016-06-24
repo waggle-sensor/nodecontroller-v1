@@ -41,7 +41,7 @@ def send_request(command):
     socket_client.connect('ipc:///tmp/zeromq_wagman-server')
     
     try:
-        socket_client.send(command.encode('ascii'))
+        socket_client.send(command)
         #serial.write(command.encode('ascii'))
         #serial.write(b'\n')
     except Exception as e:
@@ -51,7 +51,7 @@ def send_request(command):
     message = socket_client.recv()
     
     if not message == "OK":
-        raise Exception(message)
+        raise Exception("wagman-server returned: %s" % (message))
     
 
 def wagman_client(args):
