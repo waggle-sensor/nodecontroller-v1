@@ -36,8 +36,12 @@ def wagman_client(args):
     serial = Serial(wagman_device, 115200, timeout=5, write_timeout=5)
 
     command = ' '.join(args)
-    serial.write(command.encode('ascii'))
-    serial.write(b'\n')
+    try:
+        serial.write(command.encode('ascii'))
+        serial.write(b'\n')
+    except Exception as e:
+        raise Exception('Could not write to %s: %s' % (wagman_device, str(e)))
+    
 
     # header
     header = serial.readline().decode().strip()
