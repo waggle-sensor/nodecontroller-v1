@@ -12,3 +12,12 @@ cd nc-wag-os/packages/python/
 
 pip install -e pika-0.9.14
 pip install pyserial
+
+
+# python3
+
+apt-get install -y python3-pip
+
+
+pip3 install pyserial
+pip3 install tabulate
