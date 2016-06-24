@@ -73,8 +73,10 @@ def wagman_client(args):
     
 
     # only waits for session response
-    socket.setsockopt_string(zmq.SUBSCRIBE, str(session_id))
-    
+    try:
+        socket.setsockopt_string(zmq.SUBSCRIBE, str(session_id))
+    except Exception as e:
+        raise Exception("Error insetsockopt_string: %s" % (str(e)))
 
     # send request to server
     try:
