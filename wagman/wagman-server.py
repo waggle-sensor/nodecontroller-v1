@@ -14,6 +14,7 @@ Returns: "OK" on success
 
 if __name__ == "__main__":
     
+    context = zmq.Context()
     server_socket = context.socket(zmq.REP)
     server_socket.bind('ipc:///tmp/zeromq_wagman-server')
     
