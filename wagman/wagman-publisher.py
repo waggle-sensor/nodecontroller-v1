@@ -26,7 +26,7 @@ if __name__ == "__main__":
     while True:
         try:
             # connect to device
-            with Serial(wagman_device, 115200, timeout=5, write_timeout=5) as serial:
+            with Serial(wagman_device, 115200, timeout=5, writeTimeout=5) as serial:
                 print('connected!')
 
                 output = []
