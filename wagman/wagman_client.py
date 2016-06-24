@@ -84,7 +84,11 @@ def wagman_client(args):
     
     # get response from publisher
     
-    response = socket.recv_string()
+    try:
+        response = socket.recv_string()
+    except Exception as e:
+        raise Exception("Error receiving response: %s" % (str(e)))
+        
     print(response)
     prefix, _, content = response.partition(':')
 
