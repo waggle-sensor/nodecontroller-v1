@@ -72,7 +72,7 @@ def wagman_client(args):
     
 
     # only waits for session response
-    socket.setsockopt_string(zmq.SUBSCRIBE, session_id)
+    socket.setsockopt_string(zmq.SUBSCRIBE, bytes(session_id, encoding="latin-1"))
     
 
     # send request to server
