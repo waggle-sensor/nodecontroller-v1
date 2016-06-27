@@ -30,7 +30,10 @@ if __name__ == "__main__":
                 
                 while True:
                     #  Wait for next request from client
-                    message = server_socket.recv()
+                    try:
+                        message = server_socket.recv()
+                    except Exception as e:
+                        raise Exception("error recv message: %s" % str(e))
                     print("Received request: ", message)
                     
                     try:
