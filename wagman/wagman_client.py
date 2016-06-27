@@ -179,19 +179,24 @@ def wagman_log():
 def usage():
     theader = ['syntax', 'description']
     data=[]
+    suported_commands={}
     try:
         result = wagman_client(['help'])
         for cmd in result[1].split('\n'):
-            if cmd in usage_dict:
-                for syntax in usage_dict[cmd]:
-                    #print "\n".join(variant)
-                    data.append(syntax)
-            else:
-                data.append([cmd, ''])
+            suported_commands[cmd]=1
+            
     except Exception as e:
         print("error: ", str(e))
         print("Note: help is only available when the wagman is connected.")
         sys.exit(1)
+
+    for key in usage_dict.keys():
+        if cmd in suported_commands:
+            for syntax in usage_dict[cmd]:
+                data.append(syntax)
+    
+        else:
+            data.append([cmd, ''])
 
 
     print(tabulate(data, theader, tablefmt="psql"))
