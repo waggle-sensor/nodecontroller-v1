@@ -190,7 +190,7 @@ def usage():
         print("Note: help is only available when the wagman is connected.")
         sys.exit(1)
 
-    for key in usage_dict.keys():
+    for cmd in usage_dict.keys():
         if cmd in usage_dict:
             for syntax in usage_dict[cmd]:
                 data.append(syntax)
