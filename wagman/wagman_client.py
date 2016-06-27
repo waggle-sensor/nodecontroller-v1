@@ -47,7 +47,7 @@ def send_request(command):
         message = socket_client.recv(zmq.NOBLOCK)
     except zmq.error.Again as e:
         # no message, that is ok.
-        pass
+        break
     except Exception as e:
         raise Exception("warning recv: %s" % str(e))
     
