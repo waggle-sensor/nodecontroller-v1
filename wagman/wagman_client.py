@@ -117,6 +117,7 @@ def wagman_client(args):
     # get response from publisher
     
     timeout=0
+    response=''
     try:
         response = socket.recv_string(zmq.NOBLOCK)
     except zmq.error.Again as e:
