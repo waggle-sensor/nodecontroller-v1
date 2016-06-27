@@ -118,6 +118,7 @@ def wagman_client(args):
     
     timeout=0
     response=''
+    skip=0
     try:
         response = socket.recv_string(zmq.NOBLOCK)
     except zmq.error.Again as e:
@@ -127,9 +128,10 @@ def wagman_client(args):
         
         timeout+=1
         time.sleep(1)
-        
+        skip=1
     except Exception as e:
-        raise Exception("Error receiving response: %s" % (str(e)))
+        if skip==0:
+            raise Exception("Error receiving response: %s" % (str(e)))
         
     print("Response:", response)
     prefix, _, content = response.partition(':')
