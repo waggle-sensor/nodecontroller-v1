@@ -6,7 +6,7 @@ from tabulate import tabulate
 import zmq
 import sys
 import uuid
-
+import time
 
 """
 Client script/library to talk to the WagMan. The library uses zeromq to talk with WagMan publisher and server. 
