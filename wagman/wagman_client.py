@@ -131,9 +131,9 @@ def wagman_client(args):
         skip=1
     except Exception as e:
         if skip==0:
-            raise Exception("Error receiving response: %s" % (str(e)))
+            raise Exception("Error receiving response (%s): %s" % (type(e), str(e)))
         
-    print("Response:", response)
+    print("Response: \"%s\"" % (response))
     prefix, _, content = response.partition(':')
 
     if prefix.startswith('cmd'):
