@@ -177,15 +177,15 @@ def wagman_log():
     
     
     
-
+# TODO list wagman supported commands that are not listed in above usage.
 def usage():
     theader = ['syntax', 'description']
     data=[]
-    suported_commands={}
+    supported_commands={}
     try:
         result = wagman_client(['help'])
         for cmd in result[1].split('\n'):
-            suported_commands[cmd]=1
+            supported_commands[cmd]=1
             
     except Exception as e:
         print("error: ", str(e))
@@ -195,7 +195,7 @@ def usage():
     #for cmd in usage_dict.keys():
     for syntax_obj in usage_array:
         cmd = syntax_obj[0]
-        if cmd in suported_commands:
+        if cmd in supported_commands:
             for syntax in syntax_obj[1:]:
                 data.append(syntax)
     
