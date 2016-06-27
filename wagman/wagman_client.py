@@ -59,7 +59,7 @@ def send_request(command):
         #serial.write(command.encode('ascii'))
         #serial.write(b'\n')
     except Exception as e:
-        raise Exception('error %s' % (str(e)))
+        raise Exception('error (%s) %s' % (type(e), str(e)))
         
     message = None
     timeout = 0
