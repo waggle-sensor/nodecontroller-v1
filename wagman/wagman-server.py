@@ -39,7 +39,11 @@ if __name__ == "__main__":
                         server_socket.send("error: %s" % str(e))
                         raise Exception('Could not write to %s: %s' % (wagman_device, str(e)))
                     
-                    server_socket.send("OK")
+                    try:
+                        server_socket.send("OK")
+                    except Exception as e:
+                        raise Exception("error sending OK: %s" % str(e))
+                        
         except Exception as e:
             print("error: %s" % str(e))
             

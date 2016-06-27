@@ -53,7 +53,7 @@ def send_request(command):
         try:
             message = socket_client.recv(zmq.NOBLOCK)
         except Exception as e:
-            print("error:", str(e))
+            print("error recv:", str(e))
             time.sleep(1)
     
     if not message == "OK":
