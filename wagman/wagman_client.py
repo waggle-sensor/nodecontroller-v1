@@ -31,7 +31,8 @@ usage_array=[
     ['cu',      ['cu', 'current usage']],
     ['hb',      ['hb', 'last heartbeat times']],
     ['therm',       ['therm', 'thermistor values (though none are connected right now)']],
-    ['help',        ['help', '']]
+    ['help',        ['help', '']],
+    ['id',          ['return WagMan unique identifier']]
     ]
 
 
@@ -182,10 +183,19 @@ def usage():
     theader = ['syntax', 'description']
     data=[]
     supported_commands={}
+    documented_commands={}
+    undocumented_commands={}
+    
+    for syntax_obj in usage_array:
+        cmd = syntax_obj[0]
+        documented_commands[cmd]=1
+    
     try:
         result = wagman_client(['help'])
         for cmd in result[1].split('\n'):
             supported_commands[cmd]=1
+            if not cmd in documented_commands:
+                undocumented_commands[cmd]=1
             
     except Exception as e:
         print("error: ", str(e))
@@ -202,6 +212,8 @@ def usage():
         else:
             data.append([cmd, ''])
 
+    for cmd in undocumented_commands.keys():
+        data.append([cmd, ''])
 
     print(tabulate(data, theader, tablefmt="psql"))
     sys.exit(0)
