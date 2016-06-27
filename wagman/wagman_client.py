@@ -49,7 +49,7 @@ def send_request(command):
         # no message, that is ok.
         pass
     except Exception as e:
-        raise("warning recv: %s" % str(e))
+        raise Exception("warning recv: %s" % str(e))
     
     
     try:
