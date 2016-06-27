@@ -18,6 +18,7 @@ if __name__ == "__main__":
     server_socket = context.socket(zmq.REP)
     server_socket.bind('ipc:///tmp/zeromq_wagman-server')
     
+    
     while True:
         try:
             # connect to device
@@ -36,11 +37,11 @@ if __name__ == "__main__":
                         serial.write(message.encode('ascii'))
                         serial.write(b'\n')
                     except Exception as e:
-                        server_socket.send("error: %s" % str(e))
+                        server_socket.send("error (serial.write): %s" % str(e))
                         raise Exception('Could not write to %s: %s' % (wagman_device, str(e)))
                     
                     try:
-                        server_socket.send("OK")
+                        server_socket.send("OK".encode('ascii'))
                     except Exception as e:
                         raise Exception("error sending OK: %s" % str(e))
                         
