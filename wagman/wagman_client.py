@@ -213,7 +213,7 @@ def usage():
             data.append([cmd, ''])
 
     for cmd in undocumented_commands.keys():
-        data.append([cmd, ''])
+        data.append([cmd, ' '])
 
     print(tabulate(data, theader, tablefmt="psql"))
     sys.exit(0)
