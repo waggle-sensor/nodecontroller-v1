@@ -51,7 +51,7 @@ def send_request(command):
         skip=1
     except Exception as e:
         if skip==0:
-            raise Exception("warning recv: %s" % str(e))
+            raise Exception("warning recv: (%s) %s" % (type(e), str(e)))
     
     
     try:
