@@ -116,8 +116,17 @@ def wagman_client(args):
     
     # get response from publisher
     
+    timeout=0
     try:
-        response = socket.recv_string()
+        response = socket.recv_string(zmq.NOBLOCK)
+    except zmq.error.Again as e:
+        # no message
+        if timeout > 5:
+            raise Exception('recv_string timeout')
+        
+        timeout+=1
+        time.sleep(1)
+        
     except Exception as e:
         raise Exception("Error receiving response: %s" % (str(e)))
         
