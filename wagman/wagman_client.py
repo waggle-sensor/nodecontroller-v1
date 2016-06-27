@@ -48,8 +48,13 @@ def send_request(command):
     except Exception as e:
         raise Exception('error %s' % (str(e)))
         
-        
-    message = socket_client.recv()
+    message = None
+    while (message == None):
+        try:
+            message = socket_client.recv(zmq.NOBLOCK)
+        except Exception as e:
+            print("error:", str(e))
+            time.sleep(1)
     
     if not message == "OK":
         raise Exception("wagman-server returned: %s" % (message))
