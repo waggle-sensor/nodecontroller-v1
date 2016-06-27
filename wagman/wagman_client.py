@@ -191,7 +191,7 @@ def usage():
         sys.exit(1)
 
     for key in usage_dict.keys():
-        if cmd in suported_commands:
+        if cmd in usage_dict:
             for syntax in usage_dict[cmd]:
                 data.append(syntax)
     
