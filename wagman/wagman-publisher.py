@@ -4,6 +4,7 @@ from serial import Serial
 import zmq
 import time
 import sys
+import os.path
 
 
 """
@@ -24,13 +25,26 @@ if __name__ == "__main__":
     #socket.bind('tcp://*:5555')
     socket.bind('ipc:///tmp/zeromq_wagman-pub')
 
-    previous_error=''
+
+    last_message=""
+    
+    symlink_not_found_msg="error: symlink %s not found" % (wagman_device)
+    wagman_connected_msg = 'connected to %s!' % (wagman_device)
 
     while True:
+        
+        if not os.path.exists(wagman_device):
+            if last_message != symlink_not_found_msg:
+                last_message = symlink_not_found_msg
+                print(symlink_not_found_msg)
+            time.sleep(5)
+            continue
+        
         try:
-            # connect to device
+            # connect to wagman
             with Serial(wagman_device, 115200, timeout=8, writeTimeout=8) as serial:
-                print('connected to %s!' % (wagman_device))
+                last_message = wagman_connected_msg
+                print(wagman_connected_msg)
 
                 output = []
                 incommand = False
@@ -64,7 +78,7 @@ if __name__ == "__main__":
             
         except Exception as e:
             socket.send_string("error: not connected to wagman")
-            if str(e) != previous_error:
+            if str(e) != last_message:
                 print(e)
                 previous_error = str(e)
         
