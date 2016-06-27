@@ -20,19 +20,21 @@ wagman_device = '/dev/waggle_sysmon'
 debug=0
 
 # make sure you keep util/wagman-client.bash_completion in sync !
-usage_dict={
-    'start'     : [['start <portnum>', 'starts device on portnum']],
-    'stop'      : [['stop <portnum>', 'stops device on portnum']],
-    'stop!'     : [['stop! <portnum>', 'immediately kills power to device on portnum']],
-    'info'      : [['info', 'prints some system info']],
-    'eedump'    : [['edump', 'prints a hex dump of all EEPROM']],
-    'date'      : [['date', 'shows rtc date and time'], 
+usage_array=[
+    ['start',       ['start <portnum>', 'starts device on portnum']],
+    ['stop',        ['stop <portnum>', 'stops device on portnum']],
+    ['stop!',       ['stop! <portnum>', 'immediately kills power to device on portnum']],
+    ['info',        ['info', 'prints some system info']],
+    ['eedump',      ['edump', 'prints a hex dump of all EEPROM']],
+    ['date',        ['date', 'shows rtc date and time'], 
                     ['date <year> <month> <day> <hour> <minute> <second>', 'sets rtc date and time']],
-    'cu'        : [['cu', 'current usage']],
-    'hb'        : [['hb', 'last heartbeat times']],
-    'therm'     : [['therm', 'thermistor values (though none are connected right now)']],
-    'help'      : [['help', '']]
-    }
+    ['cu',      ['cu', 'current usage']],
+    ['hb',      ['hb', 'last heartbeat times']],
+    ['therm',       ['therm', 'thermistor values (though none are connected right now)']],
+    ['help',        ['help', '']]
+    ]
+
+
 
 
 def send_request(command):
@@ -190,9 +192,11 @@ def usage():
         print("Note: help is only available when the wagman is connected.")
         sys.exit(1)
 
-    for cmd in usage_dict.keys():
-        if cmd in usage_dict:
-            for syntax in usage_dict[cmd]:
+    #for cmd in usage_dict.keys():
+    for syntax_obj in usage_array:
+        cmd = syntax_obj[0]
+        if cmd in suported_commands:
+            for syntax in syntax_obj[1:]:
                 data.append(syntax)
     
         else:
