@@ -34,6 +34,7 @@ if __name__ == "__main__":
                         message = server_socket.recv()
                     except Exception as e:
                         print("error recv message: %s" % str(e))
+                        server_socket.send("something")
                         continue
                         
                     print("Received request: ", message)
