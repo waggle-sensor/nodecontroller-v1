@@ -49,6 +49,9 @@ def send_request(command):
     except zmq.error.Again as e:
         # no message, that is ok.
         skip=1
+    except zmq.error.ZMQError as e:
+        # all was ok, it should not have tried to receive message
+        skip=1
     except Exception as e:
         if skip==0:
             raise Exception("warning recv: (%s) %s" % (type(e), str(e)))
