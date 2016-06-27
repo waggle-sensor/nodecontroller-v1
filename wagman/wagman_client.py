@@ -43,13 +43,15 @@ def send_request(command):
     
     
     #make sure first to receive, in case something has to be retrived first
+    skip = 0
     try:
         message = socket_client.recv(zmq.NOBLOCK)
     except zmq.error.Again as e:
         # no message, that is ok.
-        break
+        skip=1
     except Exception as e:
-        raise Exception("warning recv: %s" % str(e))
+        if skip==0:
+            raise Exception("warning recv: %s" % str(e))
     
     
     try:
