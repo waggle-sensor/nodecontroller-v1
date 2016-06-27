@@ -49,12 +49,20 @@ def send_request(command):
         raise Exception('error %s' % (str(e)))
         
     message = None
+    timeout = 0
     while (message == None):
         try:
             message = socket_client.recv(zmq.NOBLOCK)
-        except Exception as e:
-            print("error recv:", str(e))
+        except zmq.error.Again as e:
+            # no message
+            if (timeout > 5):
+                raise Exception("timeout")
+        
+            timeout+=1
             time.sleep(1)
+            continue
+        except Exception as e:
+            raise("error recv: %s" % str(e))
     
     if not message == "OK":
         raise Exception("wagman-server returned: %s" % (message))
