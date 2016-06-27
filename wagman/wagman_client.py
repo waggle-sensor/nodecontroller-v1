@@ -32,7 +32,13 @@ usage_array=[
     ['hb',      ['hb', 'last heartbeat times']],
     ['therm',       ['therm', 'thermistor values (though none are connected right now)']],
     ['help',        ['help', '']],
-    ['id',          ['return WagMan unique identifier']]
+    ['id',          ['return WagMan unique identifier']],
+    ['log',         ['']],
+    ['bs',          ['']],
+    ['reset',       ['']],
+    ['th',          ['']],
+    ['bf',          ['']],
+    ['ping',        ['']]
     ]
 
 
