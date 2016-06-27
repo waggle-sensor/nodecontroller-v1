@@ -21,24 +21,24 @@ debug=0
 
 # make sure you keep util/wagman-client.bash_completion in sync !
 usage_array=[
-    ['start',       ['start <portnum>', 'starts device on portnum']],
-    ['stop',        ['stop <portnum>', 'stops device on portnum']],
-    ['stop!',       ['stop! <portnum>', 'immediately kills power to device on portnum']],
-    ['info',        ['info', 'prints some system info']],
-    ['eedump',      ['edump', 'prints a hex dump of all EEPROM']],
-    ['date',        ['date', 'shows rtc date and time'], 
+    ['start',       ['start <portnum>',     'starts device on portnum']],
+    ['stop',        ['stop <portnum>',      'stops device on portnum']],
+    ['stop!',       ['stop! <portnum>',     'immediately kills power to device on portnum']],
+    ['info',        ['info',                'prints some system info']],
+    ['eedump',      ['edump',               'prints a hex dump of all EEPROM']],
+    ['date',        ['date',                'shows rtc date and time'], 
                     ['date <year> <month> <day> <hour> <minute> <second>', 'sets rtc date and time']],
-    ['cu',      ['cu', 'current usage']],
-    ['hb',      ['hb', 'last heartbeat times']],
-    ['therm',       ['therm', 'thermistor values (though none are connected right now)']],
-    ['help',        ['help', '']],
-    ['id',          ['return WagMan unique identifier']],
-    ['log',         ['']],
-    ['bs',          ['']],
-    ['reset',       ['']],
-    ['th',          ['']],
-    ['bf',          ['']],
-    ['ping',        ['']]
+    ['cu',          ['cu',                  'current usage']],
+    ['hb',          ['hb',                  'last heartbeat times']],
+    ['therm',       ['therm',               'thermistor values (though none are connected right now)']],
+    ['help',        ['help',                '']],
+    ['id',          ['id',                  'return WagMan unique identifier']],
+    ['log',         ['log',                 '']],
+    ['bs',          ['bs',                  '']],
+    ['reset',       ['reset',               '']],
+    ['th',          ['th',                  '']],
+    ['bf',          ['bf',                  '']],
+    ['ping',        ['ping',                '']]
     ]
 
 
