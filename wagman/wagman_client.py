@@ -41,6 +41,17 @@ def send_request(command):
     socket_client = context.socket(zmq.REQ)
     socket_client.connect('ipc:///tmp/zeromq_wagman-server')
     
+    
+    #make sure first to receive, in case something has to be retrived first
+    try:
+        message = socket_client.recv(zmq.NOBLOCK)
+    except zmq.error.Again as e:
+        # no message, that is ok.
+        pass
+    except Exception as e:
+        raise("warning recv: %s" % str(e))
+    
+    
     try:
         socket_client.send(command.encode('ascii'))
         #serial.write(command.encode('ascii'))
@@ -57,7 +68,7 @@ def send_request(command):
             # no message
             if (timeout > 5):
                 raise Exception("timeout")
-        
+    
             timeout+=1
             time.sleep(1)
             continue
