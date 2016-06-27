@@ -137,13 +137,15 @@ def wagman_client(args):
         break
         
     print("Response: \"%s\"" % (response))
-    prefix, _, content = response.partition(':')
+    header, _, body = response.partition('\n')
 
-    if prefix.startswith('cmd'):
-        print('{}:'.format(prefix))
-        print(content.strip())
-    else:
-        print(content.strip())
+    #print(body)
+    return [header, body]
+    #if prefix.startswith('cmd'):
+    #    print('{}:'.format(prefix))
+    #    print(content.strip())
+    #else:
+    #    print(content.strip())
             
 
 def wagman_log():
@@ -173,7 +175,8 @@ def usage():
     theader = ['syntax', 'description']
     data=[]
     try:
-        for cmd in wagman_client(['help']):
+        result = wagman_client(['help'])
+        for cmd in result[1].split('\n'):
             if cmd in usage_dict:
                 for syntax in usage_dict[cmd]:
                     #print "\n".join(variant)
@@ -205,8 +208,8 @@ if __name__ == "__main__":
             
 
     try:
-        for line in wagman_client(sys.argv[1:]):
-            print(line)
+        result = wagman_client(sys.argv[1:])
+        print(result[1]) # prints body
     except Exception as e:
         print("error: ", str(e))
         sys.exit(1)
