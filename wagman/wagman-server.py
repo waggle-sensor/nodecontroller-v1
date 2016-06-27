@@ -14,6 +14,9 @@ Returns: "OK" on success
          "error"-prefixed error message in case of an error
 """
 
+
+debug=1
+
 if __name__ == "__main__":
     
     context = zmq.Context()
@@ -48,6 +51,8 @@ if __name__ == "__main__":
                 
                 while True:
                     #  Wait for next request from client
+                    if debug:
+                        print("call recv")
                     try:
                         message = server_socket.recv()
                     except Exception as e:
