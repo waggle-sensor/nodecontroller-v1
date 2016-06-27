@@ -29,6 +29,8 @@ if __name__ == "__main__":
     symlink_not_found_msg="error: symlink %s not found" % (wagman_device)
     wagman_connected_msg = 'connected to %s!' % (wagman_device)
     
+    
+   
     while True:
         
         if not os.path.exists(wagman_device):
@@ -53,6 +55,8 @@ if __name__ == "__main__":
                     #  Wait for next request from client
                     if debug:
                         print("call recv")
+                        
+                        
                     try:
                         message = server_socket.recv()
                     except Exception as e:
@@ -66,11 +70,11 @@ if __name__ == "__main__":
                         serial.write(message.encode('ascii'))
                         serial.write(b'\n')
                     except Exception as e:
-                        server_socket.send("error (serial.write): %s" % str(e))
+                        server_socket.send_string("error (serial.write): %s" % str(e))
                         raise Exception('Could not write to %s: %s' % (wagman_device, str(e)))
     
                     try:
-                        server_socket.send("OK")
+                        server_socket.send_string("OK")
                     except Exception as e:
                         raise Exception("error sending OK: %s" % str(e))
                         
