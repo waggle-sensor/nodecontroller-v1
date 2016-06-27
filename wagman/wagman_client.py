@@ -80,7 +80,7 @@ def send_request(command):
         except Exception as e:
             raise("error recv: %s" % str(e))
     
-    if not message == "OK":
+    if not message == b"OK":
         raise Exception("wagman-server returned: %s" % (message))
     
 
