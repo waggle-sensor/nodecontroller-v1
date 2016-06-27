@@ -99,7 +99,8 @@ def wagman_client(args):
     socket.connect('ipc:///tmp/zeromq_wagman-pub')
     
     
-    
+    # TODO use session_id ! 
+    session_id=''
 
     # only waits for session response
     try:
@@ -114,7 +115,7 @@ def wagman_client(args):
         raise Exception("Error sending request: %s" % (str(e)))
     
     
-    # get response from publisher
+    # get "OK" response from publisher
     
     timeout=0
     response=''
