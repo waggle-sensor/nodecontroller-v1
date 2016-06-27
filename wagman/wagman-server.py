@@ -69,7 +69,8 @@ if __name__ == "__main__":
                     try:
                         #serial.write(message.encode('ascii'))
                         serial.write(message)
-                        serial.write(b'\n')
+                        #serial.write(b'\n')
+                        serial.write('\n')
                     except Exception as e:
                         server_socket.send_string("error (serial.write): %s" % str(e))
                         raise Exception('Could not write to %s: %s' % (wagman_device, str(e)))
