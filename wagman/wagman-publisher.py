@@ -16,7 +16,7 @@ footer_prefix = '->>>'
 wagman_device = '/dev/waggle_sysmon'
 
 
-
+debug=1
 
 if __name__ == "__main__":
 
@@ -56,8 +56,15 @@ if __name__ == "__main__":
                     if incommand:
                         if line.startswith(footer_prefix):
                             incommand = False
-                            msg = 'cmd.{}:{}'.format(commandname, '\n'.join(output))
-                            print(msg)
+                            header = 'cmd.{}'.format(commandname)
+                            body = '\n'.join(output)
+                            
+                            if debug:
+                                print("header:", header)
+                                print("body:", body)
+                                
+                            msg = '{}\n{}'.format(header, body)
+                            
                             socket.send_string(msg)
                             output = []
                         else:
