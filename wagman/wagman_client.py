@@ -17,6 +17,7 @@ header_prefix = '<<<-'
 footer_prefix = '->>>'
 wagman_device = '/dev/waggle_sysmon'
 
+debug=1
 
 # make sure you keep util/wagman-client.bash_completion in sync !
 usage_dict={
@@ -139,7 +140,10 @@ def wagman_client(args):
     print("Response: \"%s\"" % (response))
     header, _, body = response.partition('\n')
 
-    #print(body)
+    if debug:
+        print("header:", header)
+        print("body:", body)
+        
     return [header, body]
     #if prefix.startswith('cmd'):
     #    print('{}:'.format(prefix))
