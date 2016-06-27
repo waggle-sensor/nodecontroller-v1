@@ -17,7 +17,7 @@ header_prefix = '<<<-'
 footer_prefix = '->>>'
 wagman_device = '/dev/waggle_sysmon'
 
-debug=1
+debug=0
 
 # make sure you keep util/wagman-client.bash_completion in sync !
 usage_dict={
@@ -136,8 +136,9 @@ def wagman_client(args):
             
             raise Exception("Error receiving response (%s): %s" % (type(e), str(e)))
         break
+    if debug:    
+        print("Response: \"%s\"" % (response))
         
-    print("Response: \"%s\"" % (response))
     header, _, body = response.partition('\n')
 
     if debug:
