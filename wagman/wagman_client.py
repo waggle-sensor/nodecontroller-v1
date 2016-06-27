@@ -115,7 +115,7 @@ def wagman_client(args):
         raise Exception("Error sending request: %s" % (str(e)))
     
     
-    # get "OK" response from publisher
+    # get response from publisher
     
     timeout=0
     response=''
