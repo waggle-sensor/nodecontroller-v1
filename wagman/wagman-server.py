@@ -60,7 +60,7 @@ if __name__ == "__main__":
                     try:
                         message = server_socket.recv()
                     except Exception as e:
-                        print("error recv message: %s" % str(e))
+                        print("error recv message: (%s) %s" % (str(type(e)), str(e)))
                         server_socket.send_string("something")
                         continue
         
