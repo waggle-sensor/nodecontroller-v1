@@ -53,16 +53,15 @@ if __name__ == "__main__":
                 while True:
                     line = serial.readline().decode().strip()
 
+                    session_id=''
+                    
                     if incommand:
                         if line.startswith(footer_prefix):
                             incommand = False
                             header = 'cmd.{}'.format(commandname)
                             body = '\n'.join(output)
                             
-                            session_id=''
-                            matchObj = re.match( r'sid=(\S+)$', line, re.M|re.I)
-                            if matchObj:
-                                session_id=matchObj.group(1).rstrip()
+                            
                             
                             if debug:
                                 print("header:", header)
@@ -78,6 +77,11 @@ if __name__ == "__main__":
                         else:
                             output.append(line)
                     elif line.startswith(header_prefix):
+                        session_id=''
+                        matchObj = re.match( r'sid=(\S+)$', line, re.M|re.I)
+                        if matchObj:
+                            session_id=matchObj.group(1).rstrip()
+                        
                         fields = line.split()
                         print(fields)
                         if len(fields) <= 2:
