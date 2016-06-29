@@ -111,8 +111,7 @@ def wagman_client(args):
     socket.connect('ipc:///tmp/zeromq_wagman-pub')
 
 
-    # TODO use session_id !
-    session_id=''
+
 
     # only waits for session response
     try:
@@ -122,7 +121,7 @@ def wagman_client(args):
 
     # send request to server
     try:
-        send_request(command)
+        send_request("@%s %s" % (str(session_id), command)
     except Exception as e:
         raise Exception("Error sending request: %s" % (str(e)))
 

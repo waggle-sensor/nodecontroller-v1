@@ -59,11 +59,19 @@ if __name__ == "__main__":
                             header = 'cmd.{}'.format(commandname)
                             body = '\n'.join(output)
                             
+                            session_id=''
+                            matchObj = re.match( r'sid=(\S+)$', line, re.M|re.I)
+                            if matchObj:
+                                session_id=matchObj.group(1).rstrip()
+                            
                             if debug:
                                 print("header:", header)
                                 print("body:", body)
-                                
-                            msg = '{}\n{}'.format(header, body)
+                            
+                            if session_id:
+                                msg = '{} {}\n{}'.format(session_id, header, body)
+                            else:
+                                msg = '{}\n{}'.format(header, body)
                             
                             socket.send_string(msg)
                             output = []
