@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -e
+set -x
+
+
+export current_dir="$(pwd)"
+
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
+
+
+
+
+# copy upstart scripts
+cp ${current_dir}/../upstart/waggle-wagman-* /etc/init/
+
+
+ln -sf ${current_dir}/wagman_client.py /usr/bin/wagman-client
+
+# bash_completion scripts
+cp ${current_dir}/wagman-client.bash_completion /etc/bash_completion.d/wagman-client
+
+
+echo "done"
+

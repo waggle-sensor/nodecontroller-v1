@@ -115,11 +115,8 @@ cp ${waggle_dir}/upstart/waggle-* /etc/init/
 rm -f ${waggle_dir}/upstart/waggle_*
 
 
-
-ln -sf ${current_dir}/wagman/wagman_client.py /usr/bin/wagman-client
-
-# bash_completion scripts
-cp ${current_dir}/wagman/wagman-client.bash_completion /etc/bash_completion.d/wagman-client
+cd wagman
+./configure
 
 
 echo "done"
