@@ -59,9 +59,12 @@ if __name__ == "__main__":
                         
                     try:
                         message = server_socket.recv()
+                    except zmq.error.ZMQError as e:
+                        print("zmq.error.ZMQError: (%s) %s" % (str(type(e)), str(e)))
+                        server_socket.send_string("could not read message")
+                        continue
                     except Exception as e:
                         print("error recv message: (%s) %s" % (str(type(e)), str(e)))
-                        server_socket.send_string("something")
                         continue
         
                     print("Received request: ", message)
