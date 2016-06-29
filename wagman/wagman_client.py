@@ -121,7 +121,7 @@ def wagman_client(args):
 
     # send request to server
     try:
-        send_request("\@%s %s" % (str(session_id), command)
+        send_request("\@%s %s" % (str(session_id), command))
     except Exception as e:
         raise Exception("Error sending request: %s" % (str(e)))
 
