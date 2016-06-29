@@ -40,7 +40,7 @@ usage_array = [
     ['bs',          ['bs <devnum>',         'displays boot media selection']],
     ['fc',          ['fc',                  'displays fail counts']],
     ['ping',        ['ping',                'requests a pong response'],
-                    ['ping <devnum>',       'send external heartbeat for device'],
+                    ['ping <devnum>',       'send external heartbeat for device']]
 ]
 
 
