@@ -59,7 +59,12 @@ if __name__ == "__main__":
                     if incommand:
                         if line.startswith(footer_prefix):
                             incommand = False
-                            header = 'cmd.{}'.format(commandname)
+                            
+                            if session_id:
+                                header = '{} cmd.{}'.format(session_id, commandname)
+                            else:
+                                header = 'cmd.{}'.format(commandname)
+                                
                             body = '\n'.join(output)
                             
                             
@@ -68,10 +73,8 @@ if __name__ == "__main__":
                                 print("sending header:", header)
                                 print("sending body:", body)
                             
-                            if session_id:
-                                msg = '{} {}\n{}'.format(session_id, header, body)
-                            else:
-                                msg = '{}\n{}'.format(header, body)
+                            
+                            msg = '{}\n{}'.format(header, body)
                             
                             socket.send_string(msg)
                             output = []
