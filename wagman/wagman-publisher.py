@@ -84,7 +84,7 @@ if __name__ == "__main__":
                         session_id=''
                         if debug:
                             print("received header:", line)
-                        matchObj = re.match( r'sid=(\S+)', line, re.M|re.I)
+                        matchObj = re.match( r'.*sid=(\S+)', line, re.M|re.I)
                         if matchObj:
                             session_id=matchObj.group(1).rstrip()
                         
