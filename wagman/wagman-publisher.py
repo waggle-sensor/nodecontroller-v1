@@ -95,11 +95,13 @@ if __name__ == "__main__":
                                 print("no session_id detected")
                         
                         fields = line.split()
-                        print(fields)
-                        if len(fields) <= 2:
-                            commandname = '?'
-                        else:
-                            commandname = fields[2]
+                        if debug:
+                            print(fields)
+                        #if len(fields) <= 2:
+                        #    commandname = '?'
+                        #else:
+                        #    commandname = fields[2]
+                        commandname = fields[-1]
 
                         incommand = True
                     elif line.startswith('log:'):
