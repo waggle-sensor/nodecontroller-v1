@@ -50,11 +50,13 @@ if __name__ == "__main__":
                 output = []
                 incommand = False
                 commandname = None
-
+                
+                session_id=''
+                
                 while True:
                     line = serial.readline().decode().strip()
 
-                    session_id=''
+                    
                     
                     if incommand:
                         if line.startswith(footer_prefix):
