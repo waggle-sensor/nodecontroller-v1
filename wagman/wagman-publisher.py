@@ -88,8 +88,11 @@ if __name__ == "__main__":
                         if matchObj:
                             session_id=matchObj.group(1).rstrip()
                         
-                        if debug and session_id:
-                            print("detected session_id:", session_id)
+                        if debug:
+                            if session_id:
+                                print("detected session_id:", session_id)
+                            else:
+                                print("no session_id detected")
                         
                         fields = line.split()
                         print(fields)
