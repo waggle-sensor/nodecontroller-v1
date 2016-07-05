@@ -70,8 +70,11 @@ if __name__ == "__main__":
                     print("Received request: ", message)
                     
                     try:
-                        #serial.write(message.encode('ascii'))
-                        serial.write(message)
+                        if str(type(message))=="<class 'bytes'>":
+                            serial.write(message)
+                        else:
+                            serial.write(message.encode('ascii'))
+                            
                         serial.write(b'\n')
                     except Exception as e:
                         server_socket.send("error (serial.write): %s" % str(e))
