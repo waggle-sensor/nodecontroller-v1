@@ -81,6 +81,7 @@ if __name__ == "__main__":
                             
                         serial.write(b'\n')
                     except Exception as e:
+                        print("error in serial write: %s" % (str(e)))
                         server_socket.send("error (serial.write): %s" % str(e))
                         raise Exception('Could not write to %s: %s' % (wagman_device, str(e)))
     
