@@ -71,8 +71,12 @@ if __name__ == "__main__":
                     
                     try:
                         if str(type(message))=="<class 'bytes'>":
+                            if debug:
+                                print("send message")
                             serial.write(message)
                         else:
+                            if debug:
+                                print("send message with encode")
                             serial.write(message.encode('ascii'))
                             
                         serial.write(b'\n')
