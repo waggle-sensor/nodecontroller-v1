@@ -104,6 +104,7 @@ Start a service:
 supervisorctl start waggle_communications
 ```
 
+* NOTE: waggle-communications service needs up to a minute to accept incoming connection from payloads after restart.
 
 
 ## Simple CPU temperature sensor
