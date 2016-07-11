@@ -90,7 +90,7 @@ def send_request(command):
             time.sleep(1)
             continue
         except Exception as e:
-            raise("error recv: %s" % str(e))
+            raise Exception("error recv: %s" % (str(e)))
 
     if not message == b"OK":
         raise Exception("wagman-server returned: %s" % (message))
@@ -147,13 +147,13 @@ def wagman_client(args):
             raise Exception("Error receiving response (%s): %s" % (type(e), str(e)))
         break
     if debug:
-        print("Response: \"%s\"" % (response))
+        print(("Response: \"%s\"" % (response)))
 
     header, _, body = response.partition('\n')
 
     if debug:
-        print("header:", header)
-        print("body:", body)
+        print(("header:", header))
+        print(("body:", body))
 
     return [header, body]
     #if prefix.startswith('cmd'):
@@ -178,10 +178,10 @@ def wagman_log():
         prefix, _, content = response.partition(':')
 
         if prefix.startswith('cmd'):
-            print('{}:'.format(prefix))
-            print(content.strip())
+            print(('{}:'.format(prefix)))
+            print((content.strip()))
         else:
-            print(content.strip())
+            print((content.strip()))
 
 
 
@@ -205,7 +205,7 @@ def usage():
                 undocumented_commands[cmd]=1
 
     except Exception as e:
-        print("error: ", str(e))
+        print(("error: ", str(e)))
         print("Note: help is only available when the wagman is connected.")
         sys.exit(1)
 
@@ -219,10 +219,10 @@ def usage():
         else:
             data.append([cmd, ''])
 
-    for cmd in undocumented_commands.keys():
+    for cmd in list(undocumented_commands.keys()):
         data.append([cmd, ' '])
 
-    print(tabulate(data, theader, tablefmt="psql"))
+    print((tabulate(data, theader, tablefmt="psql")))
     sys.exit(0)
 
 
@@ -242,7 +242,7 @@ if __name__ == "__main__":
 
     try:
         result = wagman_client(sys.argv[1:])
-        print(result[1]) # prints body
+        print((result[1])) # prints body
     except Exception as e:
-        print("error: ", str(e))
+        print(("error: ", str(e)))
         sys.exit(1)

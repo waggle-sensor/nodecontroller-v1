@@ -80,7 +80,7 @@ if __name__ == "__main__":
                         logger.debug("error recv message: (%s) %s" % (str(type(e)), str(e)))
                         continue
         
-                    print("Received request: ", message)
+                    print(("Received request: ", message))
                     
                     try:
                         if str(type(message))=="<class 'bytes'>":

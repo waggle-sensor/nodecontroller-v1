@@ -10,7 +10,7 @@
 ### END INIT INFO
 
 dir="/usr/lib/waggle/nodecontroller/nc-wag-os/waggled/WagMan"
-cmd="python WagMan.py"
+cmd="./WagMan.py"
 user=""
 
 name="wagman"

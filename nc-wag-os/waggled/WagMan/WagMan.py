@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import collections, time, datetime, serial, sys
 sys.path.append('../../../')
 from waggle_protocol.utilities import packetmaker

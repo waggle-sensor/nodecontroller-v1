@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''
 This module provides an interface to the Beehive messaging server. Here is a
 simple example of using it to repeatedly send sensor data:

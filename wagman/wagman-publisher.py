@@ -72,8 +72,8 @@ if __name__ == "__main__":
                             
                             
                             if debug:
-                                print("sending header:", header)
-                                print("sending body:", body)
+                                print(("sending header:", header))
+                                print(("sending body:", body))
                             
                             
                             msg = '{}\n{}'.format(header, body)
@@ -85,14 +85,14 @@ if __name__ == "__main__":
                     elif line.startswith(header_prefix):
                         session_id=''
                         if debug:
-                            print("received header:", line)
+                            print(("received header:", line))
                         matchObj = re.match( r'.*sid=(\S+)', line, re.M|re.I)
                         if matchObj:
                             session_id=matchObj.group(1).rstrip()
                         
                         if debug:
                             if session_id:
-                                print("detected session_id:", session_id)
+                                print(("detected session_id:", session_id))
                             else:
                                 print("no session_id detected")
                         

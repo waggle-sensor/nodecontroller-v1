@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import time, serial, sys, datetime, pprint
 sys.path.append('../../../')
 from waggle_protocol.utilities import packetmaker
@@ -10,7 +12,7 @@ from internal_communicator import send
    
 """
 
-print 'Beginning sensor script...'
+print('Beginning sensor script...')
 
 
 # TODO this sensor description is deprecated. See sensor hash below.
@@ -105,7 +107,7 @@ for i in range(len(Sensor_Index)):
         sensors[sensor_name]={}
 
     s_output = Sensor_Index[i]
-    print "s_output: ", s_output
+    print("s_output: ", s_output)
     output2sensor[s_output]=sensor_name
     sensors[sensor_name][s_output]={}
     sensors[sensor_name][s_output]['measurement']=reading_names[i]
@@ -132,7 +134,7 @@ try:
                 #Will not work if sensor board is not plugged in. 
                 #If sensor board is plugged in, check to see if it is trying to connect to the right port
                 #TODO may want to add a rule to the configuration to specify which port will be used.
-                print "Still waiting for connection... Is the sensor board plugged in?"
+                print("Still waiting for connection... Is the sensor board plugged in?")
                 time.sleep(1)
         try:
             wxsensor.flushInput()
@@ -174,12 +176,12 @@ try:
                         try:
                             sensor_name = output2sensor[output_name]
                         except Exception as e:
-                            print "Output %s unknown" % (output_name)
+                            print("Output %s unknown" % (output_name))
                             sensor_name = ''
                         
                         if sensor_name:
                             sendData=[str(timestamp_date), 'env_sense', '1', 'default', str(timestamp_epoch), sensor_name, "meta.txt", sensorsData[1:-1]]
-                            print 'Sending data: ', str(sendData)
+                            print('Sending data: ', str(sendData))
                             #packs and sends the data
                             packet = packetmaker.make_data_packet(sendData)
                             for pack in packet:
@@ -188,7 +190,7 @@ try:
                                 
                        
                         
-except KeyboardInterrupt, k:
+except KeyboardInterrupt as k:
     try:
         wxsensor.close()
     except: 

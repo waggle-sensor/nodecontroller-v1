@@ -74,7 +74,7 @@ def internal_client_push():
                     time.sleep(1)
             else: 
                 time.sleep(1) #else, wait until messages are in queue
-        except KeyboardInterrupt, k:
+        except KeyboardInterrupt as k:
                 logger.Info( "Shutting down.")
                 break
     client_sock.close()
@@ -126,7 +126,7 @@ def internal_client_pull():
             else:
                 sys.stderr.write('Internal client pull unable to connect to DC.\n')
                 time.sleep(1)
-        except KeyboardInterrupt, k:
+        except KeyboardInterrupt as k:
             logger.Info( "Internal client pull shutting down.")
             break
     client_sock.close()
@@ -229,7 +229,7 @@ def push_server():
         try:
             data = server_socket.recv()
             if data == "time":
-                time_msg = str(time.time())
+                time_msg = time.ctime(time.time())
                 server_socket.send(time_msg)
             else:
                 if len(data) < HEADER_LENGTH:
@@ -326,7 +326,7 @@ def pull_server():
                             DEVICE_DICT = update_dev_dict() #this function is in the NC_configuration module
                             client_sock.sendall('False')
                         
-            except KeyboardInterrupt, k:
+            except KeyboardInterrupt as k:
                 logger.info("Internal pull server shutting down.")
                 
                 server.close()
@@ -351,7 +351,7 @@ if __name__ == "__main__":
     try:
         
  
-        for name, function in internal_communicator_name2func.iteritems():
+        for name, function in list(internal_communicator_name2func.items()):
             new_process = multiprocessing.Process(target=function, name=name)
             new_process.start()
             name2process[name]=new_process
@@ -359,8 +359,8 @@ if __name__ == "__main__":
                 
 
         
-    except KeyboardInterrupt, k:
-        for name, subhash in internal_communicator_name2func.iteritems():
+    except KeyboardInterrupt as k:
+        for name, subhash in list(internal_communicator_name2func.items()):
             logger.info( '(KeyboardInterrupt) shutting down ' + name)
             name2process[name].terminate()
       

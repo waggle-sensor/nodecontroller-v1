@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 
 import sys
@@ -12,6 +12,6 @@ from send2dc import send
     A python script that creates and sends a time request.
 """
 packet = packetmaker.make_time_packet()
-print 'Time request packet made...' 
+print('Time request packet made...') 
 for pack in packet:
     send(pack)

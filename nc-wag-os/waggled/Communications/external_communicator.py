@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import socket, os, os.path, time, pika, logging, datetime, sys
 from multiprocessing import Process, Queue, Value
@@ -237,7 +237,7 @@ def external_client_pull():
             else:
                 logger.debug('External client pull...cloud is not connected. Waiting and trying again.')
                 time.sleep(5)
-        except KeyboardInterrupt, k:
+        except KeyboardInterrupt as k:
                 logger.info("External client pull shutting down.\n")
                 break
     client_sock.close()
@@ -269,7 +269,7 @@ def external_client_push():
             else:
                 logger.info("External client push-Unable to connect to Data Cache.\n")
                 time.sleep(5)
-        except KeyboardInterrupt, k:
+        except KeyboardInterrupt as k:
             logger.info("External client push shutting down.\n")
             break
     client_sock.close()
@@ -338,7 +338,7 @@ if __name__ == "__main__":
     
     try:
         
-        for name, function in external_communicator_name2func.iteritems():
+        for name, function in external_communicator_name2func.items():
             new_process = multiprocessing.Process(target=function, name=name)
             new_process.start()
             name2process[name]=new_process
@@ -347,9 +347,9 @@ if __name__ == "__main__":
         while True:
             pass
         
-    except KeyboardInterrupt, k:
+    except KeyboardInterrupt as k:
       
-        for name, subhash in external_communicator_name2func.iteritems():
+        for name, subhash in external_communicator_name2func.items():
             logger.info( '(KeyboardInterrupt) shutting down ' + name)
             name2process[name].terminate()
         logger.info('Done.')

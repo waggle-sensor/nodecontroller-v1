@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from multiprocessing import Queue
 #from daemon import Daemon
@@ -284,7 +284,7 @@ class DataCache:
                                 logger.error('Message corrupt. Will not store in data cache.')
                                 logger.error(e)
                     
-                except KeyboardInterrupt, k:
+                except KeyboardInterrupt as k:
                     logger.info("Data Cache server shutting down...")
                     self.stop()
                     continue
@@ -682,7 +682,7 @@ if __name__ == "__main__":
     except AlreadyRunning as e:
         logger.error(str(e))
         logger.error("Please use supervisorctl to start and stop this script.")    
-    except KeyboardInterrupt, k:
+    except KeyboardInterrupt as k:
         #terminate the external communication processes
         #for name, subhash in name2func.iteritems():
         #    logger.info( '(KeyboardInterrupt) shutting down ' + name)
