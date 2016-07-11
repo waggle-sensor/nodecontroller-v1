@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import socket, os, os.path, time, sys, logging
+import socket, os, os.path, time, sys, logging, zmq
 from multiprocessing import Process, Queue
 import multiprocessing
 sys.path.append('../../../')
@@ -145,82 +145,131 @@ def push_server():
     comm = internal_communicator()
     HOST = NCIP 
     PORT = 9090
-    try:
-      server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    except socket.error as msg:
-      logger.info( "(socket.socket) Socket Error: %s\n" % msg )
+    # try:
+    #   server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # except socket.error as msg:
+    #   logger.info( "(socket.socket) Socket Error: %s\n" % msg )
       
-      return 1
-    try:  
-      server.bind((HOST,PORT))
-    except socket.error as msg:
-      logger.info( "(server.bind) Socket Error: %s (%s, %s)\n" % (msg, HOST, PORT) )
-      return 1
-    try:
-      server.listen(5) #supports up to 5 threads, one for each GN
-    except socket.error as msg:
-      logger.info( "(server.listen) Socket Error: %s\n" % msg )
-      return 1
+    #   return 1
+    # try:  
+    #   server.bind((HOST,PORT))
+    # except socket.error as msg:
+    #   logger.info( "(server.bind) Socket Error: %s (%s, %s)\n" % (msg, HOST, PORT) )
+    #   return 1
+    # try:
+    #   server.listen(5) #supports up to 5 threads, one for each GN
+    # except socket.error as msg:
+    #   logger.info( "(server.listen) Socket Error: %s\n" % msg )
+    #   return 1
       
-    
     nc_node_id_packed = bin_pack(nodeid_hexstr2int(NODE_ID),HEADER_BYTELENGTHS["s_uniqid"])
      
     
     
     logger.info('Internal push server process started...\n')
 
+    # while True:
+    #     client_sock, addr = server.accept()
+    #     while True:
+    #         try:
+    #             data = client_sock.recv(4028) 
+    #             if not data:
+    #                 break #breaks the loop when the client socket closes
+    #             elif data == 'Hello': #a handshake from a new guest node. 
+    #                 client_sock.sendall('Hi') #NC sends 'Hi' to verify that it is the NC that the guest node is looking for.
+    #                 client_sock.sendall(HOSTNAME)#sends unique ID to GN can send messages to NC if needed
+    #             else:
+    #                 # push data from guest node into data cache.
+                    
+    #                 # here we inject the nodecontroller ID as sender, overwriting the guestnode ID.
+                    
+    #                 # extract header so we can modify it
+                    
+    #                 if len(data) < HEADER_LENGTH:
+    #                     logger.error("data fragment shorter than HEADER_LENGTH")
+    #                     break
+                    
+    #                 header_bytearray = bytearray(data[:HEADER_LENGTH])
+                    
+    #                 # TODO: check crc
+                    
+    #                 # overwrite sender
+    #                 try:
+    #                     set_header_field(header_bytearray, 's_uniqid', nc_node_id_packed)
+    #                 except Exception as e:
+    #                     logger.error("set_header_field failed: %s" % (str(e)))
+    #                     break
+                        
+    #                 #recompute header crc
+    #                 try:
+    #                     write_header_crc(header_bytearray)
+    #                 except Exception as e:
+    #                     logger.error("write_header_crc failed: %s" % (str(e)))
+    #                     break
+                        
+    #                 # concatenate new header with old data
+    #                 new_data = str(header_bytearray)+data[HEADER_LENGTH:]
+                    
+    #                 logger.debug("Sending data from GN into DC-push queue")
+    #                 comm.DC_push.put(new_data)
+    #                 logger.debug("(push_server) DC_push size: %d " % (comm.DC_push.qsize()))
+                    
+                
+    #         except KeyboardInterrupt, k:
+    #             logger.info("Internal push server shutting down.")
+                
+    #             break
+    # server.close()
+
+    context = zmq.Context()
+    server_socket = context.socket(zmq.REP)
+    server_socket.bind('tcp://%s:%s' % (HOST, PORT))
+
     while True:
-        client_sock, addr = server.accept()
-        while True:
-            try:
-                data = client_sock.recv(4028) 
-                if not data:
-                    break #breaks the loop when the client socket closes
-                elif data == 'Hello': #a handshake from a new guest node. 
-                    client_sock.sendall('Hi') #NC sends 'Hi' to verify that it is the NC that the guest node is looking for.
-                    client_sock.sendall(HOSTNAME)#sends unique ID to GN can send messages to NC if needed
-                else:
-                    # push data from guest node into data cache.
-                    
-                    # here we inject the nodecontroller ID as sender, overwriting the guestnode ID.
-                    
-                    # extract header so we can modify it
-                    
-                    if len(data) < HEADER_LENGTH:
-                        logger.error("data fragment shorter than HEADER_LENGTH")
-                        break
-                    
-                    header_bytearray = bytearray(data[:HEADER_LENGTH])
-                    
-                    # TODO: check crc
-                    
-                    # overwrite sender
-                    try:
-                        set_header_field(header_bytearray, 's_uniqid', nc_node_id_packed)
-                    except Exception as e:
-                        logger.error("set_header_field failed: %s" % (str(e)))
-                        break
-                        
-                    #recompute header crc
-                    try:
-                        write_header_crc(header_bytearray)
-                    except Exception as e:
-                        logger.error("write_header_crc failed: %s" % (str(e)))
-                        break
-                        
-                    # concatenate new header with old data
-                    new_data = str(header_bytearray)+data[HEADER_LENGTH:]
-                    
-                    logger.debug("Sending data from GN into DC-push queue")
-                    comm.DC_push.put(new_data)
-                    logger.debug("(push_server) DC_push size: %d " % (comm.DC_push.qsize()))
-                    
+        try:
+            data = server_socket.recv()
+            if data == "time":
+                time_msg = str(time.time())
+                server_socket.send(time_msg)
+            else:
+                if len(data) < HEADER_LENGTH:
+                    logger.error("data fragment shorter than HEADER_LENGTH")
+                    break
                 
-            except KeyboardInterrupt, k:
-                logger.info("Internal push server shutting down.")
+                header_bytearray = bytearray(data[:HEADER_LENGTH])
                 
-                break
-    server.close()
+                # TODO: check crc
+                
+                # overwrite sender
+                try:
+                    set_header_field(header_bytearray, 's_uniqid', nc_node_id_packed)
+                except Exception as e:
+                    logger.error("set_header_field failed: %s" % (str(e)))
+                    break
+                    
+                #recompute header crc
+                try:
+                    write_header_crc(header_bytearray)
+                except Exception as e:
+                    logger.error("write_header_crc failed: %s" % (str(e)))
+                    break
+                    
+                # concatenate new header with old data
+                new_data = str(header_bytearray)+data[HEADER_LENGTH:]
+                
+                logger.debug("Sending data from GN into DC-push queue")
+                comm.DC_push.put(new_data)
+                logger.debug("(push_server) DC_push size: %d " % (comm.DC_push.qsize()))
+        except zmq.error.ZMQError as e:
+            logger.debug("zmq.error.ZMQError: (%s) %s" % (str(type(e)), str(e)))
+            server_socket.send_string("could not read message")
+            continue
+        except Exception as e:
+            logger.debug("error recv message: (%s) %s" % (str(type(e)), str(e)))
+            continue
+
+    server_socket.close()
+
         
 
 """ 
