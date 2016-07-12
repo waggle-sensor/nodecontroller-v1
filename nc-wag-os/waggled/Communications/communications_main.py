@@ -108,7 +108,7 @@ def get_certificates():
                 
             try:
                 response = urllib.request.urlopen(CERT_SERVER)
-                html = response.read()
+                html = response.read().decode('utf-8')
             except Exception as e:
                 if (loop == 0):
                     logger.error('Have not found certificate files and can not connect to certificate server (%s): %s' % (CERT_SERVER, str(e)))
@@ -134,7 +134,7 @@ def get_certificates():
             logger.info("trying to get server certificate from certificate server %s..." % (certca_url))
             try:
                 response = urllib.request.urlopen(certca_url)
-                html = response.read()
+                html = response.read().decode('utf-8')
             except Exception as e:
                 logger.error('Could not connect to certificate server: '+str(e))
                 time.sleep(5)
@@ -160,7 +160,7 @@ def get_certificates():
             logger.info("trying to get node key and certificate from certificate server %s..." % (cert_url))
             try:
                 response = urllib.request.urlopen(cert_url)
-                html = response.read()
+                html = response.read().decode('utf-8')
             except Exception as e:
                 logger.error('Could not connect to certificate server: '+str(e))
                 time.sleep(5)
