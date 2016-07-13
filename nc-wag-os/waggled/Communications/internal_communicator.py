@@ -229,8 +229,9 @@ def push_server():
         try:
             data = server_socket.recv()
             if data == "time":
-                time_msg = time.ctime(time.time())
-                server_socket.send(time_msg)
+                t = int(time.time())
+                res = '{"epoch": %d}' % (t)
+                server_socket.send(res)
             else:
                 if len(data) < HEADER_LENGTH:
                     logger.error("data fragment shorter than HEADER_LENGTH")
