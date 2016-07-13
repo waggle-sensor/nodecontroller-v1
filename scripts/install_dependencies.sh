@@ -16,10 +16,9 @@ pip install pyserial
 
 # python3
 
-apt-get install -y python3-pip
+apt-get install -y python3-pip python3-zmq
 
 pip3 install -e pika-0.10.0
 pip3 install crcmod
 pip3 install pyserial
 pip3 install tabulate
-pip3 install pyzmq

@@ -213,8 +213,8 @@ def external_client_pull():
                         #sends the pull request indicating that it is an outgoing pull request. 
                         #TODO This can be improved (both clients combined into one) if there is a better way to distinguish incoming vs outgoing pull and pull vs push requests. 
                         data = '|o' 
-                        client_sock.send(data)
-                        msg = client_sock.recv(4028) #can be changed 
+                        client_sock.send(data.encode('iso-8859-15'))
+                        msg = client_sock.recv(4028).decode('iso-8859-15') #can be changed 
                         if msg:
                             if msg != 'False':
                                 logger.debug("put message from DC in outgoing queue")
@@ -264,7 +264,7 @@ def external_client_push():
                 client_sock.connect('/tmp/Data_Cache_server') #opens socket when a message is in the queue
                 logger.debug("Client_push connected to data cache... ")
                 msg = comm.incoming.get() #gets the incoming message from the queue
-                client_sock.send(msg) #sends msg
+                client_sock.send(msg.encode('iso-8859-15')) #sends msg
                 client_sock.close()
             else:
                 logger.info("External client push-Unable to connect to Data Cache.\n")

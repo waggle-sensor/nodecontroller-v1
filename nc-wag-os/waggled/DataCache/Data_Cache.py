@@ -154,7 +154,7 @@ class DataCache:
                 
                 
                 try:
-                    data = client_sock.recv(2048) #arbitrary
+                    data = client_sock.recv(2048).decode('iso-8859-15') #arbitrary
                     
                     if logger.isEnabledFor(logging.DEBUG):
                         if data != '|o':
@@ -188,7 +188,7 @@ class DataCache:
                                 else:
                                     logger.debug("incoming_pull message: %s" %(msg))
                                 try:
-                                    client_sock.sendall(msg) #sends the message
+                                    client_sock.sendall(msg.encode('iso-8859-15')) #sends the message
                                 except:
                                     #pushes it back into the incoming queue if the client disconnects before the message is sent
                                     try: #Will pass if data is a pull request instead of a full message 
@@ -206,7 +206,7 @@ class DataCache:
                                     logger.debug("sending message to external_client_pull, length %d" % (len(msg)))
                                     
                                 try:
-                                    client_sock.sendall(msg) #sends the message
+                                    client_sock.sendall(msg.encode('iso-8859-15')) #sends the message
                                 except Exception as e:
                                     logger.error("client_sock.sendall: "+str(e))
                                     #pushes it back into the outgoing queue if the client disconnects before the message is sent
@@ -323,7 +323,7 @@ class DataCache:
             client_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             try:
                 client_sock.connect(self.socket_file)
-                client_sock.sendall('Flush')
+                client_sock.sendall('Flush'.encode('iso-8859-15'))
                 client_sock.close()
             except Exception as e:
                 logger.error(e)

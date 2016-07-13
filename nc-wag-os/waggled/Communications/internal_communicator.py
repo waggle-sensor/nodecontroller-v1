@@ -60,7 +60,7 @@ def internal_client_push():
                     try:
                         client_sock.connect('/tmp/Data_Cache_server')
                         data = comm.DC_push.get() #Gets message out of the queue and sends to data cache
-                        client_sock.sendall(data)
+                        client_sock.sendall(data.encode('iso-8859-15'))
                         client_sock.close() #closes socket after each message is sent
                     except Exception as e:
                         logger.error(e)
@@ -103,9 +103,9 @@ def internal_client_pull():
                     dev = comm.incoming_request.get() #gets the dev ID that is initiating the pull request
                     #TODO this could probably be done a different way, but there has to be some distinction between a pull request and message push
                     request = '|' + dev #puts the request in the correct format for the DC 
-                    client_sock.send(request)
+                    client_sock.send(request.encode('iso-8859-15'))
                     try:
-                        msg = client_sock.recv(4028) #arbitrary, can go in config file
+                        msg = client_sock.recv(4028).decode('iso-8859-15') #arbitrary, can go in config file
                     except: 
                         client_sock.close()
                         time.sleep(1)
@@ -118,8 +118,8 @@ def internal_client_pull():
                         
                                 
                 except Exception as e:
-                    sys.stderr.write(e)
-                    logger.error(e)
+                    sys.stderr.write(str(e)
+                    logger.error(str(e))
                     
                     client_sock.close()
                     time.sleep(5)
@@ -227,11 +227,11 @@ def push_server():
 
     while True:
         try:
-            data = server_socket.recv()
+            data = server_socket.recv().decode('iso-8859-15')
             if data == "time":
                 t = int(time.time())
                 res = '{"epoch": %d}' % (t)
-                server_socket.send(res)
+                server_socket.send(res.encode('iso-8859-15'))
             else:
                 if len(data) < HEADER_LENGTH:
                     logger.error("data fragment shorter than HEADER_LENGTH")
@@ -302,7 +302,7 @@ def pull_server():
         client_sock, addr = server.accept()
         while True:
             try:
-                data = client_sock.recv(4028) #Guest nodes connect and send their uniq_ID (non-blocking call)
+                data = client_sock.recv(4028).decode('iso-8859-15') #Guest nodes connect and send their uniq_ID (non-blocking call)
                 if not data:
                     time.sleep(1)
                     continue
@@ -315,7 +315,7 @@ def pull_server():
                                 time.sleep(1) #sleeps until queue is no longer empty. Data cache returns 'False' if no messages are available.
                             msg = comm.incoming_msg[int(dev_loc)-1].get() #returns incoming messages. 
                             try: 
-                                client_sock.sendall(msg) #sends the msg to the GN 
+                                client_sock.sendall(msg.encode('iso-8859-15')) #sends the msg to the GN 
                             except: 
                                 #puts the message back into the DC_push queue if the GN disconnects before the message is sent.
                                 comm.DC_push.put(str(dev_loc))
@@ -325,7 +325,7 @@ def pull_server():
                             #The device dictionary may not be up to date. Need to update and try again.
                             #If the device is still not found after first try, move on.
                             DEVICE_DICT = update_dev_dict() #this function is in the NC_configuration module
-                            client_sock.sendall('False')
+                            client_sock.sendall('False'.encode('iso-8859-15'))
                         
             except KeyboardInterrupt as k:
                 logger.info("Internal pull server shutting down.")
