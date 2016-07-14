@@ -429,7 +429,7 @@ class DataCache:
                 #print 'opened file'
                 try: 
                     #print 'trying to read from file'
-                    msg = self.outgoing_cur_file.next().strip() #reads the next message in file, strips the \n
+                    msg = next(self.outgoing_cur_file).strip() #reads the next message in file, strips the \n
                     #print 'returning msg'
                     return msg
                 except:
@@ -440,7 +440,7 @@ class DataCache:
             else:
                 logger.debug('reading from exsiting file handle (data from /var/dc/outgoing_msgs/*)')
                 try: 
-                    msg = self.outgoing_cur_file.next().strip() #reads the next message in file, strips the \n
+                    msg = next(self.outgoing_cur_file).strip() #reads the next message in file, strips the \n
                     return msg
                 except:
                     self.outgoing_cur_file.close() #close the file if stop iterator error occurs
@@ -498,7 +498,7 @@ class DataCache:
                     #set the first file in the incoming_stored/dev directory as the current file generator object
                     self.incoming_cur_file[dev -1] = open(incoming_msg_files[0]) 
                     try: 
-                        msg = self.incoming_cur_file[dev -1].next().strip() #reads the next message in file, strips the \n
+                        msg = next(self.incoming_cur_file[dev -1]).strip() #reads the next message in file, strips the \n
                         return msg
                         
                     except:
@@ -508,7 +508,7 @@ class DataCache:
                         self.incoming_cur_file[dev -1] = '' #reset to empty string
                 else:
                     try: 
-                        msg = self.incoming_cur_file[dev -1].next().strip() #reads the next message in file, strips the \n
+                        msg = next(self.incoming_cur_file[dev -1]).strip() #reads the next message in file, strips the \n
                         return msg
                         
                     except:

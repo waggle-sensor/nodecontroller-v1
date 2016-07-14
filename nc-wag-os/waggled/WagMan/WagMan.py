@@ -304,7 +304,7 @@ thermistor_LUT[80] = 969
 def convert_tempToADC(temperature):
     # Check if temperature has a direct match in Lookup Table
     # If yes, return the corresponding value
-    if thermistor_LUT.has_key(temperature):
+    if temperature in thermistor_LUT:
         return thermistor_LUT[temperature]
 
     # If no, find next highest value
@@ -312,13 +312,13 @@ def convert_tempToADC(temperature):
         index = 0
 
         # Keep track of previous Key
-        prev_key = thermistor_LUT.keys()[0]
+        prev_key = list(thermistor_LUT.keys())[0]
 
         # Iterate through all keys until found temperature is too high
-        while index < len(thermistor_LUT.keys()):
+        while index < len(list(thermistor_LUT.keys())):
 
             # Find current key we are considering
-            current_key = thermistor_LUT.keys()[index]
+            current_key = list(thermistor_LUT.keys())[index]
 
             # Case 1: we overshot, so take the next highest temperature
             if current_key > temperature:
@@ -330,7 +330,7 @@ def convert_tempToADC(temperature):
                 index += 1
 
         # If temperature is higher than highest key, return highest value
-        return thermistor_LUT.values()[len(thermistor_LUT)-1]
+        return list(thermistor_LUT.values())[len(thermistor_LUT)-1]
 ########################################################################
 
 
@@ -350,7 +350,7 @@ while True:
         ser_SysMon.write("=!")
         break
     except Exception as e:
-        print e
+        print(e)
         time.sleep(5)
         
 ########################################################################
@@ -387,7 +387,7 @@ while True:
     # Did SysMon request parameters?
     if incomingNotifier == "$":
         # Send parameters
-        for i in params_core.keys():
+        for i in list(params_core.keys()):
             ser_SysMon.write(str(params_core[i]))
             ser_SysMon.write(",")
 
@@ -473,7 +473,7 @@ while True:
     # Did SysMon request guest node info?
     elif incomingNotifier == "^":
         # Send guest node parameters
-        for i in params_GuestNodes.keys():
+        for i in list(params_GuestNodes.keys()):
             ser_SysMon.write(str(params_GuestNodes[i]))
             ser_SysMon.write(",")
 
@@ -499,7 +499,7 @@ while True:
     # Is SysMon about to shut me down?
     elif incomingNotifier == "?":
         #send Shutdown to datacache to flush messages to file before shutting down.
-        print 'Sending flush request to data cache.'
+        print('Sending flush request to data cache.')
         #print incomingNotifier
         send('Flush')
 
