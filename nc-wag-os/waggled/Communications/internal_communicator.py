@@ -118,7 +118,7 @@ def internal_client_pull():
                         
                                 
                 except Exception as e:
-                    sys.stderr.write(str(e)
+                    sys.stderr.write(str(e))
                     logger.error(str(e))
                     
                     client_sock.close()
