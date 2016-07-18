@@ -228,12 +228,12 @@ def push_server():
     while True:
         try:
             data = server_socket.recv().decode('iso-8859-15')
-            server_socket.send("ack".encode('iso-8859-15'))
             if data == "time":
                 t = int(time.time())
                 res = '{"epoch": %d}' % (t)
                 server_socket.send(res.encode('iso-8859-15'))
             else:
+                server_socket.send("ack".encode('iso-8859-15'))
                 if len(data) < HEADER_LENGTH:
                     logger.error("data fragment shorter than HEADER_LENGTH")
                     break
@@ -257,7 +257,8 @@ def push_server():
                     break
                     
                 # concatenate new header with old data
-                new_data = str(header_bytearray)+data[HEADER_LENGTH:]
+                #new_data = str(header_bytearray)+data[HEADER_LENGTH:]
+                new_data = bytes(header_bytearray).decode('iso-8859-15')+data[HEADER_LENGTH:]
                 
                 logger.debug("Sending data from GN into DC-push queue")
                 comm.DC_push.put(new_data)
