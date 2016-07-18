@@ -228,6 +228,7 @@ def push_server():
     while True:
         try:
             data = server_socket.recv().decode('iso-8859-15')
+            server_socket.send("ack".encode('iso-8859-15'))
             if data == "time":
                 t = int(time.time())
                 res = '{"epoch": %d}' % (t)
@@ -237,7 +238,7 @@ def push_server():
                     logger.error("data fragment shorter than HEADER_LENGTH")
                     break
                 
-                header_bytearray = bytearray(data[:HEADER_LENGTH])
+                header_bytearray = bytearray(data[:HEADER_LENGTH].encode('iso-8859-15'))
                 
                 # TODO: check crc
                 
@@ -263,7 +264,6 @@ def push_server():
                 logger.debug("(push_server) DC_push size: %d " % (comm.DC_push.qsize()))
         except zmq.error.ZMQError as e:
             logger.debug("zmq.error.ZMQError: (%s) %s" % (str(type(e)), str(e)))
-            server_socket.send_string("could not read message".encode('iso-8859-15'))
             continue
         except Exception as e:
             logger.debug("error recv message: (%s) %s" % (str(type(e)), str(e)))
