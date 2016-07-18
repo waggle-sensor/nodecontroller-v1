@@ -263,7 +263,7 @@ def push_server():
                 logger.debug("(push_server) DC_push size: %d " % (comm.DC_push.qsize()))
         except zmq.error.ZMQError as e:
             logger.debug("zmq.error.ZMQError: (%s) %s" % (str(type(e)), str(e)))
-            server_socket.send_string("could not read message")
+            server_socket.send_string("could not read message".encode('iso-8859-15'))
             continue
         except Exception as e:
             logger.debug("error recv message: (%s) %s" % (str(type(e)), str(e)))
