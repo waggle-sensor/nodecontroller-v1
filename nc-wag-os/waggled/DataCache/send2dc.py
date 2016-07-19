@@ -27,7 +27,7 @@ def send(msg):
                     client_sock.connect('/tmp/Data_Cache_server')
                     logger.info( "Connected to data cache... ")
                     logger.info( "send(msg)... msg len: %d"% (len(msg)))
-                    client_sock.sendall(msg.encode('iso-8859-15'))
+                    client_sock.sendall(msg)
                     client_sock.close() #closes socket after each message is sent 
                     break #break loop when message sent. Otherwise, keep trying to connect until successful.
                 except Exception as e:

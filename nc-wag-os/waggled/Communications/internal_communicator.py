@@ -229,8 +229,7 @@ def push_server():
         try:
             data = server_socket.recv()
             logger.debug("type is %s" % (type(data)))
-            data = data.decode('iso-8859-1')
-            if data == "time":
+            if data.decode('iso-8859-1') == "time":
                 t = int(time.time())
                 res = '{"epoch": %d}' % (t)
                 server_socket.send(res.encode('iso-8859-1'))
@@ -240,7 +239,7 @@ def push_server():
                     logger.error("data fragment shorter than HEADER_LENGTH")
                     break
                 
-                header_bytearray = bytearray(data[:HEADER_LENGTH].encode('iso-8859-1'))
+                header_bytearray = bytearray(data[:HEADER_LENGTH])
                 
                 # TODO: check crc
                 
@@ -260,7 +259,7 @@ def push_server():
                     
                 # concatenate new header with old data
                 #new_data = str(header_bytearray)+data[HEADER_LENGTH:]
-                new_data = bytes(header_bytearray).decode('iso-8859-1')+data[HEADER_LENGTH:]
+                new_data = bytes(header_bytearray)+data[HEADER_LENGTH:]
                 
                 logger.debug("Sending data from GN into DC-push queue")
                 comm.DC_push.put(new_data)
@@ -305,7 +304,7 @@ def pull_server():
         client_sock, addr = server.accept()
         while True:
             try:
-                data = client_sock.recv(4028).decode('iso-8859-15') #Guest nodes connect and send their uniq_ID (non-blocking call)
+                data = client_sock.recv(4028).decode('iso-8859-1') #Guest nodes connect and send their uniq_ID (non-blocking call)
                 if not data:
                     time.sleep(1)
                     continue
@@ -318,7 +317,7 @@ def pull_server():
                                 time.sleep(1) #sleeps until queue is no longer empty. Data cache returns 'False' if no messages are available.
                             msg = comm.incoming_msg[int(dev_loc)-1].get() #returns incoming messages. 
                             try: 
-                                client_sock.sendall(msg.encode('iso-8859-15')) #sends the msg to the GN 
+                                client_sock.sendall(msg) #sends the msg to the GN 
                             except: 
                                 #puts the message back into the DC_push queue if the GN disconnects before the message is sent.
                                 comm.DC_push.put(str(dev_loc))
