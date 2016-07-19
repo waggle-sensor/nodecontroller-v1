@@ -60,7 +60,7 @@ def internal_client_push():
                     try:
                         client_sock.connect('/tmp/Data_Cache_server')
                         data = comm.DC_push.get() #Gets message out of the queue and sends to data cache
-                        client_sock.sendall(data.encode('iso-8859-1'))
+                        client_sock.sendall(data)
                         client_sock.close() #closes socket after each message is sent
                     except Exception as e:
                         logger.error(e)
@@ -105,7 +105,7 @@ def internal_client_pull():
                     request = '|' + dev #puts the request in the correct format for the DC 
                     client_sock.send(request.encode('iso-8859-1'))
                     try:
-                        msg = client_sock.recv(4028).decode('iso-8859-1') #arbitrary, can go in config file
+                        msg = client_sock.recv(4028) #arbitrary, can go in config file
                     except: 
                         client_sock.close()
                         time.sleep(1)
