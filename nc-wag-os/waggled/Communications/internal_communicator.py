@@ -60,7 +60,7 @@ def internal_client_push():
                     try:
                         client_sock.connect('/tmp/Data_Cache_server')
                         data = comm.DC_push.get() #Gets message out of the queue and sends to data cache
-                        client_sock.sendall(data.encode('iso-8859-15'))
+                        client_sock.sendall(data.encode('iso-8859-1'))
                         client_sock.close() #closes socket after each message is sent
                     except Exception as e:
                         logger.error(e)
@@ -103,9 +103,9 @@ def internal_client_pull():
                     dev = comm.incoming_request.get() #gets the dev ID that is initiating the pull request
                     #TODO this could probably be done a different way, but there has to be some distinction between a pull request and message push
                     request = '|' + dev #puts the request in the correct format for the DC 
-                    client_sock.send(request.encode('iso-8859-15'))
+                    client_sock.send(request.encode('iso-8859-1'))
                     try:
-                        msg = client_sock.recv(4028).decode('iso-8859-15') #arbitrary, can go in config file
+                        msg = client_sock.recv(4028).decode('iso-8859-1') #arbitrary, can go in config file
                     except: 
                         client_sock.close()
                         time.sleep(1)
@@ -227,18 +227,20 @@ def push_server():
 
     while True:
         try:
-            data = server_socket.recv().decode('iso-8859-15')
+            data = server_socket.recv()
+            logger.debug("type is %s" % (type(data)))
+#                .decode('iso-8859-1')
             if data == "time":
                 t = int(time.time())
                 res = '{"epoch": %d}' % (t)
-                server_socket.send(res.encode('iso-8859-15'))
+                server_socket.send(res.encode('iso-8859-1'))
             else:
-                server_socket.send("ack".encode('iso-8859-15'))
+                server_socket.send("ack".encode('iso-8859-1'))
                 if len(data) < HEADER_LENGTH:
                     logger.error("data fragment shorter than HEADER_LENGTH")
                     break
                 
-                header_bytearray = bytearray(data[:HEADER_LENGTH].encode('iso-8859-15'))
+                header_bytearray = bytearray(data[:HEADER_LENGTH].encode('iso-8859-1'))
                 
                 # TODO: check crc
                 
@@ -258,7 +260,7 @@ def push_server():
                     
                 # concatenate new header with old data
                 #new_data = str(header_bytearray)+data[HEADER_LENGTH:]
-                new_data = bytes(header_bytearray).decode('iso-8859-15')+data[HEADER_LENGTH:]
+                new_data = bytes(header_bytearray).decode('iso-8859-1')+data[HEADER_LENGTH:]
                 
                 logger.debug("Sending data from GN into DC-push queue")
                 comm.DC_push.put(new_data)
