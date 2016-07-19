@@ -102,8 +102,8 @@ def internal_client_pull():
                     client_sock.connect('/tmp/Data_Cache_server')#opens socket when there is an incoming pull request
                     dev = comm.incoming_request.get() #gets the dev ID that is initiating the pull request
                     #TODO this could probably be done a different way, but there has to be some distinction between a pull request and message push
-                    request = '|' + dev #puts the request in the correct format for the DC 
-                    client_sock.send(request.encode('iso-8859-1'))
+                    request = '|'.encode('iso-8859-1') + dev #puts the request in the correct format for the DC 
+                    client_sock.send(request)
                     try:
                         msg = client_sock.recv(4028) #arbitrary, can go in config file
                     except: 
@@ -113,7 +113,7 @@ def internal_client_pull():
                     if not msg:
                         break
                     else:
-                        comm.incoming_msg[int(dev) - 1].put(msg) #puts the message in the device's incoming queue. Message is pulled out of queue by pull server and sent to GN. 
+                        comm.incoming_msg[int(dev.decode('iso-8859-1')) - 1].put(msg) #puts the message in the device's incoming queue. Message is pulled out of queue by pull server and sent to GN. 
                         client_sock.close() #closes socket after each message is sent 
                         
                                 
@@ -304,14 +304,14 @@ def pull_server():
         client_sock, addr = server.accept()
         while True:
             try:
-                data = client_sock.recv(4028).decode('iso-8859-1') #Guest nodes connect and send their uniq_ID (non-blocking call)
+                data = client_sock.recv(4028) #Guest nodes connect and send their uniq_ID (non-blocking call)
                 if not data:
                     time.sleep(1)
                     continue
                 else:
                     for i in range(2): 
                         try:
-                            dev_loc = DEVICE_DICT[data] #gets the device queue location from dictionary
+                            dev_loc = DEVICE_DICT[data.decode('iso-8859-1')] #gets the device queue location from dictionary
                             comm.incoming_request.put(str(dev_loc)) #Unique ID goes into incoming requests queue. These get pulled out by the pull_client as pull requests
                             while comm.incoming_msg[int(dev_loc)-1].empty():
                                 time.sleep(1) #sleeps until queue is no longer empty. Data cache returns 'False' if no messages are available.

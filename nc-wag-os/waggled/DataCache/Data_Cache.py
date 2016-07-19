@@ -154,16 +154,16 @@ class DataCache:
                 
                 
                 try:
-                    data = client_sock.recv(2048).decode('iso-8859-15') #arbitrary
+                    data = client_sock.recv(2048) #arbitrary
                     
                     if logger.isEnabledFor(logging.DEBUG):
-                        if data != '|o':
+                        if data != '|o'.encode('iso-8859-1'):
                             logger.debug('(DataCache) received data.')
                     if not data:
                         break
                     else:
                         #'Flush' means that there is an external flush request or if WagMan is about to shut down the node controller
-                        if data == 'Flush':
+                        if data == 'Flush'.encode('iso-8859-1'):
                             #flush all stored messages into files
                             logger.debug('External flush request made.')
                         
@@ -176,19 +176,20 @@ class DataCache:
                             
                                 
                         #Indicates that it is a pull request ( somebody want data from the DC)
-                        elif data[0] == '|': #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
+                        elif data[0] == ord('|'): #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
                             logger.debug('Somebody wants data')
-                            data, dest = data.split('|', 1) #splits to get either 'o' for outgoing request or the device location for incoming request
-                            if dest != 'o':
+                            #data, dest = data.decode('iso-8859-1').split('|', 1) #splits to get either 'o' for outgoing request or the device location for incoming request
+                            dest = data[1:]
+                            if dest != 'o'.encode('iso-8859-1'):
                                 logger.debug('Somebody wants data, without o')
                                 msg = self.incoming_pull(int(dest)) #pulls a message from that device's queue
                                 if not msg:
                                     logger.debug("no message")
-                                    msg = 'False'
+                                    msg = 'False'.encode('iso-8859-1')
                                 else:
                                     logger.debug("incoming_pull message: %s" %(msg))
                                 try:
-                                    client_sock.sendall(msg.encode('iso-8859-15')) #sends the message
+                                    client_sock.sendall(msg) #sends the message
                                 except:
                                     #pushes it back into the incoming queue if the client disconnects before the message is sent
                                     try: #Will pass if data is a pull request instead of a full message 
@@ -200,13 +201,13 @@ class DataCache:
                                 logger.debug('Somebody wants data, using o')
                                 msg = self.outgoing_pull() #pulls the highest priority message
                                 if not msg: 
-                                    msg = 'False'
+                                    msg = 'False'.encode('iso-8859-15')
                                     logger.debug("have no message for external_client_pull")
                                 else:
                                     logger.debug("sending message to external_client_pull, length %d" % (len(msg)))
                                     
                                 try:
-                                    client_sock.sendall(msg.encode('iso-8859-15')) #sends the message
+                                    client_sock.sendall(msg) #sends the message
                                 except Exception as e:
                                     logger.error("client_sock.sendall: "+str(e))
                                     #pushes it back into the outgoing queue if the client disconnects before the message is sent
