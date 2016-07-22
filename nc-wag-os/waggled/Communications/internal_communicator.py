@@ -228,7 +228,6 @@ def push_server():
     while True:
         try:
             data = server_socket.recv()
-            logger.debug("type is %s" % (type(data)))
             if data.decode('iso-8859-1') == "time":
                 t = int(time.time())
                 res = '{"epoch": %d}' % (t)
