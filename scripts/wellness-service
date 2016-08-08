@@ -1,0 +1,166 @@
+#!/usr/bin/python
+
+import os
+import socket
+import subprocess
+import sys
+import time
+
+# Every minute, check the following items:
+# - Modem in lsusb
+# - Modem in ifconfig
+# - Modem has IP address
+# - Beehive server is in DNS
+# - Beehive server can be pinged
+# - Local sshd is ok (test connect locally)
+# Every half hour, check the following items:
+# - Can ssh to beehive
+# - Can ssh to NC from beehive
+#
+# If modem is not in lsusb,
+#   1) power cycle the hub,
+#   2) log failure.
+# If modem not in ifconfig,
+#   1) pkill -HUP pppd
+#   2) log failure.
+# If modem has no IP address,
+#   1) pkill -HUP pppd
+#   2) log failure.
+# If beehive cannot be pinged
+#   beehive server is in DNS
+
+
+# Run a command and capture it's output
+def run_command(command):
+  p = subprocess.Popen(command, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+  return iter(p.stdout.readline, b'')
+
+# Get the Beehive server hostname
+def get_beehive_hostname():
+  server_host = ''
+  try:
+    with open('/etc/waggle/server_host', 'r') as f:
+      server_host = f.readline()[:-1]
+  except Exception:
+    pass
+  return server_host
+
+# Get the reverse SSH tunnel port
+def get_reverse_ssh_port():
+  port = ''
+  try:
+    with open('/etc/waggle/reverse_ssh_port', 'r') as f:
+      port = f.readline()[:-1]
+  except Exception:
+    pass
+  return port
+
+# Check that there is a "Wireless" device connected to the USB hub
+def check_USB_modem():
+  output = run_command(['lsusb'])
+  for line in output:
+    if "Wireless" in line:
+      return True
+  return False
+
+# Check that there is an IP address listed in the PPP info of ifconfig
+def check_network_interface():
+  output = run_command(['ifconfig'])
+  have_ppp = False
+  have_ip = False
+  for line in output:
+    if "Point-to-Point Protocol" in line:
+      have_ppp = True
+    if "inet addr:" in line:
+      have_ip = True
+  return have_ppp and have_ip
+
+# DNS lookup of the Beehive server hostname
+def check_beehive_DNS(hostname):
+  beehive_ip = ''
+  try:
+    beehive_ip = socket.gethostbyname(hostname)
+  except Exception:
+    return False
+
+  return True
+
+# Ping the Beehive server
+def check_beehive_ping(hostname):
+  rc = os.system("ping -c 1 -q " + hostname + " > /dev/null 2>&1")
+  if rc != 0:
+    return False
+
+  return True
+
+# Connect to the local sshd
+def check_local_sshd():
+  # To test, add "waggle" user to ThinkPad and setup passwordless key
+  command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
+             '-o \"PasswordAuthentication no\"',
+             '-o \"CertificateFile /usr/lib/waggle/SSL/node/cert.pem\"',
+             '-o \"ConnectTimeout 1\" waggle@localhost',
+             'date > /dev/null 2>&1']
+  #print ' '.join(command)
+  rc = os.system(' '.join(command))
+  if rc != 0:
+    return False
+
+  return True
+
+
+# Connect to the Beehive server's sshd
+def check_beehive_sshd(hostname):
+  command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
+             '-o \"PasswordAuthentication no\"',
+             '-o \"CertificateFile /usr/lib/waggle/SSL/node/cert.pem\"',
+             'root@'+hostname, '-p 20022',
+             'date > /dev/null 2>&1']
+  #print ' '.join(command)
+  rc = os.system(' '.join(command))
+  if rc != 0:
+    return False
+
+  return True
+
+
+# Connect to the local sshd by way of the Beehive server
+def check_reverse_ssh_tunnel(hostname, port):
+  command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
+             '-o \"PasswordAuthentication no\"',
+             '-o \"CertificateFile /usr/lib/waggle/SSL/node/cert.pem\"',
+             'root@'+hostname, '-p 20022',
+             '\"ssh waggle@localhost -p', port, '\" date > /dev/null 2>&1']
+  #print ' '.join(command)
+  rc = os.system(' '.join(command))
+  if rc != 0:
+    return False
+
+  return True
+
+
+#base_sleep_time = 60  # s
+base_sleep_time = 2  # s
+interval_count = 0
+beehive_hostname = get_beehive_hostname()
+reverse_ssh_port = get_reverse_ssh_port()
+while True:
+  results = [check_USB_modem(),
+             check_network_interface(),
+             check_beehive_DNS(beehive_hostname),
+             check_beehive_ping(beehive_hostname),
+             check_local_sshd()]
+  print 'Per Minute Results:', results
+  # ping -c 1 -D beehive1.mcs.anl.gov | grep icmp_seq
+  # date -d '@<timestamp>'
+
+  #if interval_count >= 30:
+  if interval_count >= 2:
+    results = [check_beehive_sshd(beehive_hostname),
+               check_reverse_ssh_tunnel(beehive_hostname, reverse_ssh_port)]
+    print 'Per Half-hour Results:', results
+    interval_count = 0
+
+  interval_count += 1
+  time.sleep(base_sleep_time)
