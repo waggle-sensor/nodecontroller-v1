@@ -57,7 +57,7 @@ def get_reverse_ssh_port():
   return port
 
 def reset_deadman_trigger():
-  file = "/usr/lib/waggle/alive"
+  file = "/usr/lib/waggle/waggle_image/alive"
   rc = os.system("touch " + file + " > /dev/null 2>&1")
   if rc != 0:
     return False
@@ -159,8 +159,8 @@ while True:
   # ping -c 1 -D beehive1.mcs.anl.gov | grep icmp_seq
   # date -d '@<timestamp>'
 
-  #if interval_count >= 30:
   results2 = []
+  #if interval_count >= 30:
   if interval_count >= 2:
     results2 = [check_beehive_sshd(beehive_hostname),
                check_reverse_ssh_tunnel(beehive_hostname, reverse_ssh_port)]
