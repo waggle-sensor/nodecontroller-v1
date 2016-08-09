@@ -151,7 +151,7 @@ while True:
              check_beehive_DNS(beehive_hostname),
              check_beehive_ping(beehive_hostname),
              check_local_sshd()]
-  print 'Per Minute Results:', results
+  print('Per Minute Results:', results)
   # ping -c 1 -D beehive1.mcs.anl.gov | grep icmp_seq
   # date -d '@<timestamp>'
 
@@ -159,7 +159,7 @@ while True:
   if interval_count >= 2:
     results = [check_beehive_sshd(beehive_hostname),
                check_reverse_ssh_tunnel(beehive_hostname, reverse_ssh_port)]
-    print 'Per Half-hour Results:', results
+    print('Per Half-hour Results:', results)
     interval_count = 0
 
   interval_count += 1
