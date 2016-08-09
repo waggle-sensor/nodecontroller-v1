@@ -56,6 +56,13 @@ def get_reverse_ssh_port():
     pass
   return port
 
+def reset_deadman_trigger():
+  file = "/usr/lib/waggle/alive"
+  rc = os.system("touch " + file + " > /dev/null 2>&1")
+  if rc != 0:
+    return False
+
+
 # Check that there is a "Wireless" device connected to the USB hub
 def check_USB_modem():
   output = run_command(['lsusb'])
@@ -143,21 +150,24 @@ interval_count = 0
 beehive_hostname = get_beehive_hostname()
 reverse_ssh_port = get_reverse_ssh_port()
 while True:
-  results = [check_USB_modem(),
+  results1 = [check_USB_modem(),
              check_network_interface(),
              check_beehive_DNS(beehive_hostname),
              check_beehive_ping(beehive_hostname),
              check_local_sshd()]
-  print('Per Minute Results:', results)
+  print('Per Minute Results:', results1)
   # ping -c 1 -D beehive1.mcs.anl.gov | grep icmp_seq
   # date -d '@<timestamp>'
 
   #if interval_count >= 30:
+  results2 = []
   if interval_count >= 2:
-    results = [check_beehive_sshd(beehive_hostname),
+    results2 = [check_beehive_sshd(beehive_hostname),
                check_reverse_ssh_tunnel(beehive_hostname, reverse_ssh_port)]
-    print('Per Half-hour Results:', results)
+    print('Per Half-hour Results:', results2)
     interval_count = 0
 
+  if all(results1 + results2):
+    reset_deadman_trigger()
   interval_count += 1
   time.sleep(base_sleep_time)
