@@ -41,7 +41,7 @@ def get_beehive_hostname():
   server_host = ''
   try:
     with open('/etc/waggle/server_host', 'r') as f:
-      server_host = f.readline()[:-1]
+      server_host = f.readline().rstrip()
   except Exception:
     pass
   return server_host
@@ -51,7 +51,7 @@ def get_reverse_ssh_port():
   port = ''
   try:
     with open('/etc/waggle/reverse_ssh_port', 'r') as f:
-      port = f.readline()[:-1]
+      port = f.readline().rstrip()
   except Exception:
     pass
   return port
