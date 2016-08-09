@@ -129,7 +129,6 @@ def check_beehive_sshd(hostname):
 def check_reverse_ssh_tunnel(hostname, port):
   command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
              '-o \"PasswordAuthentication no\"',
-             '-o \"CertificateFile /usr/lib/waggle/SSL/node/cert.pem\"',
              'root@'+hostname, '-p 20022',
              '\"ssh waggle@localhost -p', port, '\" date > /dev/null 2>&1']
   #print ' '.join(command)
