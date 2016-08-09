@@ -144,8 +144,8 @@ def check_reverse_ssh_tunnel(hostname, port):
   return True
 
 
-#base_sleep_time = 60  # s
-base_sleep_time = 2  # s
+# base_sleep_time = 2  # s
+base_sleep_time = 60  # s
 interval_count = 0
 beehive_hostname = get_beehive_hostname()
 reverse_ssh_port = get_reverse_ssh_port()
@@ -160,8 +160,8 @@ while True:
   # date -d '@<timestamp>'
 
   results2 = []
-  #if interval_count >= 30:
-  if interval_count >= 2:
+  # if interval_count >= 2:
+  if interval_count >= 30:
     results2 = [check_beehive_sshd(beehive_hostname),
                check_reverse_ssh_tunnel(beehive_hostname, reverse_ssh_port)]
     print('Per Half-hour Results:', results2)
