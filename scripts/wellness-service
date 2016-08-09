@@ -99,7 +99,6 @@ def check_local_sshd():
   # To test, add "waggle" user to ThinkPad and setup passwordless key
   command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
              '-o \"PasswordAuthentication no\"',
-             '-o \"CertificateFile /usr/lib/waggle/SSL/node/cert.pem\"',
              '-o \"ConnectTimeout 1\" waggle@localhost',
              'date > /dev/null 2>&1']
   #print ' '.join(command)
@@ -114,7 +113,6 @@ def check_local_sshd():
 def check_beehive_sshd(hostname):
   command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
              '-o \"PasswordAuthentication no\"',
-             '-o \"CertificateFile /usr/lib/waggle/SSL/node/cert.pem\"',
              'root@'+hostname, '-p 20022',
              'date > /dev/null 2>&1']
   #print ' '.join(command)
