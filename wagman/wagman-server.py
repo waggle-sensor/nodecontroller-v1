@@ -57,7 +57,7 @@ if __name__ == "__main__":
         try:
             # connect to wagman
             
-            with Serial(wagman_device, 56700, timeout=8, writeTimeout=8) as serial:
+            with Serial(wagman_device, 57600, timeout=8, writeTimeout=8) as serial:
                 last_message = wagman_connected_msg
                 logger.debug(wagman_connected_msg)
                 
