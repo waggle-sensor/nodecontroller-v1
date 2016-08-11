@@ -175,9 +175,9 @@ def restore_reverse_ssh_tunnel(hostname, port):
   time.sleep(10)
   if check_reverse_ssh_tunnel(hostname, port):
       log_message('Reverse ssh tunnel has been restored.')
-    else:
-      log_message('Unable to restore reverse ssh tunnel.')
-      return False
+  else:
+    log_message('Unable to restore reverse ssh tunnel.')
+    return False
 
   return True
 
@@ -209,21 +209,28 @@ while True:
     interval_count = 0
 
   results = results1 + results2
-  if all(results):
-    reset_deadman_trigger()
-  else:
+  # Re-enable when ready to deploy
+  #if all(results):
+  reset_deadman_trigger()
+  #else:
     # log failed tests
-    log_message("The following tests failed: " + 
+    #log_message("The following tests failed: " + 
                 str([n for x,n in zip(results,test_names) if not x]) + "\n")
 
   # Attempt to restore functionality to get all tests to pass
   # NOTE: the WagMan gives the NC about 2 minutes to attempt any intervention
   if results[0]:    # USB Modem
+    log_message("USB Modem: No intervention taken")
   elif results[1]:  # Network Interface
+    log_message("Network Interface: No intervention taken")
   elif results[2]:  # Beehive DNS
+    log_message("Beehive DNS: No intervention taken")
   elif results[3]:  # Beehive Ping
+    log_message("Beehive Ping: No intervention taken") 
   elif results[4]:  # Local sshd
+    log_message("Local sshd: No intervention taken")
   elif results[5]:  # Beehive sshd
+    log_message("Beehive sshd: No intervention taken")
   elif results[6]:  # Reverse SSH Tunnel
     attempt_count = 0
     restored = False
