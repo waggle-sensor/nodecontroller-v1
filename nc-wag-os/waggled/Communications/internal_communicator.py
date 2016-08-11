@@ -102,6 +102,8 @@ def internal_client_pull():
                     client_sock.connect('/tmp/Data_Cache_server')#opens socket when there is an incoming pull request
                     dev = comm.incoming_request.get() #gets the dev ID that is initiating the pull request
                     #TODO this could probably be done a different way, but there has to be some distinction between a pull request and message push
+                    if type(dev) == str:
+                        dev = dev.encode('iso-8859-1')
                     request = '|'.encode('iso-8859-1') + dev #puts the request in the correct format for the DC 
                     client_sock.send(request)
                     try:
@@ -332,6 +334,9 @@ def pull_server():
                 logger.info("Internal pull server shutting down.")
                 
                 server.close()
+                break
+            except socket.SocketError as e:
+                logger.error("(pull_server) error on socket: %s" % (str(e)))
                 break
             except Exception as e:
                 logger.error("(pull_server) error receiving data: %s" % (str(e)))
