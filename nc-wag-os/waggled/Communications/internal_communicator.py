@@ -335,7 +335,7 @@ def pull_server():
                 
                 server.close()
                 break
-            except socket.SocketError as e:
+            except socket.error as e:
                 logger.error("(pull_server) error on socket: %s" % (str(e)))
                 break
             except Exception as e:
