@@ -131,6 +131,7 @@ def check_local_sshd():
 def check_beehive_sshd(hostname):
   command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
              '-o \"PasswordAuthentication no\"',
+             '-o \""StrictHostKeyChecking no"\"',
              'root@'+hostname, '-p 20022',
              'date > /dev/null 2>&1']
   #print ' '.join(command)
@@ -145,6 +146,7 @@ def check_beehive_sshd(hostname):
 def check_reverse_ssh_tunnel(hostname, port):
   command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
              '-o \"PasswordAuthentication no\"',
+             '-o \""StrictHostKeyChecking no"\"',
              'root@'+hostname, '-p 20022',
              '\"ssh waggle@localhost -p', port, '\" date > /dev/null 2>&1']
   #print ' '.join(command)
@@ -210,32 +212,34 @@ while True:
 
   results = results1 + results2
   # Re-enable when ready to deploy
-  #if all(results):
-  reset_deadman_trigger()
-  #else:
+  if all(results[:-1]):  # all but the reverse ssh tunnel (for now)
+    reset_deadman_trigger()
+  else:
     # log failed tests
-    #log_message("The following tests failed: " + 
+    log_message("The following tests failed: " + 
                 str([n for x,n in zip(results,test_names) if not x]) + "\n")
 
   # Attempt to restore functionality to get all tests to pass
   # NOTE: the WagMan gives the NC about 2 minutes to attempt any intervention
-  if results[0]:    # USB Modem
+  """
+  if not results[0]:    # USB Modem
     log_message("USB Modem: No intervention taken")
-  elif results[1]:  # Network Interface
+  elif not results[1]:  # Network Interface
     log_message("Network Interface: No intervention taken")
-  elif results[2]:  # Beehive DNS
+  elif not results[2]:  # Beehive DNS
     log_message("Beehive DNS: No intervention taken")
-  elif results[3]:  # Beehive Ping
+  elif not results[3]:  # Beehive Ping
     log_message("Beehive Ping: No intervention taken") 
-  elif results[4]:  # Local sshd
+  elif not results[4]:  # Local sshd
     log_message("Local sshd: No intervention taken")
-  elif results[5]:  # Beehive sshd
+  elif not results[5]:  # Beehive sshd
     log_message("Beehive sshd: No intervention taken")
-  elif results[6]:  # Reverse SSH Tunnel
+  elif not results[6]:  # Reverse SSH Tunnel
     attempt_count = 0
     restored = False
     while (attempt_count < 10) and (not restored):
       restored = restore_reverse_ssh_tunnel(beehive_hostname, reverse_ssh_port)
+  """
 
   interval_count += 1
   time.sleep(base_sleep_time)
