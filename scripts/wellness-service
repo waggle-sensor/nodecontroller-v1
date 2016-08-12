@@ -218,6 +218,7 @@ while True:
   # Re-enable when ready to deploy
   if all(results):  # all but the reverse ssh tunnel (for now)
     reset_deadman_trigger()
+    log_message("Node Controller is well.")
   else:
     # log failed tests
     log_message("The following tests failed: " + 
