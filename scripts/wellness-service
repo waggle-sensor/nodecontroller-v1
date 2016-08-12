@@ -105,8 +105,10 @@ def check_beehive_DNS(hostname):
   return True
 
 # Ping the Beehive server
+# The ICMP port is disabled on the beehive servers for external IPs, so
+# just check that the beehive web portal is up
 def check_beehive_ping(hostname):
-  rc = os.system("ping -c 1 -q " + hostname + " > /dev/null 2>&1")
+  rc = os.system("curl " + hostname + "/api/ > /dev/null 2>&1")
   if rc != 0:
     return False
 
