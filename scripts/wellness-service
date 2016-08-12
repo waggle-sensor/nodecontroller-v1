@@ -148,7 +148,8 @@ def check_reverse_ssh_tunnel(hostname, port):
              '-o \"PasswordAuthentication no\"',
              '-o \""StrictHostKeyChecking no"\"',
              'root@'+hostname, '-p 20022',
-             '\"ssh waggle@localhost -p', port, '\" date > /dev/null 2>&1']
+             '\"ssh -i /usr/lib/waggle/ssh_keys/id_rsa_waggle_aot_test',
+             'waggle@localhost -p', port, '\" date > /dev/null 2>&1']
   #print ' '.join(command)
   rc = os.system(' '.join(command))
   if rc != 0:
@@ -212,7 +213,7 @@ while True:
 
   results = results1 + results2
   # Re-enable when ready to deploy
-  if all(results[:-1]):  # all but the reverse ssh tunnel (for now)
+  if all(results):  # all but the reverse ssh tunnel (for now)
     reset_deadman_trigger()
   else:
     # log failed tests
