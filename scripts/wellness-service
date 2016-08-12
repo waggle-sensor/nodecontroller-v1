@@ -117,6 +117,7 @@ def check_local_sshd():
   # To test, add "waggle" user to ThinkPad and setup passwordless key
   command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
              '-o \"PasswordAuthentication no\"',
+             '-o \""StrictHostKeyChecking no"\"',
              '-o \"ConnectTimeout 1\" waggle@localhost',
              'date > /dev/null 2>&1']
   #print ' '.join(command)
