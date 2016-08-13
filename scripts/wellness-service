@@ -93,7 +93,7 @@ def unsubscribe_wagman_status(socket):
 def check_USB_modem():
   output = run_command(['lsusb'])
   for line in output:
-    if "Wireless" in line:
+    if b"Wireless" in line:
       return True
   return False
 
