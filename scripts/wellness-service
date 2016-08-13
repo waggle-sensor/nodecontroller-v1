@@ -221,13 +221,14 @@ wagman_status = subscribe_wagman_status()
 """ Clean up when script is terminated """
 """ ################################## """
 def cleanup(signum, stack_frame):
-  unsubscribe_wagman_status(socket)
+  unsubscribe_wagman_status(wagman_status)
 for sig in (SIGINT, SIGQUIT, SIGABRT):
   signal(sig, cleanup)
 """ ################################## """
 
 while True:
-  print(get_wagman_status(wagman_status))
+  for i in range(10):
+    print(get_wagman_status(wagman_status))
 
   results1 = [check_USB_modem(),
              check_network_interface(),
