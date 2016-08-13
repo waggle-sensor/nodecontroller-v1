@@ -79,13 +79,6 @@ def subscribe_wagman_status():
   socket.connect ('ipc:///tmp/zeromq_wagman-pub')
   return socket
 
-def get_wagman_status(socket):
-  try:
-    message = socket.recv_string()
-  except zmq.ZMQError:
-    message = ""
-  return message
-
 def unsubscribe_wagman_status(socket):
   socket.close()
 
@@ -179,6 +172,18 @@ def check_reverse_ssh_tunnel(hostname, port):
 
   return True
 
+def check_wagman_status(socket):
+  message = ""
+  try:
+    while True:
+      message = socket.recv_string()
+  except zmq.ZMQError:
+    pass
+
+  if len(message) == 0:
+    return False
+  return True
+
 #########################
 ##### Interventions #####
 #########################
@@ -216,19 +221,29 @@ interval_count = 0
 beehive_hostname = get_beehive_hostname()
 reverse_ssh_port = get_reverse_ssh_port()
 wagman_status = subscribe_wagman_status()
+last_wagman_status_time = time.time()
+max_wagman_silence_duration = 600  # s
 
 """ ################################## """
 """ Clean up when script is terminated """
 """ ################################## """
 def cleanup(signum, stack_frame):
   unsubscribe_wagman_status(wagman_status)
-for sig in (SIGINT, SIGQUIT, SIGABRT):
+  quit()
+for sig in (SIGINT, SIGQUIT, SIGTERM):
   signal(sig, cleanup)
 """ ################################## """
 
 while True:
-  for i in range(10):
-    print(get_wagman_status(wagman_status))
+  # Check if the WagMan is still sending updates
+  if check_wagman_status(wagman_status):
+    last_wagman_status_time = time.time()
+  else:
+    current_time = time.time()
+    wagman_silence_duration = current_time - last_wagman_status_time
+    if wagman_silence_duration >= max_wagman_silence_duration:
+      log_message("WagMan is not well.")
+      # TODO: send the signal to reboot the WagMan
 
   results1 = [check_USB_modem(),
              check_network_interface(),
