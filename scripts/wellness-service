@@ -75,7 +75,7 @@ def subscribe_wagman_status():
   context = zmq.Context()
   socket = context.socket(zmq.SUB)
   socket.setsockopt(zmq.RCVTIMEO, 3000)
-  socket.setsockopt(zmq.SUBSCRIBE, '')
+  socket.setsockopt(zmq.SUBSCRIBE, b'')
   socket.connect ('ipc:///tmp/zeromq_wagman-pub')
   return socket
 
@@ -216,15 +216,14 @@ wagman_status = subscribe_wagman_status()
 """ ################################## """
 """ Clean up when script is terminated """
 """ ################################## """
-def cleanup():
+def cleanup(signum, stack_frame):
   unsubscribe_wagman_status(socket)
-for sig in (SIGABRT, SIGBREAK, SIGILL, SIGINT, SIGSEGV, SIGTERM):
-    signal(sig, cleanup)
+for sig in (SIGINT, SIGQUIT, SIGABRT):
+  signal(sig, cleanup)
 """ ################################## """
 
 while True:
-  wagman_status = get_wagman_status()
-  print(wagman_status)
+  print(get_wagman_status(wagman_status))
 
   results1 = [check_USB_modem(),
              check_network_interface(),
