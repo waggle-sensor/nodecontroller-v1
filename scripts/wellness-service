@@ -6,6 +6,7 @@ import socket
 import subprocess
 import sys
 import time
+import zmq
 
 # Every minute, check the following items:
 # - Modem in lsusb
@@ -69,6 +70,20 @@ def reset_deadman_trigger():
 def log_message(message):
   timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
   os.system("logger -t wellness " + timestamp + " " + message)
+
+def subscribe_wagman_status():
+  context = zmq.Context()
+  socket = context.socket(zmq.SUB)
+  socket.setsockopt(zmq.RCVTIMEO, 3000)
+  socket.setsockopt(zmq.SUBSCRIBE, '')
+  socket.connect ('ipc:///tmp/zeromq_wagman-pub')
+  return socket
+
+def get_wagman_status(socket):
+  message = socket.recv_string()
+
+def unsubscribe_wagman_status(socket):
+  socket.close()
 
 ###########################
 ##### Wellness Checks #####
@@ -196,7 +211,21 @@ base_sleep_time = 60  # s
 interval_count = 0
 beehive_hostname = get_beehive_hostname()
 reverse_ssh_port = get_reverse_ssh_port()
+wagman_status = subscribe_wagman_status()
+
+""" ################################## """
+""" Clean up when script is terminated """
+""" ################################## """
+def cleanup():
+  unsubscribe_wagman_status(socket)
+for sig in (SIGABRT, SIGBREAK, SIGILL, SIGINT, SIGSEGV, SIGTERM):
+    signal(sig, cleanup)
+""" ################################## """
+
 while True:
+  wagman_status = get_wagman_status()
+  print(wagman_status)
+
   results1 = [check_USB_modem(),
              check_network_interface(),
              check_beehive_DNS(beehive_hostname),
