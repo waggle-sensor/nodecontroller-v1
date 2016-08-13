@@ -80,7 +80,11 @@ def subscribe_wagman_status():
   return socket
 
 def get_wagman_status(socket):
-  message = socket.recv_string()
+  try:
+    message = socket.recv_string()
+  except zmq.ZMQError:
+    message = ""
+  return message
 
 def unsubscribe_wagman_status(socket):
   socket.close()
