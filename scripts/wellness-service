@@ -103,9 +103,9 @@ def check_network_interface():
   have_ppp = False
   have_ip = False
   for line in output:
-    if "Point-to-Point Protocol" in line:
+    if b"Point-to-Point Protocol" in line:
       have_ppp = True
-    if "inet addr:" in line:
+    if b"inet addr:" in line:
       have_ip = True
   return have_ppp and have_ip
 
@@ -187,7 +187,7 @@ def restore_reverse_ssh_tunnel(hostname, port):
 
   status = run_command(['waggle-service', 'status',
                         'waggle-reverse_ssh_tunnel'])[0]
-  if "running" in status:
+  if b"running" in status:
     log_message('waggle-reverse_ssh_tunnel restarted successfully.')
   else:
     log_message('waggle-reverse_ssh_tunnel failed to start.')
