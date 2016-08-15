@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 from signal import *
@@ -6,6 +6,7 @@ import socket
 import subprocess
 import sys
 import time
+import zmq
 
 # Every minute, check the following items:
 # - Modem in lsusb
@@ -70,6 +71,17 @@ def log_message(message):
   timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
   os.system("logger -t wellness " + timestamp + " " + message)
 
+def subscribe_wagman_status():
+  context = zmq.Context()
+  socket = context.socket(zmq.SUB)
+  socket.setsockopt(zmq.RCVTIMEO, 3000)
+  socket.setsockopt(zmq.SUBSCRIBE, b'')
+  socket.connect ('ipc:///tmp/zeromq_wagman-pub')
+  return socket
+
+def unsubscribe_wagman_status(socket):
+  socket.close()
+
 ###########################
 ##### Wellness Checks #####
 ###########################
@@ -78,7 +90,7 @@ def log_message(message):
 def check_USB_modem():
   output = run_command(['lsusb'])
   for line in output:
-    if "Wireless" in line:
+    if b"Wireless" in line:
       return True
   return False
 
@@ -88,9 +100,9 @@ def check_network_interface():
   have_ppp = False
   have_ip = False
   for line in output:
-    if "Point-to-Point Protocol" in line:
+    if b"Point-to-Point Protocol" in line:
       have_ppp = True
-    if "inet addr:" in line:
+    if b"inet addr:" in line:
       have_ip = True
   return have_ppp and have_ip
 
@@ -160,9 +172,24 @@ def check_reverse_ssh_tunnel(hostname, port):
 
   return True
 
+def check_wagman_status(socket):
+  message = ""
+  try:
+    while True:
+      message = socket.recv_string()
+  except zmq.ZMQError:
+    pass
+
+  if len(message) == 0:
+    return False
+  return True
+
 #########################
 ##### Interventions #####
 #########################
+
+def reset_wagman():
+  os.system("/usr/lib/waggle/waggle_image/scripts/reset_wagman.sh")
 
 # Attempt to restore the reverse ssh tunnel
 def restore_reverse_ssh_tunnel(hostname, port):
@@ -172,7 +199,7 @@ def restore_reverse_ssh_tunnel(hostname, port):
 
   status = run_command(['waggle-service', 'status',
                         'waggle-reverse_ssh_tunnel'])[0]
-  if "running" in status:
+  if b"running" in status:
     log_message('waggle-reverse_ssh_tunnel restarted successfully.')
   else:
     log_message('waggle-reverse_ssh_tunnel failed to start.')
@@ -196,7 +223,31 @@ base_sleep_time = 60  # s
 interval_count = 0
 beehive_hostname = get_beehive_hostname()
 reverse_ssh_port = get_reverse_ssh_port()
+wagman_status = subscribe_wagman_status()
+last_wagman_status_time = time.time()
+max_wagman_silence_duration = 600  # s
+
+""" ################################## """
+""" Clean up when script is terminated """
+""" ################################## """
+def cleanup(signum, stack_frame):
+  unsubscribe_wagman_status(wagman_status)
+  quit()
+for sig in (SIGINT, SIGQUIT, SIGTERM):
+  signal(sig, cleanup)
+""" ################################## """
+
 while True:
+  # Check if the WagMan is still sending updates
+  if check_wagman_status(wagman_status):
+    last_wagman_status_time = time.time()
+  else:
+    current_time = time.time()
+    wagman_silence_duration = current_time - last_wagman_status_time
+    if wagman_silence_duration >= max_wagman_silence_duration:
+      log_message("WagMan is not well. Resetting WagMan...")
+      reset_wagman()
+
   results1 = [check_USB_modem(),
              check_network_interface(),
              check_beehive_DNS(beehive_hostname),
