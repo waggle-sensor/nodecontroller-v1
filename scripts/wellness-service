@@ -188,6 +188,9 @@ def check_wagman_status(socket):
 ##### Interventions #####
 #########################
 
+def reset_wagman():
+  os.system("/usr/lib/waggle/waggle_image/scripts/reset_wagman.sh")
+
 # Attempt to restore the reverse ssh tunnel
 def restore_reverse_ssh_tunnel(hostname, port):
   log_message('Restarting waggle-reverse_ssh_tunnel.')
@@ -242,8 +245,8 @@ while True:
     current_time = time.time()
     wagman_silence_duration = current_time - last_wagman_status_time
     if wagman_silence_duration >= max_wagman_silence_duration:
-      log_message("WagMan is not well.")
-      # TODO: send the signal to reboot the WagMan
+      log_message("WagMan is not well. Resetting WagMan...")
+      reset_wagman()
 
   results1 = [check_USB_modem(),
              check_network_interface(),
