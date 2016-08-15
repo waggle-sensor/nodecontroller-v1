@@ -161,10 +161,10 @@ def check_beehive_sshd(hostname):
 def check_reverse_ssh_tunnel(hostname, port):
   command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
              '-o "PasswordAuthentication no"',
-             '-o StrictHostKeyChecking no"',
+             '-o "StrictHostKeyChecking no"',
              'root@'+hostname, '-p 20022',
              '"ssh -i /usr/lib/waggle/ssh_keys/id_rsa_waggle_aot_test',
-             'waggle@localhost -p', port, '" date > /dev/null 2>&1']
+             'waggle@localhost -p', port, '" > /dev/null 2>&1']
   #print ' '.join(command)
   rc = os.system(' '.join(command))
   if rc != 0:
