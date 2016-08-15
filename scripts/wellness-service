@@ -220,7 +220,7 @@ test_names = ['USB Modem', 'Network Interface', 'Beehive DNS', 'Beehive Ping',
 
 # base_sleep_time = 2  # s
 base_sleep_time = 60  # s
-interval_count = 0
+interval_count = 30  # check Beehive when we first start up
 beehive_hostname = get_beehive_hostname()
 reverse_ssh_port = get_reverse_ssh_port()
 wagman_status = subscribe_wagman_status()
