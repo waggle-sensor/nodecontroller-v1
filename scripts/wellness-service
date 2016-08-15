@@ -263,7 +263,8 @@ while True:
     results2 = [check_beehive_sshd(beehive_hostname),
                check_reverse_ssh_tunnel(beehive_hostname, reverse_ssh_port)]
     #print('Per Half-hour Results:', results2)
-    interval_count = 0
+    if all(results2):
+      interval_count = 0
 
   results = results1 + results2
   # Re-enable when ready to deploy
