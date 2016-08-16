@@ -248,6 +248,7 @@ while True:
     if wagman_silence_duration >= max_wagman_silence_duration:
       log_message("WagMan is not well. Resetting WagMan...")
       reset_wagman()
+      last_wagman_status_time = time.time()
 
   results1 = [check_USB_modem(),
              check_network_interface(),
