@@ -164,6 +164,7 @@ def check_reverse_ssh_tunnel(hostname, port):
              '-o "StrictHostKeyChecking no"',
              'root@'+hostname, '-p 20022',
              '"ssh -i /usr/lib/waggle/ssh_keys/id_rsa_waggle_aot_test',
+             '-o \\"StrictHostKeyChecking no\\"',
              'waggle@localhost -p', port, '" > /dev/null 2>&1']
   #print ' '.join(command)
   rc = os.system(' '.join(command))
