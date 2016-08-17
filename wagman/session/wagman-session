@@ -1,0 +1,27 @@
+#!/bin/sh
+
+tmux has-session -t wagman && tmux kill-session -t wagman
+tmux new-session -d -s wagman
+
+tmux new-window -t wagman:1 -n 'Commands'
+
+tmux split-window -h
+tmux select-pane -t 1
+tmux split-window -v
+
+tmux select-pane -t 0
+tmux send-keys "python3 wagman-sub.py log" C-m
+
+tmux select-pane -t 1
+tmux send-keys "python3 wagman-sub.py cmd" C-m
+
+tmux select-pane -t 2
+tmux send-keys "python3 wagman-send.py $1" C-m
+
+tmux new-window -t wagman:2 -n 'Publisher'
+tmux select-pane -t 0
+tmux send-keys "python3 wagman-pub.py $1" C-m
+
+tmux select-window -t wagman:1
+
+tmux attach-session -t wagman

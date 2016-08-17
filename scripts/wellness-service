@@ -1,0 +1,304 @@
+#!/usr/bin/python3
+
+import os
+from signal import *
+import socket
+import subprocess
+import sys
+import time
+import zmq
+
+# Every minute, check the following items:
+# - Modem in lsusb
+# - Modem in ifconfig
+# - Modem has IP address
+# - Beehive server is in DNS
+# - Beehive server can be pinged
+# - Local sshd is ok (test connect locally)
+# Every half hour, check the following items:
+# - Can ssh to beehive
+# - Can ssh to NC from beehive
+#
+# If modem is not in lsusb,
+#   1) power cycle the hub,
+#   2) log failure.
+# If modem not in ifconfig,
+#   1) pkill -HUP pppd
+#   2) log failure.
+# If modem has no IP address,
+#   1) pkill -HUP pppd
+#   2) log failure.
+# If beehive cannot be pinged
+#   beehive server is in DNS
+
+############################
+##### Helper Functions #####
+############################
+
+# Run a command and capture it's output
+def run_command(command):
+  p = subprocess.Popen(command, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+  return iter(p.stdout.readline, b'')
+
+# Get the Beehive server hostname
+def get_beehive_hostname():
+  server_host = ''
+  try:
+    with open('/etc/waggle/server_host', 'r') as f:
+      server_host = f.readline().rstrip()
+  except Exception:
+    pass
+  return server_host
+
+# Get the reverse SSH tunnel port
+def get_reverse_ssh_port():
+  port = ''
+  try:
+    with open('/etc/waggle/reverse_ssh_port', 'r') as f:
+      port = f.readline().rstrip()
+  except Exception:
+    pass
+  return port
+
+def reset_deadman_trigger():
+  file = "/usr/lib/waggle/waggle_image/alive"
+  rc = os.system("touch " + file + " > /dev/null 2>&1")
+  if rc != 0:
+    return False
+  
+def log_message(message):
+  timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+  os.system("logger -t wellness " + timestamp + " " + message)
+
+def subscribe_wagman_status():
+  context = zmq.Context()
+  socket = context.socket(zmq.SUB)
+  socket.setsockopt(zmq.RCVTIMEO, 3000)
+  socket.setsockopt(zmq.SUBSCRIBE, b'')
+  socket.connect ('ipc:///tmp/zeromq_wagman-pub')
+  return socket
+
+def unsubscribe_wagman_status(socket):
+  socket.close()
+
+###########################
+##### Wellness Checks #####
+###########################
+
+# Check that there is a "Wireless" device connected to the USB hub
+def check_USB_modem():
+  output = run_command(['lsusb'])
+  for line in output:
+    if b"Wireless" in line:
+      return True
+  return False
+
+# Check that there is an IP address listed in the PPP info of ifconfig
+def check_network_interface():
+  output = run_command(['ifconfig'])
+  have_ppp = False
+  have_ip = False
+  for line in output:
+    if b"Point-to-Point Protocol" in line:
+      have_ppp = True
+    if b"inet addr:" in line:
+      have_ip = True
+  return have_ppp and have_ip
+
+# DNS lookup of the Beehive server hostname
+def check_beehive_DNS(hostname):
+  beehive_ip = ''
+  try:
+    beehive_ip = socket.gethostbyname(hostname)
+  except Exception:
+    return False
+
+  return True
+
+# Ping the Beehive server
+# The ICMP port is disabled on the beehive servers for external IPs, so
+# just check that the beehive web portal is up
+def check_beehive_ping(hostname):
+  rc = os.system("curl " + hostname + "/api/ > /dev/null 2>&1")
+  if rc != 0:
+    return False
+
+  return True
+
+# Connect to the local sshd
+def check_local_sshd():
+  # To test, add "waggle" user to ThinkPad and setup passwordless key
+  command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
+             '-o "PasswordAuthentication no"',
+             '-o "StrictHostKeyChecking no"',
+             '-o "ConnectTimeout 1" waggle@localhost',
+             'date > /dev/null 2>&1']
+  #print ' '.join(command)
+  rc = os.system(' '.join(command))
+  if rc != 0:
+    return False
+
+  return True
+
+
+# Connect to the Beehive server's sshd
+def check_beehive_sshd(hostname):
+  command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
+             '-o "PasswordAuthentication no"',
+             '-o "StrictHostKeyChecking no"',
+             'root@'+hostname, '-p 20022',
+             'date > /dev/null 2>&1']
+  #print ' '.join(command)
+  rc = os.system(' '.join(command))
+  if rc != 0:
+    return False
+
+  return True
+
+
+# Connect to the local sshd by way of the Beehive server
+def check_reverse_ssh_tunnel(hostname, port):
+  command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
+             '-o "PasswordAuthentication no"',
+             '-o "StrictHostKeyChecking no"',
+             'root@'+hostname, '-p 20022',
+             '"ssh -i /usr/lib/waggle/ssh_keys/id_rsa_waggle_aot_test',
+             '-o \\"StrictHostKeyChecking no\\"',
+             'waggle@localhost -p', port, '" > /dev/null 2>&1']
+  #print ' '.join(command)
+  rc = os.system(' '.join(command))
+  if rc != 0:
+    return False
+
+  return True
+
+def check_wagman_status(socket):
+  message = ""
+  try:
+    while True:
+      message = socket.recv_string()
+  except zmq.ZMQError:
+    pass
+
+  if len(message) == 0:
+    return False
+  return True
+
+#########################
+##### Interventions #####
+#########################
+
+def reset_wagman():
+  os.system("/usr/lib/waggle/waggle_image/scripts/reset_wagman.sh")
+
+# Attempt to restore the reverse ssh tunnel
+def restore_reverse_ssh_tunnel(hostname, port):
+  log_message('Restarting waggle-reverse_ssh_tunnel.')
+  os.system('waggle-service stop waggle-reverse_ssh_tunnel')
+  os.system('waggle-service start waggle-reverse_ssh_tunnel')
+
+  status = run_command(['waggle-service', 'status',
+                        'waggle-reverse_ssh_tunnel'])[0]
+  if b"running" in status:
+    log_message('waggle-reverse_ssh_tunnel restarted successfully.')
+  else:
+    log_message('waggle-reverse_ssh_tunnel failed to start.')
+    return False
+
+  time.sleep(10)
+  if check_reverse_ssh_tunnel(hostname, port):
+      log_message('Reverse ssh tunnel has been restored.')
+  else:
+    log_message('Unable to restore reverse ssh tunnel.')
+    return False
+
+  return True
+
+# Human readable names for the tests in the same sequence that they are run
+test_names = ['USB Modem', 'Network Interface', 'Beehive DNS', 'Beehive Ping',
+              'Local sshd', 'Beehive sshd', 'Reverse SSH Tunnel']
+
+# base_sleep_time = 2  # s
+base_sleep_time = 60  # s
+interval_count = 30  # check Beehive when we first start up
+beehive_hostname = get_beehive_hostname()
+reverse_ssh_port = get_reverse_ssh_port()
+wagman_status = subscribe_wagman_status()
+last_wagman_status_time = time.time()
+max_wagman_silence_duration = 600  # s
+
+""" ################################## """
+""" Clean up when script is terminated """
+""" ################################## """
+def cleanup(signum, stack_frame):
+  unsubscribe_wagman_status(wagman_status)
+  quit()
+for sig in (SIGINT, SIGQUIT, SIGTERM):
+  signal(sig, cleanup)
+""" ################################## """
+
+while True:
+  # Check if the WagMan is still sending updates
+  if check_wagman_status(wagman_status):
+    last_wagman_status_time = time.time()
+  else:
+    current_time = time.time()
+    wagman_silence_duration = current_time - last_wagman_status_time
+    if wagman_silence_duration >= max_wagman_silence_duration:
+      log_message("WagMan is not well. Resetting WagMan...")
+      reset_wagman()
+      last_wagman_status_time = time.time()
+
+  results1 = [check_USB_modem(),
+             check_network_interface(),
+             check_beehive_DNS(beehive_hostname),
+             check_beehive_ping(beehive_hostname),
+             check_local_sshd()]
+  #print('Per Minute Results:', results1)
+  # ping -c 1 -D beehive1.mcs.anl.gov | grep icmp_seq
+  # date -d '@<timestamp>'
+
+  results2 = []
+  # if interval_count >= 2:
+  if interval_count >= 30:
+    results2 = [check_beehive_sshd(beehive_hostname),
+               check_reverse_ssh_tunnel(beehive_hostname, reverse_ssh_port)]
+    #print('Per Half-hour Results:', results2)
+    if all(results2):
+      interval_count = 0
+
+  results = results1 + results2
+  # Re-enable when ready to deploy
+  if all(results):  # all but the reverse ssh tunnel (for now)
+    reset_deadman_trigger()
+    log_message("Node Controller is well.")
+  else:
+    # log failed tests
+    log_message("The following tests failed: " + 
+                str([n for x,n in zip(results,test_names) if not x]) + "\n")
+
+  # Attempt to restore functionality to get all tests to pass
+  # NOTE: the WagMan gives the NC about 2 minutes to attempt any intervention
+  """
+  if not results[0]:    # USB Modem
+    log_message("USB Modem: No intervention taken")
+  elif not results[1]:  # Network Interface
+    log_message("Network Interface: No intervention taken")
+  elif not results[2]:  # Beehive DNS
+    log_message("Beehive DNS: No intervention taken")
+  elif not results[3]:  # Beehive Ping
+    log_message("Beehive Ping: No intervention taken") 
+  elif not results[4]:  # Local sshd
+    log_message("Local sshd: No intervention taken")
+  elif not results[5]:  # Beehive sshd
+    log_message("Beehive sshd: No intervention taken")
+  elif not results[6]:  # Reverse SSH Tunnel
+    attempt_count = 0
+    restored = False
+    while (attempt_count < 10) and (not restored):
+      restored = restore_reverse_ssh_tunnel(beehive_hostname, reverse_ssh_port)
+  """
+
+  interval_count += 1
+  time.sleep(base_sleep_time)
