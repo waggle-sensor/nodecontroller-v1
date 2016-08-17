@@ -57,8 +57,8 @@ while True:
 
                         body = '\n'.join(output)
 
-                        logging.debug("sending header:", header)
-                        logging.debug("sending body:", body)
+                        logging.debug("sending header: {}".format(header))
+                        logging.debug("sending body: {}".format(body))
 
                         msg = '{}\n{}'.format(header, body)
 
