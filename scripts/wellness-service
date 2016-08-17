@@ -51,16 +51,6 @@ def get_beehive_hostname():
     pass
   return server_host
 
-# Get the reverse SSH tunnel port
-def get_reverse_ssh_port():
-  port = ''
-  try:
-    with open('/etc/waggle/reverse_ssh_port', 'r') as f:
-      port = f.readline().rstrip()
-  except Exception:
-    pass
-  return port
-
 def reset_deadman_trigger():
   file = "/usr/lib/waggle/waggle_image/alive"
   rc = os.system("touch " + file + " > /dev/null 2>&1")
@@ -179,7 +169,7 @@ def reset_wagman():
 
 # Human readable names for the tests in the same sequence that they are run
 test_names = ['USB Modem', 'Network Interface', 'Beehive DNS', 'Beehive Ping',
-              'Local sshd', 'Beehive sshd', 'Reverse SSH Tunnel']
+              'Local sshd', 'Beehive sshd']
 
 # base_sleep_time = 2  # s
 base_sleep_time = 60  # s
@@ -230,7 +220,7 @@ while True:
 
   results = results1 + results2
   # Re-enable when ready to deploy
-  if all(results):  # all but the reverse ssh tunnel (for now)
+  if all(results):
     reset_deadman_trigger()
     log_message("Node Controller is well.")
   else:
