@@ -1,23 +1,22 @@
 #!/usr/bin/env python3
-
-import sys, os
+"""
+Client script/library to talk to the WagMan. The library uses zeromq to talk
+with WagMan publisher and server.
+"""
+import logging
+import sys
 from serial import Serial
 from tabulate import tabulate
 import zmq
-import sys
 import uuid
 import time
 
-"""
-Client script/library to talk to the WagMan. The library uses zeromq to talk with WagMan publisher and server.
-"""
+logging.basicConfig(level=logging.ERROR,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 header_prefix = '<<<-'
 footer_prefix = '->>>'
-wagman_device = '/dev/waggle_sysmon'
-
-debug = 0
 
 # make sure you keep util/wagman-client.bash_completion in sync !
 usage_array = [
@@ -43,9 +42,6 @@ usage_array = [
                     ['ping <devnum>',       'send external heartbeat for device']]
 ]
 
-
-
-
 def send_request(command):
 
     # connection to server to send request
@@ -54,7 +50,7 @@ def send_request(command):
     socket_client.connect('ipc:///tmp/zeromq_wagman-server')
 
 
-    #make sure first to receive, in case something has to be retrived first
+    # make sure first to receive, in case something has to be retrived first
     skip = 0
     try:
         message = socket_client.recv(zmq.NOBLOCK)
@@ -97,10 +93,6 @@ def send_request(command):
 
 
 def wagman_client(args):
-
-    if not os.path.islink(wagman_device):
-        raise Exception('Symlink %s not found' % (wagman_device))
-
     command = ' '.join(args)
 
     session_id = uuid.uuid4()
@@ -109,9 +101,6 @@ def wagman_client(args):
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
     socket.connect('ipc:///tmp/zeromq_wagman-pub')
-
-
-
 
     # only waits for session response
     try:
@@ -138,7 +127,7 @@ def wagman_client(args):
             if timeout > 5:
                 raise Exception('recv_string timeout')
 
-            timeout+=1
+            timeout += 1
             time.sleep(1)
 
             continue
@@ -146,21 +135,15 @@ def wagman_client(args):
 
             raise Exception("Error receiving response (%s): %s" % (type(e), str(e)))
         break
-    if debug:
-        print("Response: \"%s\"" % (response))
+
+    logging.debug('Response: "{}"'.format(response))
 
     header, _, body = response.partition('\n')
 
-    if debug:
-        print("header:", header)
-        print("body:", body)
+    logging.debug('header: {}'.format(header))
+    logging.debug('body: {}'.format(body))
 
-    return [header, body]
-    #if prefix.startswith('cmd'):
-    #    print('{}:'.format(prefix))
-    #    print(content.strip())
-    #else:
-    #    print(content.strip())
+    return header, body
 
 
 def wagman_log():
