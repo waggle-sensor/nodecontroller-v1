@@ -21,54 +21,29 @@ else:
 
 context = zmq.Context()
 server_socket = context.socket(zmq.REP)
+server_socket.setsockopt(zmq.SNDTIMEO, 15000)
 server_socket.bind('ipc:///tmp/zeromq_wagman-server')
-
-last_message = ''
-symlink_not_found_msg = "error: symlink %s not found" % (wagman_device)
-wagman_connected_msg = 'connected to %s!' % (wagman_device)
 
 while True:
     try:
         with Serial(wagman_device, 57600, timeout=8, writeTimeout=8) as serial:
-            last_message = wagman_connected_msg
-            logging.debug(wagman_connected_msg)
+            logging.debug('connected')
 
             while True:
-                #  Wait for next request from client
-                logging.debug("waiting for message")
+                logging.debug('waiting for message')
+                message = server_socket.recv()
+                logging.debug('Received request: {}'.format(message))
 
                 try:
-                    message = server_socket.recv()
-                except zmq.error.ZMQError as e:
-                    logging.error("zmq.error.ZMQError: (%s) %s" % (str(type(e)), str(e)))
-                    server_socket.send_string("could not read message")
-                    continue
-                except Exception as e:
-                    logging.error("error recv message: (%s) %s" % (str(type(e)), str(e)))
-                    continue
-
-                logging.info("Received request: {}".format(message))
-
-                try:
-                    if str(type(message))=="<class 'bytes'>":
-                        logging.debug("send message")
-                        serial.write(message)
-                    else:
-                        logging.debug("send message with encode")
-                        serial.write(message.encode('ascii'))
-
+                    serial.write(message)
                     serial.write(b'\n')
                 except Exception as e:
-                    logging.error("error in serial write: %s" % (str(e)))
-                    server_socket.send_string("error (serial.write): %s" % str(e))
-                    raise Exception('Could not write to %s: %s' % (wagman_device, str(e)))
-
-                try:
-                    server_socket.send_string("OK")
-                except Exception as e:
-                    raise Exception("error sending OK: %s" % str(e))
+                    server_socket.send_string('ERROR')
+                    raise e
+                else:
+                    server_socket.send_string('OK')
 
     except Exception as e:
-        logging.error("error in wagman-server.py: %s" % str(e))
+        logging.error(e)
 
     time.sleep(5)

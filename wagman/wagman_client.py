@@ -12,7 +12,7 @@ import logging
 
 
 logging.basicConfig(level=logging.ERROR,
-                    format='%(asctime)s - %(levelname)s - %(lineno)d - %(message)s')
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 context = zmq.Context()
