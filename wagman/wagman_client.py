@@ -12,7 +12,10 @@ import logging
 
 
 logging.basicConfig(level=logging.ERROR,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+                    format='%(asctime)s - %(levelname)s - %(lineno)d - %(message)s')
+
+
+context = zmq.Context()
 
 header_prefix = '<<<-'
 footer_prefix = '->>>'
@@ -48,53 +51,17 @@ def random_id():
 
 
 def send_request(command):
-
-    # connection to server to send request
-    context = zmq.Context()
     socket_client = context.socket(zmq.REQ)
+    socket_client.setsockopt(zmq.SNDTIMEO, 5000)
+    socket_client.setsockopt(zmq.RCVTIMEO, 5000)
+
     socket_client.connect('ipc:///tmp/zeromq_wagman-server')
 
+    socket_client.send_string(command)
+    message = socket_client.recv_string()
 
-    # make sure first to receive, in case something has to be retrived first
-    skip = 0
-    try:
-        message = socket_client.recv(zmq.NOBLOCK)
-    except zmq.error.Again as e:
-        # no message, that is ok.
-        skip=1
-    except zmq.error.ZMQError as e:
-        # all was ok, it should not have tried to receive message
-        skip=1
-    except Exception as e:
-        if skip==0:
-            raise Exception("warning recv: (%s) %s" % (type(e), str(e)))
-
-
-    try:
-        socket_client.send(command.encode('ascii'))
-        #serial.write(command.encode('ascii'))
-        #serial.write(b'\n')
-    except Exception as e:
-        raise Exception('error (%s) %s' % (type(e), str(e)))
-
-    message = None
-    timeout = 0
-    while (message == None):
-        try:
-            message = socket_client.recv(zmq.NOBLOCK)
-        except zmq.error.Again as e:
-            # no message
-            if (timeout > 5):
-                raise Exception("timeout")
-
-            timeout+=1
-            time.sleep(1)
-            continue
-        except Exception as e:
-            raise("error recv: %s" % str(e))
-
-    if not message == b"OK":
-        raise Exception("wagman-server returned: %s" % (message))
+    if message != 'OK':
+        raise RuntimeError('wagman-server returned: {}'.format(message))
 
 
 def wagman_client(args):
@@ -103,43 +70,14 @@ def wagman_client(args):
     session_id = random_id()
 
     # first subscribe, then send request
-    context = zmq.Context()
     socket = context.socket(zmq.SUB)
+    socket.setsockopt(zmq.RCVTIMEO, 5000)
     socket.connect('ipc:///tmp/zeromq_wagman-pub')
 
-    # only waits for session response
-    try:
-        socket.setsockopt_string(zmq.SUBSCRIBE, str(session_id))
-    except Exception as e:
-        raise Exception("Error insetsockopt_string: %s" % (str(e)))
-
-    # send request to server
-    try:
-        send_request("@%s %s" % (str(session_id), command))
-    except Exception as e:
-        raise Exception("Error sending request: %s" % (str(e)))
-
-
-    # get response from publisher
-
-    timeout=0
-    response=''
-    while 1:
-        try:
-            response = socket.recv_string(zmq.NOBLOCK)
-        except zmq.error.Again as e:
-            # no message
-            if timeout > 5:
-                raise Exception('recv_string timeout')
-
-            timeout += 1
-            time.sleep(1)
-
-            continue
-        except Exception as e:
-
-            raise Exception("Error receiving response (%s): %s" % (type(e), str(e)))
-        break
+    socket.setsockopt_string(zmq.SUBSCRIBE, str(session_id))
+    send_request('@{} {}'.format(session_id, command))
+    response = socket.recv_string()
+    socket.setsockopt_string(zmq.UNSUBSCRIBE, str(session_id))
 
     logging.debug('Response: "{}"'.format(response))
 
@@ -153,7 +91,6 @@ def wagman_client(args):
 
 def wagman_log():
 
-    context = zmq.Context()
     socket = context.socket(zmq.SUB)
     socket.connect('ipc:///tmp/zeromq_wagman-pub')
 
