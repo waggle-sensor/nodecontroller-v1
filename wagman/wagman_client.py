@@ -3,17 +3,16 @@
 Client script/library to talk to the WagMan. The library uses zeromq to talk
 with WagMan publisher and server.
 """
-import logging
 import sys
 from serial import Serial
 from tabulate import tabulate
 import zmq
 import time
+import logging
 
 
 logging.basicConfig(level=logging.ERROR,
                     format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 header_prefix = '<<<-'
 footer_prefix = '->>>'

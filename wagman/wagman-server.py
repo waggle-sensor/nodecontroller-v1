@@ -40,11 +40,11 @@ while True:
                 try:
                     message = server_socket.recv()
                 except zmq.error.ZMQError as e:
-                    logging.debug("zmq.error.ZMQError: (%s) %s" % (str(type(e)), str(e)))
+                    logging.error("zmq.error.ZMQError: (%s) %s" % (str(type(e)), str(e)))
                     server_socket.send_string("could not read message")
                     continue
                 except Exception as e:
-                    logging.debug("error recv message: (%s) %s" % (str(type(e)), str(e)))
+                    logging.error("error recv message: (%s) %s" % (str(type(e)), str(e)))
                     continue
 
                 logging.info("Received request: {}".format(message))

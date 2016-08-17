@@ -9,6 +9,11 @@ import time
 import sys
 import os.path
 import re
+import logging
+
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 header_prefix = '<<<-'
 footer_prefix = '->>>'
@@ -31,7 +36,7 @@ while True:
     try:
         with Serial(wagman_device, 57600, timeout=8, writeTimeout=8) as serial:
             last_message = wagman_connected_msg
-            print(wagman_connected_msg)
+            logging.debug(wagman_connected_msg)
 
             output = []
             incommand = False
@@ -52,8 +57,8 @@ while True:
 
                         body = '\n'.join(output)
 
-                        print("sending header:", header)
-                        print("sending body:", body)
+                        logging.debug("sending header:", header)
+                        logging.debug("sending body:", body)
 
                         msg = '{}\n{}'.format(header, body)
 
@@ -63,18 +68,18 @@ while True:
                         output.append(line)
                 elif line.startswith(header_prefix):
                     session_id=''
-                    print("received header:", line)
+                    logging.debug('received header: {}'.format(line))
                     matchObj = re.match( r'.*sid=(\S+)', line, re.M|re.I)
                     if matchObj:
                         session_id=matchObj.group(1).rstrip()
 
                     if session_id:
-                        print("detected session_id:", session_id)
+                        logging.debug("detected session_id: {}".format(session_id))
                     else:
-                        print("no session_id detected")
+                        logging.debug("no session_id detected")
 
                     fields = line.split()
-                    print(fields)
+                    logging.debug(fields)
 
                     #if len(fields) <= 2:
                     #    commandname = '?'
@@ -85,13 +90,13 @@ while True:
 
                     incommand = True
                 elif line.startswith('log:'):
-                    print(line)
+                    logging.debug(line)
                     socket.send_string(line)
 
     except Exception as e:
         socket.send_string("error: not connected to wagman")
         if str(e) != last_message:
-            print(e)
+            logging.error(e)
             previous_error = str(e)
 
     time.sleep(5)
