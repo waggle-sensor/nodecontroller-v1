@@ -47,7 +47,7 @@ usage_array = [
 
 def random_id():
     from random import randint
-    return randint(0, 999)
+    return str(randint(0, 999))
 
 
 def send_request(command):
@@ -74,10 +74,11 @@ def wagman_client(args):
     socket.setsockopt(zmq.RCVTIMEO, 5000)
     socket.connect('ipc:///tmp/zeromq_wagman-pub')
 
-    socket.setsockopt_string(zmq.SUBSCRIBE, str(session_id))
+    socket.setsockopt_string(zmq.SUBSCRIBE, session_id)
     send_request('@{} {}'.format(session_id, command))
     response = socket.recv_string()
-    socket.setsockopt_string(zmq.UNSUBSCRIBE, str(session_id))
+
+    socket.setsockopt_string(zmq.UNSUBSCRIBE, session_id)
 
     logging.debug('Response: "{}"'.format(response))
 
@@ -109,8 +110,6 @@ def wagman_log():
             print(content.strip())
 
 
-
-# TODO list wagman supported commands that are not listed in above usage.
 def usage():
     theader = ['syntax', 'description']
     data=[]
@@ -153,7 +152,6 @@ def usage():
 
 if __name__ == "__main__":
 
-
     if len(sys.argv) <= 1:
         usage()
 
@@ -164,10 +162,5 @@ if __name__ == "__main__":
             wagman_log()
             sys.exit(0)
 
-
-    try:
         result = wagman_client(sys.argv[1:])
-        print(result[1]) # prints body
-    except Exception as e:
-        print("error: ", str(e))
-        sys.exit(1)
+        print(result[1])
