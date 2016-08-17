@@ -12,7 +12,7 @@ import re
 import logging
 
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 header_prefix = '<<<-'
@@ -36,7 +36,7 @@ while True:
     try:
         with Serial(wagman_device, 57600, timeout=8, writeTimeout=8) as serial:
             last_message = wagman_connected_msg
-            logging.debug(wagman_connected_msg)
+            logging.info('connected')
 
             output = []
             incommand = False

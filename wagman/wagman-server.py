@@ -11,7 +11,7 @@ import os.path
 import logging
 
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 if len(sys.argv) > 1:
@@ -27,7 +27,7 @@ server_socket.bind('ipc:///tmp/zeromq_wagman-server')
 while True:
     try:
         with Serial(wagman_device, 57600, timeout=8, writeTimeout=8) as serial:
-            logging.debug('connected')
+            logging.info('connected')
 
             while True:
                 logging.debug('waiting for message')

@@ -7,11 +7,10 @@ import sys
 from serial import Serial
 from tabulate import tabulate
 import zmq
-import time
 import logging
 
 
-logging.basicConfig(level=logging.ERROR,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 
