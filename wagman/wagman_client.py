@@ -8,8 +8,8 @@ import sys
 from serial import Serial
 from tabulate import tabulate
 import zmq
-import uuid
 import time
+
 
 logging.basicConfig(level=logging.ERROR,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -41,6 +41,12 @@ usage_array = [
     ['ping',        ['ping',                'requests a pong response'],
                     ['ping <devnum>',       'send external heartbeat for device']]
 ]
+
+
+def random_id():
+    from random import randint
+    return randint(0, 999)
+
 
 def send_request(command):
 
@@ -95,7 +101,7 @@ def send_request(command):
 def wagman_client(args):
     command = ' '.join(args)
 
-    session_id = uuid.uuid4()
+    session_id = random_id()
 
     # first subscribe, then send request
     context = zmq.Context()
