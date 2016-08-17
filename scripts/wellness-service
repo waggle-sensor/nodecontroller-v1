@@ -58,8 +58,7 @@ def reset_deadman_trigger():
     return False
   
 def log_message(message):
-  timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
-  os.system("logger -t wellness " + timestamp + " " + message)
+  os.system("logger -t wellness " + message)
 
 def subscribe_wagman_status():
   context = zmq.Context()
@@ -213,7 +212,7 @@ while True:
   results2 = []
   # if interval_count >= 2:
   if interval_count >= 30:
-    results2 = check_beehive_sshd(beehive_hostname)
+    results2 = [check_beehive_sshd(beehive_hostname),]
     #print('Per Half-hour Results:', results2)
     if all(results2):
       interval_count = 0
