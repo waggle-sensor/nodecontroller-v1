@@ -134,7 +134,7 @@ def check_local_sshd():
              '-o "StrictHostKeyChecking no"',
              '-o "ConnectTimeout 1" waggle@localhost',
              'date > /dev/null 2>&1']
-  #print ' '.join(command)
+  #print(' '.join(command))
   rc = os.system(' '.join(command))
   if rc != 0:
     return False
@@ -149,7 +149,7 @@ def check_beehive_sshd(hostname):
              '-o "StrictHostKeyChecking no"',
              'root@'+hostname, '-p 20022',
              'date > /dev/null 2>&1']
-  #print ' '.join(command)
+  #print(' '.join(command))
   rc = os.system(' '.join(command))
   if rc != 0:
     return False
@@ -157,22 +157,7 @@ def check_beehive_sshd(hostname):
   return True
 
 
-# Connect to the local sshd by way of the Beehive server
-def check_reverse_ssh_tunnel(hostname, port):
-  command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
-             '-o "PasswordAuthentication no"',
-             '-o "StrictHostKeyChecking no"',
-             'root@'+hostname, '-p 20022',
-             '"ssh -i /usr/lib/waggle/ssh_keys/id_rsa_waggle_aot_test',
-             '-o \\"StrictHostKeyChecking no\\"',
-             'waggle@localhost -p', port, '" > /dev/null 2>&1']
-  #print ' '.join(command)
-  rc = os.system(' '.join(command))
-  if rc != 0:
-    return False
-
-  return True
-
+# Check that we can read any WagMan status messages
 def check_wagman_status(socket):
   message = ""
   try:
@@ -192,29 +177,6 @@ def check_wagman_status(socket):
 def reset_wagman():
   os.system("/usr/lib/waggle/waggle_image/scripts/reset_wagman.sh")
 
-# Attempt to restore the reverse ssh tunnel
-def restore_reverse_ssh_tunnel(hostname, port):
-  log_message('Restarting waggle-reverse_ssh_tunnel.')
-  os.system('waggle-service stop waggle-reverse_ssh_tunnel')
-  os.system('waggle-service start waggle-reverse_ssh_tunnel')
-
-  status = run_command(['waggle-service', 'status',
-                        'waggle-reverse_ssh_tunnel'])[0]
-  if b"running" in status:
-    log_message('waggle-reverse_ssh_tunnel restarted successfully.')
-  else:
-    log_message('waggle-reverse_ssh_tunnel failed to start.')
-    return False
-
-  time.sleep(10)
-  if check_reverse_ssh_tunnel(hostname, port):
-      log_message('Reverse ssh tunnel has been restored.')
-  else:
-    log_message('Unable to restore reverse ssh tunnel.')
-    return False
-
-  return True
-
 # Human readable names for the tests in the same sequence that they are run
 test_names = ['USB Modem', 'Network Interface', 'Beehive DNS', 'Beehive Ping',
               'Local sshd', 'Beehive sshd', 'Reverse SSH Tunnel']
@@ -223,7 +185,6 @@ test_names = ['USB Modem', 'Network Interface', 'Beehive DNS', 'Beehive Ping',
 base_sleep_time = 60  # s
 interval_count = 30  # check Beehive when we first start up
 beehive_hostname = get_beehive_hostname()
-reverse_ssh_port = get_reverse_ssh_port()
 wagman_status = subscribe_wagman_status()
 last_wagman_status_time = time.time()
 max_wagman_silence_duration = 600  # s
@@ -262,8 +223,7 @@ while True:
   results2 = []
   # if interval_count >= 2:
   if interval_count >= 30:
-    results2 = [check_beehive_sshd(beehive_hostname),
-               check_reverse_ssh_tunnel(beehive_hostname, reverse_ssh_port)]
+    results2 = check_beehive_sshd(beehive_hostname)
     #print('Per Half-hour Results:', results2)
     if all(results2):
       interval_count = 0
@@ -293,11 +253,6 @@ while True:
     log_message("Local sshd: No intervention taken")
   elif not results[5]:  # Beehive sshd
     log_message("Beehive sshd: No intervention taken")
-  elif not results[6]:  # Reverse SSH Tunnel
-    attempt_count = 0
-    restored = False
-    while (attempt_count < 10) and (not restored):
-      restored = restore_reverse_ssh_tunnel(beehive_hostname, reverse_ssh_port)
   """
 
   interval_count += 1
