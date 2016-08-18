@@ -154,7 +154,7 @@ if __name__ == "__main__":
     if len(sys.argv) <= 1:
         usage()
     elif len(sys.argv) == 2 and sys.argv[1] == 'epoch':
-        result = wagman_client(['date'])
+        _, result = wagman_client(['date'])
         year, month, day, hour, minute, second = map(int, result.split())
         epoch = datetime(year, month, day, hour, minute, second).strftime('%s')
         print(epoch)
