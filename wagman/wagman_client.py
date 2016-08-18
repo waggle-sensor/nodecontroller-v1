@@ -8,6 +8,7 @@ from serial import Serial
 from tabulate import tabulate
 import zmq
 import logging
+from datetime import datetime
 
 
 logging.basicConfig(level=logging.INFO,
@@ -150,16 +151,18 @@ def usage():
 
 
 if __name__ == "__main__":
-
     if len(sys.argv) <= 1:
         usage()
-
-    if len(sys.argv) > 1:
+    elif len(sys.argv) == 2 and sys.argv[1] == 'epoch':
+        result = wagman_client(['date'])
+        year, month, day, hour, minute, second = map(int, result.split())
+        epoch = datetime(year, month, day, hour, minute, second).strftime('%s')
+        print(epoch)
+    elif len(sys.argv) > 1:
         if sys.argv[1] == 'help' or sys.argv[1] == '?':
             usage()
         if sys.argv[1] == 'log':
             wagman_log()
             sys.exit(0)
-
         result = wagman_client(sys.argv[1:])
         print(result[1])
