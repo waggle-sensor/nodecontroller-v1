@@ -158,6 +158,11 @@ if __name__ == "__main__":
         year, month, day, hour, minute, second = map(int, result.split())
         epoch = datetime(year, month, day, hour, minute, second).strftime('%s')
         print(epoch)
+    elif len(sys.argv) == 3 and sys.argv[1] == 'epoch':
+        dt = datetime.fromtimestamp(int(sys.argv[2]))
+        args = dt.strftime('%Y %m %d %H %M %S').split()
+        result = wagman_client(args)
+        print(result[1])
     elif len(sys.argv) > 1:
         if sys.argv[1] == 'help' or sys.argv[1] == '?':
             usage()
