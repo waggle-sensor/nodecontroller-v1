@@ -160,7 +160,7 @@ if __name__ == "__main__":
         print(epoch)
     elif len(sys.argv) == 3 and sys.argv[1] == 'epoch':
         dt = datetime.fromtimestamp(int(sys.argv[2]))
-        args = dt.strftime('%Y %m %d %H %M %S').split()
+        args = ['date'] + dt.strftime('%Y %m %d %H %M %S').split()
         result = wagman_client(args)
         print(result[1])
     elif len(sys.argv) > 1:
