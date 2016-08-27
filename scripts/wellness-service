@@ -234,7 +234,6 @@ while True:
     last_wagman_status_time = time.time()
   else:
     # WagMan stopped sending updates
-    print("Wagman stopped sending updates!")
     current_time = time.time()
     wagman_silence_duration = current_time - last_wagman_status_time
     if wagman_silence_duration >= max_wagman_silence_duration:
