@@ -73,38 +73,6 @@ def subscribe_wagman_status():
 def unsubscribe_wagman_status(socket):
   socket.close()
 
-def get_system_date():
-  return int(time.time())
-
-def get_wagman_date():
-  return int(list(run_command(["wagman-client", "epoch"]))[0])
-
-def get_wagman_build_time():
-  output = int(list(run_command(["wagman-client", "ver"]))[0])
-  return int(re.search('time (\d+)', output).group(1))
-
-def get_guest_node_date():
-  key_path = '/usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node'
-  return int(list(run_command(['ssh', '-i', key_path,
-                               '-o "StrictHostKeyChecking no"',
-                               '-o "ConnectTimeout 3"',
-                               'waggle@10.31.81.51',
-                               'date', '+%s']))[0])
-
-def get_beehive_date():
-  r = requests.get('http://beehive1.mcs.anl.gov/api/1/epoch')
-  assert r.status_code == 200
-  response = r.json()
-  return int(response['epoch'])
-
-def get_dates(sources):
-  for source in sources:
-    try:
-      yield source()
-    except Exception as e:
-      #print("Error: " + str(e))
-      pass
-
 ###########################
 ##### Wellness Checks #####
 ###########################
@@ -200,34 +168,6 @@ def check_wagman_status(socket):
 def reset_wagman():
   os.system("/usr/lib/waggle/waggle_image/scripts/reset_wagman.sh")
 
-def update_wagman_date():
-  nodecontroller_date = time.time()
-  wagman_date = run_command(["wagman-client", "epoch"])
-  year,month,day,hour,minute,second = wagman_time.split()
-  wagman_epoch_time = datetime.datetime(int(year), int(month), int(day),
-                                        int(hour), int(minute), int(second),
-                                        0).timestamp()
-  current_epoch_time = time.time()
-  if round(current_epoch_time) > round(wagman_epoch_time):
-    #print("Update WagMan.")
-    current_date = datetime.datetime.now()
-    current_date_string = current_date.strftime("%Y %m %d %H %M %S")
-    os.system("wagman-client date " + current_date_string + " > /dev/null 2>&1")
-  
-
-def update_date():
-  sources = [get_system_date,
-             get_wagman_date,
-             get_wagman_build_time,
-             get_guest_node_date,]
-  date = ""
-  try:
-    date = float(get_beehive_date())
-  except Exception as e:
-    #print("Error: " + str(e))
-    dates = list(get_dates(sources))
-    date = max(dates)
-  os.system("date +%s -s @{0} > /dev/null 2>&1".format(date))
 
 # Human readable names for the tests in the same sequence that they are run
 test_names = ['USB Modem', 'Network Interface', 'Beehive DNS', 'Beehive Ping',
@@ -241,14 +181,6 @@ base_sleep_time = 60  # (seconds)
 beehive_check_duration = 1800  # (seconds) 30 minutes
 # check Beehive on start up
 beehive_check_time = time.time() - beehive_check_duration - 1
-
-date_update_duration = 86400  # (seconds) 24 hours
-# update date on start up
-date_update_time = time.time() - date_update_duration - 1
-
-wagman_date_update_duration = 3600  # (seconds) 1 hour
-# update WagMan date on start up
-wagman_date_update_time = time.time() - wagman_date_update_duration - 1
 
 wagman_status = subscribe_wagman_status()
 last_wagman_status_time = time.time()
@@ -300,11 +232,6 @@ while True:
   if check_wagman_status(wagman_status):
     # WagMan is still sending updates
     last_wagman_status_time = time.time()
-
-    # Update the WagMan's date
-    if (current_time - wagman_date_update_time) > wagman_date_update_duration:
-      print("Updating wagman date...")
-      update_wagman_date()
   else:
     # WagMan stopped sending updates
     print("Wagman stopped sending updates!")
@@ -314,12 +241,5 @@ while True:
       log_message("WagMan is not well. Resetting WagMan...")
       reset_wagman()
       last_wagman_status_time = time.time()
-
-  # update system date
-  if (current_time - date_update_time) > date_update_duration:
-    print("Updating system date...")
-    update_date()
-    print("Done Updating system date.")
-    date_update_time = time.time()
 
   time.sleep(base_sleep_time)
