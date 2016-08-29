@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
+import datetime
 import os
+import requests
 from signal import *
 import socket
 import subprocess
@@ -166,17 +168,23 @@ def check_wagman_status(socket):
 def reset_wagman():
   os.system("/usr/lib/waggle/waggle_image/scripts/reset_wagman.sh")
 
+
 # Human readable names for the tests in the same sequence that they are run
 test_names = ['USB Modem', 'Network Interface', 'Beehive DNS', 'Beehive Ping',
               'Local sshd', 'Beehive sshd']
 
 # base_sleep_time = 2  # s
-base_sleep_time = 60  # s
-interval_count = 30  # check Beehive when we first start up
 beehive_hostname = get_beehive_hostname()
+
+base_sleep_time = 60  # (seconds)
+
+beehive_check_duration = 1800  # (seconds) 30 minutes
+# check Beehive on start up
+beehive_check_time = time.time() - beehive_check_duration - 1
+
 wagman_status = subscribe_wagman_status()
 last_wagman_status_time = time.time()
-max_wagman_silence_duration = 600  # s
+max_wagman_silence_duration = 600  # (seconds) 10 minutes
 
 """ ################################## """
 """ Clean up when script is terminated """
@@ -189,10 +197,43 @@ for sig in (SIGINT, SIGQUIT, SIGTERM):
 """ ################################## """
 
 while True:
-  # Check if the WagMan is still sending updates
+  current_time = time.time()
+
+  # Local checks (done every minute)
+  #print("Performing local checks...")
+  local_check_results = [check_USB_modem(),
+                         check_network_interface(),
+                         check_local_sshd()]
+
+  # Beehive checks
+  beehive_check_results = []
+  print("Performing Beehive checks...")
+  if (current_time - beehive_check_time) > beehive_check_duration:
+    beehive_check_results = [check_beehive_DNS(beehive_hostname),
+                             check_beehive_ping(beehive_hostname),
+                             check_beehive_sshd(beehive_hostname),]
+    if all(results2):
+      beehive_check_time = time.time()
+
+  # Reset deadman trigger if all local and Beehive checks have passed
+  results = local_check_results + beehive_check_results
+  if all(results):
+    #print("Resetting deadman trigger...")
+    reset_deadman_trigger()
+    #print("Node Controller is well.")
+    log_message("Node Controller is well.")
+  else:
+    #print("Logging test failures...")
+    log_message("The following tests failed: " + 
+                str([n for x,n in zip(results,test_names) if not x]) + "\n")
+
+  # WagMan checks
+  print("Performing wagman checks...")
   if check_wagman_status(wagman_status):
+    # WagMan is still sending updates
     last_wagman_status_time = time.time()
   else:
+    # WagMan stopped sending updates
     current_time = time.time()
     wagman_silence_duration = current_time - last_wagman_status_time
     if wagman_silence_duration >= max_wagman_silence_duration:
@@ -200,49 +241,4 @@ while True:
       reset_wagman()
       last_wagman_status_time = time.time()
 
-  results1 = [check_USB_modem(),
-             check_network_interface(),
-             check_beehive_DNS(beehive_hostname),
-             check_beehive_ping(beehive_hostname),
-             check_local_sshd()]
-  #print('Per Minute Results:', results1)
-  # ping -c 1 -D beehive1.mcs.anl.gov | grep icmp_seq
-  # date -d '@<timestamp>'
-
-  results2 = []
-  # if interval_count >= 2:
-  if interval_count >= 30:
-    results2 = [check_beehive_sshd(beehive_hostname),]
-    #print('Per Half-hour Results:', results2)
-    if all(results2):
-      interval_count = 0
-
-  results = results1 + results2
-  # Re-enable when ready to deploy
-  if all(results):
-    reset_deadman_trigger()
-    log_message("Node Controller is well.")
-  else:
-    # log failed tests
-    log_message("The following tests failed: " + 
-                str([n for x,n in zip(results,test_names) if not x]) + "\n")
-
-  # Attempt to restore functionality to get all tests to pass
-  # NOTE: the WagMan gives the NC about 2 minutes to attempt any intervention
-  """
-  if not results[0]:    # USB Modem
-    log_message("USB Modem: No intervention taken")
-  elif not results[1]:  # Network Interface
-    log_message("Network Interface: No intervention taken")
-  elif not results[2]:  # Beehive DNS
-    log_message("Beehive DNS: No intervention taken")
-  elif not results[3]:  # Beehive Ping
-    log_message("Beehive Ping: No intervention taken") 
-  elif not results[4]:  # Local sshd
-    log_message("Local sshd: No intervention taken")
-  elif not results[5]:  # Beehive sshd
-    log_message("Beehive sshd: No intervention taken")
-  """
-
-  interval_count += 1
   time.sleep(base_sleep_time)

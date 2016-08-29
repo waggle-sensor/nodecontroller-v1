@@ -1,5 +1,22 @@
 #!/bin/bash
 
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  echo "Key: $key"
+  case $key in
+    -s)
+      WAGGLE_SERVER="$2"
+      shift
+      ;;
+    --server=*)
+      WAGGLE_SERVER="${key#*=}"
+      ;;
+      *)
+      ;;
+  esac
+  shift
+done
+
 set -e
 set -x
 #set -v 
@@ -62,27 +79,23 @@ if [ ! -e /etc/waggle/hostname ] ; then
   echo ${NODE_ID} > /etc/waggle/hostname
 fi
 
-if [ ${RABBITMQ_HOST}x == "x" ] ; then
+if [ ${WAGGLE_SERVER}x == "x" ] ; then
   if [ -e /etc/waggle/server_host ] ; then
-    RABBITMQ_HOST=`cat /etc/waggle/server_host`
+    WAGGLE_SERVER=`cat /etc/waggle/server_host`
   fi
 fi
 
-if [ ${RABBITMQ_HOST}x == "x" ] ; then
-  # Get the IP for the server you want to connect to
-  read -p "Enter the URL or IP address of the beehive cloud server you want to use: " RABBITMQ_HOST
-fi
-
-if [ ${RABBITMQ_HOST}x == "x" ] ; then
-  export RABBITMQ_HOST='127.0.0.1'
+# AoT Default Server
+if [ ${WAGGLE_SERVER}x == "x" ] ; then
+  WAGGLE_SERVER="beehive1.mcs.anl.gov"
 fi
 
 #We have to move away from manual input, and take it as an argument, with the 
 #default beehive server IP set to localhost. Also, we need a way to let the 
 #user know that a wrong server was chosen.
-echo "The beehive server is set to ${RABBITMQ_HOST}."
+echo "The beehive server is set to ${WAGGLE_SERVER}."
 sleep 1
-echo ${RABBITMQ_HOST} > /etc/waggle/server_host
+echo ${WAGGLE_SERVER} > /etc/waggle/server_host
 
 
 #has to be changed so that the requirement for node ID in the packet header is met

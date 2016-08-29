@@ -45,12 +45,19 @@ docker run -ti --name nc --rm -v ${HOME}/git/nodecontroller/:/usr/lib/waggle/nod
 
 ## Configuration
 
-The environment variable RABBITMQ_HOST can be used to tell the node controller where to send the sensor data. Run the configure script.
+To tell the node controller where to send the sensor data. Run the configure script with the -s option (--server=... also works) :
 
 ```bash
-
 cd /usr/lib/waggle/nodecontroller/
-RABBITMQ_HOST=<IP> ./configure
+./configure -s <HOSTNAME>
+```
+
+This can also be achieved by setting the environment variable WAGGLE_SERVER:
+
+```bash
+cd /usr/lib/waggle/nodecontroller/
+export WAGGLE_SERVER=<HOSTNAME>
+./configure
 ```
 
 Inside of a Docker container communication with the guest node may require overwriting NCIP. Access to ports 9090 and 9091 is restricted by only exposing them instead of publishing them. 
