@@ -42,12 +42,10 @@ NCIP = read_file('/etc/waggle/NCIP')
 
 #get server IP from file
 #CLOUD_IP = read_file('/etc/waggle/server_ip') #TODO: deprecate this
-RABBITMQ_HOST=read_file('/etc/waggle/server_host')
+BEEHIVE_HOST=read_file('/etc/waggle/server_host')
 
 # the certificate server is optional and may only be accessible in an internal network
 CERT_SERVER_PORT=24181
-CERT_SERVER_HOST = RABBITMQ_HOST
-CERT_SERVER='http://' + CERT_SERVER_HOST + ':' + str(CERT_SERVER_PORT)
 
     
 def create_dev_dict():
@@ -92,7 +90,7 @@ PRIORITY_ORDER = [5,4,3,2,1]
 AVAILABLE_MEM = 256000
 
 #The params used to connect to the cloud are stored here
-# [deprecated] CLOUD_ADDR = 'amqps://waggle:waggle@' + RABBITMQ_HOST + ':5671/%2F'
+# [deprecated] CLOUD_ADDR = 'amqps://waggle:waggle@' + BEEHIVE_HOST + ':5671/%2F'
 
 
 
@@ -106,7 +104,7 @@ CA_ROOT_FILE="/usr/lib/waggle/SSL/waggleca/cacert.pem"
 
 pika_credentials = pika.PlainCredentials('node', 'waggle')
     
-pika_params=pika.ConnectionParameters(  host=RABBITMQ_HOST, 
+pika_params=pika.ConnectionParameters(  host=BEEHIVE_HOST, 
                                         credentials=pika_credentials, 
                                         virtual_host='/', 
                                         port=RABBITMQ_PORT, 
@@ -114,7 +112,7 @@ pika_params=pika.ConnectionParameters(  host=RABBITMQ_HOST,
                                         ssl_options={"ca_certs": CA_ROOT_FILE , 'certfile': CLIENT_CERT_FILE, 'keyfile': CLIENT_KEY_FILE, 'cert_reqs' : ssl.CERT_REQUIRED} 
                                          )
 #else:
-#    pika_params=pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=pika_credentials, virtual_host='/', port=RABBITMQ_PORT, ssl=USE_SSL)
+#    pika_params=pika.ConnectionParameters(host=BEEHIVE_HOST, credentials=pika_credentials, virtual_host='/', port=RABBITMQ_PORT, ssl=USE_SSL)
 
 
 
