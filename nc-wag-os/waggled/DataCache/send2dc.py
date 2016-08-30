@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import socket, os, os.path, time, sys, logging
 
 
@@ -39,7 +39,7 @@ def send(msg):
                 time.sleep(1)
                 logger.warning('Unable to connect to DC...')
 
-        except KeyboardInterrupt, k:
+        except KeyboardInterrupt as k:
             logger.Info("Shutting down.")
             
             break

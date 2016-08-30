@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # msg_handler.py
 
 import os, os.path, sys

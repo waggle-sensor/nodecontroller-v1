@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import socket, os, os.path, logging, sys, time
 from datetime import datetime
@@ -43,7 +43,7 @@ if __name__ == "__main__":
         packet = packetmaker.make_data_packet("hello world_"+str(i))
         packettime = packettime + (datetime.now()-tstart)
         
-        print "huhu"
+        print("huhu")
         logger.info("A")
         for pack in packet:
             logger.info("a pack")
@@ -63,8 +63,8 @@ if __name__ == "__main__":
                 break
                 
     end = time.time()
-    print "time in seconds: %s" % (end - start)
+    print("time in seconds: %s" % (end - start))
     
-    print "packettime: ", packettime.total_seconds()
-    print "sendingtime: ", sendingtime.total_seconds()
+    print("packettime: ", packettime.total_seconds())
+    print("sendingtime: ", sendingtime.total_seconds())
 

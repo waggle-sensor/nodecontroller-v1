@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import socket, os, os.path, time, sys, logging
+import socket, os, os.path, time, sys, logging, zmq
 from multiprocessing import Process, Queue
 import multiprocessing
 sys.path.append('../../../')
@@ -74,7 +74,7 @@ def internal_client_push():
                     time.sleep(1)
             else: 
                 time.sleep(1) #else, wait until messages are in queue
-        except KeyboardInterrupt, k:
+        except KeyboardInterrupt as k:
                 logger.Info( "Shutting down.")
                 break
     client_sock.close()
@@ -102,7 +102,9 @@ def internal_client_pull():
                     client_sock.connect('/tmp/Data_Cache_server')#opens socket when there is an incoming pull request
                     dev = comm.incoming_request.get() #gets the dev ID that is initiating the pull request
                     #TODO this could probably be done a different way, but there has to be some distinction between a pull request and message push
-                    request = '|' + dev #puts the request in the correct format for the DC 
+                    if type(dev) == str:
+                        dev = dev.encode('iso-8859-1')
+                    request = '|'.encode('iso-8859-1') + dev #puts the request in the correct format for the DC 
                     client_sock.send(request)
                     try:
                         msg = client_sock.recv(4028) #arbitrary, can go in config file
@@ -113,20 +115,20 @@ def internal_client_pull():
                     if not msg:
                         break
                     else:
-                        comm.incoming_msg[int(dev) - 1].put(msg) #puts the message in the device's incoming queue. Message is pulled out of queue by pull server and sent to GN. 
+                        comm.incoming_msg[int(dev.decode('iso-8859-1')) - 1].put(msg) #puts the message in the device's incoming queue. Message is pulled out of queue by pull server and sent to GN. 
                         client_sock.close() #closes socket after each message is sent 
                         
                                 
                 except Exception as e:
-                    sys.stderr.write(e)
-                    logger.error(e)
+                    sys.stderr.write(str(e))
+                    logger.error(str(e))
                     
                     client_sock.close()
                     time.sleep(5)
             else:
                 sys.stderr.write('Internal client pull unable to connect to DC.\n')
                 time.sleep(1)
-        except KeyboardInterrupt, k:
+        except KeyboardInterrupt as k:
             logger.Info( "Internal client pull shutting down.")
             break
     client_sock.close()
@@ -145,82 +147,133 @@ def push_server():
     comm = internal_communicator()
     HOST = NCIP 
     PORT = 9090
-    try:
-      server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    except socket.error as msg:
-      logger.info( "(socket.socket) Socket Error: %s\n" % msg )
+    # try:
+    #   server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # except socket.error as msg:
+    #   logger.info( "(socket.socket) Socket Error: %s\n" % msg )
       
-      return 1
-    try:  
-      server.bind((HOST,PORT))
-    except socket.error as msg:
-      logger.info( "(server.bind) Socket Error: %s (%s, %s)\n" % (msg, HOST, PORT) )
-      return 1
-    try:
-      server.listen(5) #supports up to 5 threads, one for each GN
-    except socket.error as msg:
-      logger.info( "(server.listen) Socket Error: %s\n" % msg )
-      return 1
+    #   return 1
+    # try:  
+    #   server.bind((HOST,PORT))
+    # except socket.error as msg:
+    #   logger.info( "(server.bind) Socket Error: %s (%s, %s)\n" % (msg, HOST, PORT) )
+    #   return 1
+    # try:
+    #   server.listen(5) #supports up to 5 threads, one for each GN
+    # except socket.error as msg:
+    #   logger.info( "(server.listen) Socket Error: %s\n" % msg )
+    #   return 1
       
-    
     nc_node_id_packed = bin_pack(nodeid_hexstr2int(NODE_ID),HEADER_BYTELENGTHS["s_uniqid"])
      
     
     
     logger.info('Internal push server process started...\n')
 
+    # while True:
+    #     client_sock, addr = server.accept()
+    #     while True:
+    #         try:
+    #             data = client_sock.recv(4028) 
+    #             if not data:
+    #                 break #breaks the loop when the client socket closes
+    #             elif data == 'Hello': #a handshake from a new guest node. 
+    #                 client_sock.sendall('Hi') #NC sends 'Hi' to verify that it is the NC that the guest node is looking for.
+    #                 client_sock.sendall(HOSTNAME)#sends unique ID to GN can send messages to NC if needed
+    #             else:
+    #                 # push data from guest node into data cache.
+                    
+    #                 # here we inject the nodecontroller ID as sender, overwriting the guestnode ID.
+                    
+    #                 # extract header so we can modify it
+                    
+    #                 if len(data) < HEADER_LENGTH:
+    #                     logger.error("data fragment shorter than HEADER_LENGTH")
+    #                     break
+                    
+    #                 header_bytearray = bytearray(data[:HEADER_LENGTH])
+                    
+    #                 # TODO: check crc
+                    
+    #                 # overwrite sender
+    #                 try:
+    #                     set_header_field(header_bytearray, 's_uniqid', nc_node_id_packed)
+    #                 except Exception as e:
+    #                     logger.error("set_header_field failed: %s" % (str(e)))
+    #                     break
+                        
+    #                 #recompute header crc
+    #                 try:
+    #                     write_header_crc(header_bytearray)
+    #                 except Exception as e:
+    #                     logger.error("write_header_crc failed: %s" % (str(e)))
+    #                     break
+                        
+    #                 # concatenate new header with old data
+    #                 new_data = str(header_bytearray)+data[HEADER_LENGTH:]
+                    
+    #                 logger.debug("Sending data from GN into DC-push queue")
+    #                 comm.DC_push.put(new_data)
+    #                 logger.debug("(push_server) DC_push size: %d " % (comm.DC_push.qsize()))
+                    
+                
+    #         except KeyboardInterrupt, k:
+    #             logger.info("Internal push server shutting down.")
+                
+    #             break
+    # server.close()
+
+    context = zmq.Context()
+    server_socket = context.socket(zmq.REP)
+    server_socket.bind('tcp://%s:%s' % (HOST, PORT))
+
     while True:
-        client_sock, addr = server.accept()
-        while True:
-            try:
-                data = client_sock.recv(4028) 
-                if not data:
-                    break #breaks the loop when the client socket closes
-                elif data == 'Hello': #a handshake from a new guest node. 
-                    client_sock.sendall('Hi') #NC sends 'Hi' to verify that it is the NC that the guest node is looking for.
-                    client_sock.sendall(HOSTNAME)#sends unique ID to GN can send messages to NC if needed
-                else:
-                    # push data from guest node into data cache.
-                    
-                    # here we inject the nodecontroller ID as sender, overwriting the guestnode ID.
-                    
-                    # extract header so we can modify it
-                    
-                    if len(data) < HEADER_LENGTH:
-                        logger.error("data fragment shorter than HEADER_LENGTH")
-                        break
-                    
-                    header_bytearray = bytearray(data[:HEADER_LENGTH])
-                    
-                    # TODO: check crc
-                    
-                    # overwrite sender
-                    try:
-                        set_header_field(header_bytearray, 's_uniqid', nc_node_id_packed)
-                    except Exception as e:
-                        logger.error("set_header_field failed: %s" % (str(e)))
-                        break
-                        
-                    #recompute header crc
-                    try:
-                        write_header_crc(header_bytearray)
-                    except Exception as e:
-                        logger.error("write_header_crc failed: %s" % (str(e)))
-                        break
-                        
-                    # concatenate new header with old data
-                    new_data = str(header_bytearray)+data[HEADER_LENGTH:]
-                    
-                    logger.debug("Sending data from GN into DC-push queue")
-                    comm.DC_push.put(new_data)
-                    logger.debug("(push_server) DC_push size: %d " % (comm.DC_push.qsize()))
-                    
+        try:
+            data = server_socket.recv()
+            if data.decode('iso-8859-1') == "time":
+                t = int(time.time())
+                res = '{"epoch": %d}' % (t)
+                server_socket.send(res.encode('iso-8859-1'))
+            else:
+                server_socket.send("ack".encode('iso-8859-1'))
+                if len(data) < HEADER_LENGTH:
+                    logger.error("data fragment shorter than HEADER_LENGTH")
+                    break
                 
-            except KeyboardInterrupt, k:
-                logger.info("Internal push server shutting down.")
+                header_bytearray = bytearray(data[:HEADER_LENGTH])
                 
-                break
-    server.close()
+                # TODO: check crc
+                
+                # overwrite sender
+                try:
+                    set_header_field(header_bytearray, 's_uniqid', nc_node_id_packed)
+                except Exception as e:
+                    logger.error("set_header_field failed: %s" % (str(e)))
+                    break
+                    
+                #recompute header crc
+                try:
+                    write_header_crc(header_bytearray)
+                except Exception as e:
+                    logger.error("write_header_crc failed: %s" % (str(e)))
+                    break
+                    
+                # concatenate new header with old data
+                #new_data = str(header_bytearray)+data[HEADER_LENGTH:]
+                new_data = bytes(header_bytearray)+data[HEADER_LENGTH:]
+                
+                logger.debug("Sending data from GN into DC-push queue")
+                comm.DC_push.put(new_data)
+                logger.debug("(push_server) DC_push size: %d " % (comm.DC_push.qsize()))
+        except zmq.error.ZMQError as e:
+            logger.debug("zmq.error.ZMQError: (%s) %s" % (str(type(e)), str(e)))
+            continue
+        except Exception as e:
+            logger.debug("error recv message: (%s) %s" % (str(type(e)), str(e)))
+            continue
+
+    server_socket.close()
+
         
 
 """ 
@@ -259,7 +312,7 @@ def pull_server():
                 else:
                     for i in range(2): 
                         try:
-                            dev_loc = DEVICE_DICT[data] #gets the device queue location from dictionary
+                            dev_loc = DEVICE_DICT[data.decode('iso-8859-1')] #gets the device queue location from dictionary
                             comm.incoming_request.put(str(dev_loc)) #Unique ID goes into incoming requests queue. These get pulled out by the pull_client as pull requests
                             while comm.incoming_msg[int(dev_loc)-1].empty():
                                 time.sleep(1) #sleeps until queue is no longer empty. Data cache returns 'False' if no messages are available.
@@ -275,12 +328,15 @@ def pull_server():
                             #The device dictionary may not be up to date. Need to update and try again.
                             #If the device is still not found after first try, move on.
                             DEVICE_DICT = update_dev_dict() #this function is in the NC_configuration module
-                            client_sock.sendall('False')
+                            client_sock.sendall('False'.encode('iso-8859-15'))
                         
-            except KeyboardInterrupt, k:
+            except KeyboardInterrupt as k:
                 logger.info("Internal pull server shutting down.")
                 
                 server.close()
+                break
+            except socket.error as e:
+                logger.error("(pull_server) error on socket: %s" % (str(e)))
                 break
             except Exception as e:
                 logger.error("(pull_server) error receiving data: %s" % (str(e)))
@@ -302,7 +358,7 @@ if __name__ == "__main__":
     try:
         
  
-        for name, function in internal_communicator_name2func.iteritems():
+        for name, function in list(internal_communicator_name2func.items()):
             new_process = multiprocessing.Process(target=function, name=name)
             new_process.start()
             name2process[name]=new_process
@@ -310,8 +366,8 @@ if __name__ == "__main__":
                 
 
         
-    except KeyboardInterrupt, k:
-        for name, subhash in internal_communicator_name2func.iteritems():
+    except KeyboardInterrupt as k:
+        for name, subhash in list(internal_communicator_name2func.items()):
             logger.info( '(KeyboardInterrupt) shutting down ' + name)
             name2process[name].terminate()
       

@@ -104,10 +104,10 @@ def wagman_log():
         prefix, _, content = response.partition(':')
 
         if prefix.startswith('cmd'):
-            print('{}:'.format(prefix))
-            print(content.strip())
+            print(('{}:'.format(prefix)))
+            print((content.strip()))
         else:
-            print(content.strip())
+            print((content.strip()))
 
 
 def usage():
@@ -129,7 +129,7 @@ def usage():
                 undocumented_commands[cmd]=1
 
     except Exception as e:
-        print("error: ", str(e))
+        print(("error: ", str(e)))
         print("Note: help is only available when the wagman is connected.")
         sys.exit(1)
 
@@ -143,10 +143,10 @@ def usage():
         else:
             data.append([cmd, ''])
 
-    for cmd in undocumented_commands.keys():
+    for cmd in list(undocumented_commands.keys()):
         data.append([cmd, ' '])
 
-    print(tabulate(data, theader, tablefmt="psql"))
+    print((tabulate(data, theader, tablefmt="psql")))
     sys.exit(0)
 
 

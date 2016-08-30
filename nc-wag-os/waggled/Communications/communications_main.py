@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os, os.path, pika, datetime, sys, logging, argparse, re
 import shutils
@@ -8,7 +8,7 @@ sys.path.append('../NC/')
 from NC_configuration import *
 from external_communicator import *
 from internal_communicator import *
-import urllib2
+
 import subprocess
 
 sys.path.append('../../..')
@@ -267,12 +267,12 @@ def get_certificates():
                 f.write(CLIENT_KEY_string)
             logger.info("File '%s' has been written." % (CLIENT_KEY_FILE))
             subprocess.call(['chown', 'waggle:waggle', CLIENT_KEY_FILE])
-            os.chmod(CLIENT_KEY_FILE, 0600)
+            os.chmod(CLIENT_KEY_FILE, 0o600)
         
             with open(CLIENT_CERT_FILE, 'w') as f:
                 f.write(CLIENT_CERT_string)
             subprocess.call(['chown', 'waggle:waggle', CLIENT_CERT_FILE])
-            os.chmod(CLIENT_CERT_FILE, 0600)
+            os.chmod(CLIENT_CERT_FILE, 0o600)
             
             logger.info("File '%s' has been written." % (CLIENT_CERT_FILE))
             
@@ -292,8 +292,8 @@ def get_certificates():
                 with open(waggle_authorized_keys, 'w') as f:
                     f.write(new_authorized_keys)
                 
-                os.chmod(waggle_authorized_keys, 0600)
-                os.chmod(waggle_ssh_dir, 0700)
+                os.chmod(waggle_authorized_keys, 0o600)
+                os.chmod(waggle_ssh_dir, 0o700)
                 subprocess.call(['chown', 'waggle:waggle', waggle_authorized_keys])
                 logger.info("File '%s' has been written." % (waggle_authorized_keys))
             else:
@@ -412,9 +412,9 @@ if __name__ == "__main__":
         
             name2process={}
         
-            name2func = dict(external_communicator_name2func.items() + internal_communicator_name2func.items())
+            name2func = dict(list(external_communicator_name2func.items()) + list(internal_communicator_name2func.items()))
         
-            for name, function in name2func.iteritems():
+            for name, function in name2func.items():
                 new_process = multiprocessing.Process(target=function, name=name)
                 new_process.start()
                 name2process[name]=new_process
@@ -427,7 +427,7 @@ if __name__ == "__main__":
         
             while True:
             
-                for name, function in name2func.iteritems():
+                for name, function in name2func.items():
                     if not name2process[name].is_alive():
                         logger.warning( 'Process "%s" has crashed. Restarting...' % (name) )
                         new_process = multiprocessing.Process(target=function, name=name)
@@ -440,7 +440,7 @@ if __name__ == "__main__":
                 time.sleep(3)
 
             #terminate the external communication processes
-            for name, subhash in name2func.iteritems():
+            for name, subhash in name2func.items():
                 logger.info( 'shutting down ' + name)
                 name2process[name].terminate()
        
@@ -456,9 +456,9 @@ if __name__ == "__main__":
     except AlreadyRunning as e:
         logger.error(str(e))
         logger.error("Please use supervisorctl to start and stop this script.")    
-    except KeyboardInterrupt, k:
+    except KeyboardInterrupt as k:
         #terminate the external communication processes
-        for name, subhash in name2func.iteritems():
+        for name, subhash in name2func.items():
             logger.info( '(KeyboardInterrupt) shutting down ' + name)
             name2process[name].terminate()
     except Exception as e:

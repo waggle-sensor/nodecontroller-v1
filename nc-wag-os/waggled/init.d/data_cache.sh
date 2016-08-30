@@ -10,7 +10,7 @@
 ### END INIT INFO
 
 dir="/usr/lib/waggle/nodecontroller/nc-wag-os/waggled/DataCache"
-cmd_start="python Data_Cache.py --logging"
+cmd_start="./Data_Cache.py --logging"
 user=""
 
 name="data_cache_initd"

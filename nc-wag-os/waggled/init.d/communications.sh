@@ -10,7 +10,7 @@
 ### END INIT INFO
 
 dir="/usr/lib/waggle/nodecontroller/nc-wag-os/waggled/Communications"
-cmd="python communications_main.py --logging"
+cmd="./communications_main.py --logging"
 user=""
 
 name="communications_initd"

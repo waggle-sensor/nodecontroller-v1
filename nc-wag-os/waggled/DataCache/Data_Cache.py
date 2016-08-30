@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from multiprocessing import Queue
 #from daemon import Daemon
@@ -157,13 +157,13 @@ class DataCache:
                     data = client_sock.recv(2048) #arbitrary
                     
                     if logger.isEnabledFor(logging.DEBUG):
-                        if data != '|o':
+                        if data != '|o'.encode('iso-8859-1'):
                             logger.debug('(DataCache) received data.')
                     if not data:
                         break
                     else:
                         #'Flush' means that there is an external flush request or if WagMan is about to shut down the node controller
-                        if data == 'Flush':
+                        if data == 'Flush'.encode('iso-8859-1'):
                             #flush all stored messages into files
                             logger.debug('External flush request made.')
                         
@@ -176,15 +176,16 @@ class DataCache:
                             
                                 
                         #Indicates that it is a pull request ( somebody want data from the DC)
-                        elif data[0] == '|': #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
+                        elif data[0] == ord('|'): #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
                             logger.debug('Somebody wants data')
-                            data, dest = data.split('|', 1) #splits to get either 'o' for outgoing request or the device location for incoming request
-                            if dest != 'o':
+                            #data, dest = data.decode('iso-8859-1').split('|', 1) #splits to get either 'o' for outgoing request or the device location for incoming request
+                            dest = data[1:]
+                            if dest != 'o'.encode('iso-8859-1'):
                                 logger.debug('Somebody wants data, without o')
                                 msg = self.incoming_pull(int(dest)) #pulls a message from that device's queue
                                 if not msg:
                                     logger.debug("no message")
-                                    msg = 'False'
+                                    msg = 'False'.encode('iso-8859-1')
                                 else:
                                     logger.debug("incoming_pull message: %s" %(msg))
                                 try:
@@ -200,7 +201,7 @@ class DataCache:
                                 logger.debug('Somebody wants data, using o')
                                 msg = self.outgoing_pull() #pulls the highest priority message
                                 if not msg: 
-                                    msg = 'False'
+                                    msg = 'False'.encode('iso-8859-15')
                                     logger.debug("have no message for external_client_pull")
                                 else:
                                     logger.debug("sending message to external_client_pull, length %d" % (len(msg)))
@@ -284,7 +285,7 @@ class DataCache:
                                 logger.error('Message corrupt. Will not store in data cache.')
                                 logger.error(e)
                     
-                except KeyboardInterrupt, k:
+                except KeyboardInterrupt as k:
                     logger.info("Data Cache server shutting down...")
                     self.stop()
                     continue
@@ -323,7 +324,7 @@ class DataCache:
             client_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             try:
                 client_sock.connect(self.socket_file)
-                client_sock.sendall('Flush')
+                client_sock.sendall('Flush'.encode('iso-8859-15'))
                 client_sock.close()
             except Exception as e:
                 logger.error(e)
@@ -429,7 +430,7 @@ class DataCache:
                 #print 'opened file'
                 try: 
                     #print 'trying to read from file'
-                    msg = self.outgoing_cur_file.next().strip() #reads the next message in file, strips the \n
+                    msg = next(self.outgoing_cur_file).strip() #reads the next message in file, strips the \n
                     #print 'returning msg'
                     return msg
                 except:
@@ -440,7 +441,7 @@ class DataCache:
             else:
                 logger.debug('reading from exsiting file handle (data from /var/dc/outgoing_msgs/*)')
                 try: 
-                    msg = self.outgoing_cur_file.next().strip() #reads the next message in file, strips the \n
+                    msg = next(self.outgoing_cur_file).strip() #reads the next message in file, strips the \n
                     return msg
                 except:
                     self.outgoing_cur_file.close() #close the file if stop iterator error occurs
@@ -498,7 +499,7 @@ class DataCache:
                     #set the first file in the incoming_stored/dev directory as the current file generator object
                     self.incoming_cur_file[dev -1] = open(incoming_msg_files[0]) 
                     try: 
-                        msg = self.incoming_cur_file[dev -1].next().strip() #reads the next message in file, strips the \n
+                        msg = next(self.incoming_cur_file[dev -1]).strip() #reads the next message in file, strips the \n
                         return msg
                         
                     except:
@@ -508,7 +509,7 @@ class DataCache:
                         self.incoming_cur_file[dev -1] = '' #reset to empty string
                 else:
                     try: 
-                        msg = self.incoming_cur_file[dev -1].next().strip() #reads the next message in file, strips the \n
+                        msg = next(self.incoming_cur_file[dev -1]).strip() #reads the next message in file, strips the \n
                         return msg
                         
                     except:
@@ -682,7 +683,7 @@ if __name__ == "__main__":
     except AlreadyRunning as e:
         logger.error(str(e))
         logger.error("Please use supervisorctl to start and stop this script.")    
-    except KeyboardInterrupt, k:
+    except KeyboardInterrupt as k:
         #terminate the external communication processes
         #for name, subhash in name2func.iteritems():
         #    logger.info( '(KeyboardInterrupt) shutting down ' + name)

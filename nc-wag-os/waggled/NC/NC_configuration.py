@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys, pika, ssl
 sys.path.append('../../../')
 from waggle_protocol.utilities.packetmaker import *

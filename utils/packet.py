@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''
 This module contains methods relating to the construction and interpretation
 of waggle packets. The main functions to examine in this class are pack and
@@ -11,7 +12,7 @@ of a Waggle node so it can be used for testing...
 '''
 from crcmod.predefined import mkCrcFun
 from struct import pack
-import cStringIO as StringIO
+import io as StringIO
 import time
 import logging
 import struct

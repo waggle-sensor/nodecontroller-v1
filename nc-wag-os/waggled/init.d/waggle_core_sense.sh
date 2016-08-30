@@ -10,7 +10,7 @@
 ### END INIT INFO
 
 dir="/usr/lib/waggle/nodecontroller/nc-wag-os/waggled/NC"
-cmd="python sensor.py"
+cmd="./sensor.py"
 user=""
 
 name="start_sensor_initd"
