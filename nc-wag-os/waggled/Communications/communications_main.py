@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os, os.path, pika, datetime, sys, logging, argparse, re
+import shutils
 import logging.handlers
 sys.path.append('../NC/')
 #from multiprocessing import Process
@@ -41,6 +42,8 @@ formatter = logging.Formatter(LOG_FORMAT)
 AOT_PUBLIC_KEY = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCsYPMSrC6k33vqzulXSx8141ThfNKXiyFxwNxnudLCa0NuE1SZTMad2ottHIgA9ZawcSWOVkAlwkvufh4gjA8LVZYAVGYHHfU/+MyxhK0InI8+FHOPKAnpno1wsTRxU92xYAYIwAz0tFmhhIgnraBfkJAVKrdezE/9P6EmtKCiJs9At8FjpQPUamuXOy9/yyFOxb8DuDfYepr1M0u1vn8nTGjXUrj7BZ45VJq33nNIVu8ScEdCN1b6PlCzLVylRWnt8+A99VHwtVwt2vHmCZhMJa3XE7GqoFocpp8TxbxsnzSuEGMs3QzwR9vHZT9ICq6O8C1YOG6JSxuXupUUrHgd"
 AOT_PUBLIC_KEY_COMMENT = "AoT_key"
 
+REGISTRATION_KEY = "/root/id_rsa_waggle_aot_registration"
+
 
 # from: http://www.electricmonk.nl/log/2011/08/14/redirect-stdout-and-stderr-to-a-logger-in-python/
 class StreamToLogger(object):
@@ -61,8 +64,21 @@ class StreamToLogger(object):
         pass
 
 
+def run_registration_command(command):
+  p = subprocess.Popen(
+    ["ssh", BEEHIVE_HOST,
+     "-p", "20022",
+     "-i", REGISTRATION_KEY,
+     "-o", "StrictHostKeyChecking no",
+     command,
+     "2>/dev/null"],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE)
+  return p.stdout.read().decode()
+
+
 def read_file( str ):
-    print "read_file: "+str
+    print("read_file: "+str)
     if not os.path.isfile(str) :
         return ""
     with open(str,'r') as file_:
@@ -107,8 +123,7 @@ def get_certificates():
                     logger.info("File '%s' not found." % (reverse_ssh_port_file))
                 
             try:
-                response = urllib2.urlopen(CERT_SERVER)
-                html = response.read()
+                html = run_registration_command("")
             except Exception as e:
                 if (loop == 0):
                     logger.error('Have not found certificate files and can not connect to certificate server (%s): %s' % (CERT_SERVER, str(e)))
@@ -125,16 +140,15 @@ def get_certificates():
                 continue
         else:
             logger.info("All certificate files found.")
+            shutils.remove(REGISTRATION_KEY)
             break
             
         # make sure certficate files exist.
         if not CA_ROOT_FILE_exists:
             createDirForFile(CA_ROOT_FILE)
-            certca_url= CERT_SERVER+"/certca"
-            logger.info("trying to get server certificate from certificate server %s..." % (certca_url))
+            logger.info("trying to get server certificate from certificate server %s..." % (BEEHIVE_HOST))
             try:
-                response = urllib2.urlopen(certca_url)
-                html = response.read()
+                html = run_registration_command("certca")
             except Exception as e:
                 logger.error('Could not connect to certificate server: '+str(e))
                 time.sleep(5)
@@ -152,20 +166,17 @@ def get_certificates():
                 f.write(html)
     
             logger.debug("File %s written." % (CA_ROOT_FILE))
-        
+
         if not (CLIENT_KEY_FILE_exists and CLIENT_CERT_FILE_exists):
             createDirForFile(CLIENT_KEY_FILE)
             createDirForFile(CLIENT_CERT_FILE)
-            cert_url= CERT_SERVER+"/node?"+NODE_ID
-            logger.info("trying to get node key and certificate from certificate server %s..." % (cert_url))
+            logger.info("trying to get node key and certificate from certificate server %s..." % (BEEHIVE_HOST))
             try:
-                response = urllib2.urlopen(cert_url)
-                html = response.read()
+                html = run_registration_command("node?%s" % NODE_ID)
             except Exception as e:
                 logger.error('Could not connect to certificate server: '+str(e))
                 time.sleep(5)
                 continue
-    
     
             priv_key_start = "-----BEGIN RSA PRIVATE KEY-----"
             position_rsa_priv_key_start = html.find(priv_key_start)
@@ -197,16 +208,13 @@ def get_certificates():
                 time.sleep(5)
                 continue
             logger.info("position_priv_cert_end: "+str(position_priv_cert_end))
-            
-            
+
             html_tail = html[position_priv_cert_end+len(end_cert):]
-            
-            
-            
-        
+
             CLIENT_KEY_string = html[position_rsa_priv_key_start:position_rsa_priv_key_end+len(priv_key_end)]+"\n"
             CLIENT_CERT_string = html[position_priv_cert_start:position_priv_cert_end+len(end_cert)]+"\n"
-        
+
+
             # find port for reverse ssh tunnel
             PORT_int = re.findall("PORT=(\d+)", html_tail)[0]
         
@@ -216,13 +224,11 @@ def get_certificates():
             logger.debug("CLIENT_CERT_FILE: "+CLIENT_CERT_string)
             
             logger.debug("PORT: "+str(PORT_int))
-        
-        
-        
+
             waggle_ssh_dir = "/home/waggle/.ssh/"
             waggle_authorized_keys = waggle_ssh_dir + 'authorized_keys'
-            
-           
+
+
             # read existing authorized_keys file
             old_authorized_keys = read_file(waggle_authorized_keys)
             old_authorized_keys_array = old_authorized_keys.split("\n")
