@@ -52,11 +52,11 @@ cd /usr/lib/waggle/nodecontroller/
 ./configure -s <HOSTNAME>
 ```
 
-This can also be achieved by setting the environment variable WAGGLE_SERVER:
+This can also be achieved by setting the environment variable BEEHIVE_HOST:
 
 ```bash
 cd /usr/lib/waggle/nodecontroller/
-export WAGGLE_SERVER=<HOSTNAME>
+export BEEHIVE_HOST=<HOSTNAME>
 ./configure
 ```
 

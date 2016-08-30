@@ -5,11 +5,11 @@ while [[ $# -gt 0 ]]; do
   echo "Key: $key"
   case $key in
     -s)
-      WAGGLE_SERVER="$2"
+      BEEHIVE_HOST="$2"
       shift
       ;;
     --server=*)
-      WAGGLE_SERVER="${key#*=}"
+      BEEHIVE_HOST="${key#*=}"
       ;;
       *)
       ;;
@@ -79,23 +79,23 @@ if [ ! -e /etc/waggle/hostname ] ; then
   echo ${NODE_ID} > /etc/waggle/hostname
 fi
 
-if [ ${WAGGLE_SERVER}x == "x" ] ; then
+if [ ${BEEHIVE_HOST}x == "x" ] ; then
   if [ -e /etc/waggle/server_host ] ; then
-    WAGGLE_SERVER=`cat /etc/waggle/server_host`
+    BEEHIVE_HOST=`cat /etc/waggle/server_host`
   fi
 fi
 
 # AoT Default Server
-if [ ${WAGGLE_SERVER}x == "x" ] ; then
-  WAGGLE_SERVER="beehive1.mcs.anl.gov"
+if [ ${BEEHIVE_HOST}x == "x" ] ; then
+  BEEHIVE_HOST="beehive1.mcs.anl.gov"
 fi
 
 #We have to move away from manual input, and take it as an argument, with the 
 #default beehive server IP set to localhost. Also, we need a way to let the 
 #user know that a wrong server was chosen.
-echo "The beehive server is set to ${WAGGLE_SERVER}."
+echo "The beehive server is set to ${BEEHIVE_HOST}."
 sleep 1
-echo ${WAGGLE_SERVER} > /etc/waggle/server_host
+echo ${BEEHIVE_HOST} > /etc/waggle/server_host
 
 
 #has to be changed so that the requirement for node ID in the packet header is met
