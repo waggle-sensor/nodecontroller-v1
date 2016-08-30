@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os, os.path, pika, datetime, sys, logging, argparse, re
-import shutils
+import shutil
 import logging.handlers
 sys.path.append('../NC/')
 #from multiprocessing import Process
@@ -140,7 +140,7 @@ def get_certificates():
                 continue
         else:
             logger.info("All certificate files found.")
-            shutils.remove(REGISTRATION_KEY)
+            shutil.remove(REGISTRATION_KEY)
             break
             
         # make sure certficate files exist.
