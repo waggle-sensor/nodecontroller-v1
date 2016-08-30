@@ -212,7 +212,7 @@ while True:
     beehive_check_results = [check_beehive_DNS(beehive_hostname),
                              check_beehive_ping(beehive_hostname),
                              check_beehive_sshd(beehive_hostname),]
-    if all(results2):
+    if all(beehive_check_results):
       beehive_check_time = time.time()
 
   # Reset deadman trigger if all local and Beehive checks have passed
