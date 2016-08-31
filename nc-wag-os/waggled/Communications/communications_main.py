@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os, os.path, pika, datetime, sys, logging, argparse, re
-import shutil
 import logging.handlers
 sys.path.append('../NC/')
 #from multiprocessing import Process
@@ -70,8 +69,7 @@ def run_registration_command(command):
      "-p", "20022",
      "-i", REGISTRATION_KEY,
      "-o", "StrictHostKeyChecking no",
-     command,
-     "2>/dev/null"],
+     command],
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE)
   return p.stdout.read().decode()
@@ -140,7 +138,7 @@ def get_certificates():
                 continue
         else:
             logger.info("All certificate files found.")
-            shutil.remove(REGISTRATION_KEY)
+            os.remove(REGISTRATION_KEY)
             break
             
         # make sure certficate files exist.
