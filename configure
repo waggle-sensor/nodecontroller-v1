@@ -98,12 +98,6 @@ sleep 1
 echo ${BEEHIVE_HOST} > /etc/waggle/server_host
 
 
-#has to be changed so that the requirement for node ID in the packet header is met
-echo " " > /etc/waggle/queuename
-echo "${NODE_ID}, \n" > /etc/waggle/devices
-echo "1,2,3,4, \n" >> /etc/waggle/devices
-echo "${NODE_ID}:5, \n" >> /etc/waggle/devices
-
 #make directory to store data cache log files and stored messages
 #make / as large as possible, all the cached data gets stored here. 
 mkdir -p /var/dc

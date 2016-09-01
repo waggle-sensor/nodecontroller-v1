@@ -138,7 +138,8 @@ def get_certificates():
                 continue
         else:
             logger.info("All certificate files found.")
-            os.remove(REGISTRATION_KEY)
+            if os.path.isfile(REGISTRATION_KEY):
+              os.remove(REGISTRATION_KEY)
             break
             
         # make sure certficate files exist.

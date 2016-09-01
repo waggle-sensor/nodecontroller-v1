@@ -30,6 +30,7 @@ if not NODE_ID:
     sys.exit(1)
 
 
+
 manager = Manager()
 
 conf = manager.dict()
@@ -52,6 +53,15 @@ def create_dev_dict():
     """
         This function creates the device dictionary that maps each node with its location/ priority in the data cache. 
     """
+
+    # write a default devices file if one doesn't already exist
+    devices_filename = '/etc/waggle/devices'
+    if not os.path.isfile(devices_filename):
+        with open(devices_filename,'w') as devices_file:
+            devices_file.write("%s, \n" % NODE_ID)
+            devices_file.write("1,2,3,4, \n")
+            devices_file.write("%s:5, \n")
+
     #Registered devices, available locations/priorities, and current device:location/priority maps are stored in this file
     #This file is updated in msg_handler.py when a GN registers or de-registers
     with open('/etc/waggle/devices', 'r') as file_:
