@@ -22,4 +22,3 @@ pip3 install -e pika-0.10.0
 pip3 install crcmod
 pip3 install pyserial
 pip3 install tabulate
-pip3 install shutils

@@ -32,9 +32,7 @@ if [ "$EUID" -ne 0 ]
 fi
 
 
-if [ $(python3 -c "import crcmod;" ; echo $?) -ne 0 ] ; then
-  ./scripts/install_dependencies.sh
-fi
+./scripts/install_dependencies.sh
 
 # for log files
 mkdir -p /var/log/waggle/
