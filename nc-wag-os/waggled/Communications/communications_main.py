@@ -102,13 +102,18 @@ def get_certificates():
     loop=-1
     while True:
         loop=(loop+1)%20
-        CA_ROOT_FILE_exists = os.path.isfile(CA_ROOT_FILE)
-        CLIENT_KEY_FILE_exists = os.path.isfile(CLIENT_KEY_FILE)
-        CLIENT_CERT_FILE_exists = os.path.isfile(CLIENT_CERT_FILE)
-        reverse_ssh_port_file_exists = os.path.isfile(reverse_ssh_port_file)
+        CA_ROOT_FILE_exists = os.path.isfile(CA_ROOT_FILE) and
+                              os.stat(CA_ROOT_FILE).st_size > 0
+        CLIENT_KEY_FILE_exists = os.path.isfile(CLIENT_KEY_FILE) and
+                                 os.stat(CLIENT_KEY_FILE).st_size > 0
+        CLIENT_CERT_FILE_exists = os.path.isfile(CLIENT_CERT_FILE) and
+                                  os.stat(CLIENT_CERT_FILE).st_size > 0
+        reverse_ssh_port_file_exists = os.path.isfile(reverse_ssh_port_file) and
+                                  os.stat(reverse_ssh_port_file).st_size > 0
     
         #check if cert server is available
-        if not (CA_ROOT_FILE_exists and CLIENT_KEY_FILE_exists and CLIENT_CERT_FILE_exists and reverse_ssh_port_file_exists):
+        if not (CA_ROOT_FILE_exists and CLIENT_KEY_FILE_exists and
+                CLIENT_CERT_FILE_exists and reverse_ssh_port_file_exists):
         
             if (loop == 0):
                 if not CA_ROOT_FILE_exists:
@@ -163,6 +168,7 @@ def get_certificates():
         
             with open(CA_ROOT_FILE, 'w') as f:
                 f.write(html)
+            f.close()
     
             logger.debug("File %s written." % (CA_ROOT_FILE))
 
@@ -264,12 +270,14 @@ def get_certificates():
             # write everything to files
             with open(CLIENT_KEY_FILE, 'w') as f:
                 f.write(CLIENT_KEY_string)
+            f.close()
             logger.info("File '%s' has been written." % (CLIENT_KEY_FILE))
             subprocess.call(['chown', 'waggle:waggle', CLIENT_KEY_FILE])
             os.chmod(CLIENT_KEY_FILE, 0o600)
         
             with open(CLIENT_CERT_FILE, 'w') as f:
                 f.write(CLIENT_CERT_string)
+            f.close()
             subprocess.call(['chown', 'waggle:waggle', CLIENT_CERT_FILE])
             os.chmod(CLIENT_CERT_FILE, 0o600)
             
@@ -277,6 +285,7 @@ def get_certificates():
             
             with open(reverse_ssh_port_file, 'w') as f:
                 f.write(str(PORT_int))
+            f.close()
             
             logger.info("File '%s' has been written." % (reverse_ssh_port_file))
             
@@ -290,6 +299,7 @@ def get_certificates():
                 
                 with open(waggle_authorized_keys, 'w') as f:
                     f.write(new_authorized_keys)
+                f.close()
                 
                 os.chmod(waggle_authorized_keys, 0o600)
                 os.chmod(waggle_ssh_dir, 0o700)
