@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import os.path
 import requests
 from signal import *
 import socket
@@ -10,28 +11,6 @@ import sys
 import time
 import zmq
 
-# Every minute, check the following items:
-# - Modem in lsusb
-# - Modem in ifconfig
-# - Modem has IP address
-# - Beehive server is in DNS
-# - Beehive server can be pinged
-# - Local sshd is ok (test connect locally)
-# Every half hour, check the following items:
-# - Can ssh to beehive
-# - Can ssh to NC from beehive
-#
-# If modem is not in lsusb,
-#   1) power cycle the hub,
-#   2) log failure.
-# If modem not in ifconfig,
-#   1) pkill -HUP pppd
-#   2) log failure.
-# If modem has no IP address,
-#   1) pkill -HUP pppd
-#   2) log failure.
-# If beehive cannot be pinged
-#   beehive server is in DNS
 
 ############################
 ##### Helper Functions #####
@@ -76,6 +55,11 @@ def unsubscribe_wagman_status(socket):
 ###########################
 ##### Wellness Checks #####
 ###########################
+
+# See whether file system recovery to the alternate bood medium
+# has completed by checking for the existance of /root/do_recovery
+def in_recovery():
+  return os.path.isfile('/root/do_recovery')
 
 # Check that there is a "Wireless" device connected to the USB hub
 def check_USB_modem():
@@ -198,6 +182,11 @@ for sig in (SIGINT, SIGQUIT, SIGTERM):
 
 while True:
   current_time = time.time()
+
+  # Recovery status check
+  if in_recovery():
+    reset_deadman_trigger()
+    log_message("Node Controller is performing a file system recovery.")
 
   # Local checks (done every minute)
   #print("Performing local checks...")
