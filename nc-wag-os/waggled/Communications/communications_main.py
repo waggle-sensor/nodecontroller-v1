@@ -102,18 +102,13 @@ def get_certificates():
     loop=-1
     while True:
         loop=(loop+1)%20
-        CA_ROOT_FILE_exists = os.path.isfile(CA_ROOT_FILE) and
-                              os.stat(CA_ROOT_FILE).st_size > 0
-        CLIENT_KEY_FILE_exists = os.path.isfile(CLIENT_KEY_FILE) and
-                                 os.stat(CLIENT_KEY_FILE).st_size > 0
-        CLIENT_CERT_FILE_exists = os.path.isfile(CLIENT_CERT_FILE) and
-                                  os.stat(CLIENT_CERT_FILE).st_size > 0
-        reverse_ssh_port_file_exists = os.path.isfile(reverse_ssh_port_file) and
-                                  os.stat(reverse_ssh_port_file).st_size > 0
+        CA_ROOT_FILE_exists = os.path.isfile(CA_ROOT_FILE) and os.stat(CA_ROOT_FILE).st_size > 0
+        CLIENT_KEY_FILE_exists = os.path.isfile(CLIENT_KEY_FILE) and os.stat(CLIENT_KEY_FILE).st_size > 0
+        CLIENT_CERT_FILE_exists = os.path.isfile(CLIENT_CERT_FILE) and os.stat(CLIENT_CERT_FILE).st_size > 0
+        reverse_ssh_port_file_exists = os.path.isfile(reverse_ssh_port_file) and os.stat(reverse_ssh_port_file).st_size > 0
     
         #check if cert server is available
-        if not (CA_ROOT_FILE_exists and CLIENT_KEY_FILE_exists and
-                CLIENT_CERT_FILE_exists and reverse_ssh_port_file_exists):
+        if not (CA_ROOT_FILE_exists and CLIENT_KEY_FILE_exists and CLIENT_CERT_FILE_exists and reverse_ssh_port_file_exists):
         
             if (loop == 0):
                 if not CA_ROOT_FILE_exists:
