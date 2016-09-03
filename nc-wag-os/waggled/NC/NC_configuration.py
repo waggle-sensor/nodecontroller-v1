@@ -7,6 +7,7 @@ import string
 import random
 from multiprocessing import Manager
 import json
+import netifaces
 
 """
     This file stores all of the configurable variables for the node controller. 
@@ -40,6 +41,9 @@ conf['QUEUENAME'] = read_file('/etc/waggle/queuename')
 
 #Get node controller IP
 NCIP = read_file('/etc/waggle/NCIP')
+if NCIP == "":
+  NCIP = netifaces.ifaddresses('eth0')[netifaces.AF_INET][0]['addr']
+
 
 #get server IP from file
 #CLOUD_IP = read_file('/etc/waggle/server_ip') #TODO: deprecate this
