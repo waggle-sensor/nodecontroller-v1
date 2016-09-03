@@ -64,7 +64,7 @@ def create_dev_dict():
         with open(devices_filename,'w') as devices_file:
             devices_file.write("%s, \n" % NODE_ID)
             devices_file.write("1,2,3,4, \n")
-            devices_file.write("%s:5, \n")
+            devices_file.write("%s:5, \n" % NODE_ID)
 
     #Registered devices, available locations/priorities, and current device:location/priority maps are stored in this file
     #This file is updated in msg_handler.py when a GN registers or de-registers
