@@ -123,7 +123,8 @@ pika_params=pika.ConnectionParameters(  host=BEEHIVE_HOST,
                                         virtual_host='/', 
                                         port=RABBITMQ_PORT, 
                                         ssl=USE_SSL, 
-                                        ssl_options={"ca_certs": CA_ROOT_FILE , 'certfile': CLIENT_CERT_FILE, 'keyfile': CLIENT_KEY_FILE, 'cert_reqs' : ssl.CERT_REQUIRED} 
+                                        ssl_options={"ca_certs": CA_ROOT_FILE , 'certfile': CLIENT_CERT_FILE, 'keyfile': CLIENT_KEY_FILE, 'cert_reqs' : ssl.CERT_REQUIRED},
+                                        socket_timeout=10
                                          )
 #else:
 #    pika_params=pika.ConnectionParameters(host=BEEHIVE_HOST, credentials=pika_credentials, virtual_host='/', port=RABBITMQ_PORT, ssl=USE_SSL)
