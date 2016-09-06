@@ -154,8 +154,8 @@ def reset_wagman():
 
 
 # Human readable names for the tests in the same sequence that they are run
-test_names = ['USB Modem', 'Network Interface', 'Beehive DNS', 'Beehive Ping',
-              'Local sshd', 'Beehive sshd']
+test_names = ['USB Modem', 'Network Interface', 'Local sshd',
+              'Beehive DNS', 'Beehive Ping', 'Beehive sshd']
 
 # base_sleep_time = 2  # s
 beehive_hostname = get_beehive_hostname()
