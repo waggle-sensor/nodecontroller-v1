@@ -61,25 +61,31 @@ def unsubscribe_wagman_status(socket):
 def in_recovery():
   return os.path.isfile('/root/do_recovery')
 
-# Check that there is a "Wireless" device connected to the USB hub
+# Check that there is a "Wireless" or "Realtek" (LAN) device
+# connected to the USB hub
 def check_USB_modem():
   output = run_command(['lsusb'])
   for line in output:
-    if b"Wireless" in line:
+    if (b"Wireless" in line) or \
+       (b"Realtek" in line):
       return True
+
   return False
 
-# Check that there is an IP address listed in the PPP info of ifconfig
+# Check that there is an IP address listed in either the PPP or
+# eth1 info of ifconfig
 def check_network_interface():
   output = run_command(['ifconfig'])
-  have_ppp = False
-  have_ip = False
+  next_line = False
   for line in output:
-    if b"Point-to-Point Protocol" in line:
-      have_ppp = True
-    if b"inet addr:" in line:
-      have_ip = True
-  return have_ppp and have_ip
+    if (b"Point-to-Point Protocol" in line) or \
+       (b"eth1" in line):
+      next_line = True
+    elif next_line and (b"inet addr:" in line):
+      return True
+    else:
+      next_line = False
+  return False
 
 # DNS lookup of the Beehive server hostname
 def check_beehive_DNS(hostname):
