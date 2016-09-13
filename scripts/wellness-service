@@ -77,9 +77,11 @@ def check_USB_modem():
 def check_network_interface():
   output = run_command(['ifconfig'])
   next_line = False
-  for line in output:
-    if (b"Point-to-Point Protocol" in line) or \
-       (b"eth1" in line):
+   for line in output:
+     if (b"eth0" in line):
+       continue
+     if (b"Point-to-Point Protocol" in line) or \
+        (b"eth" in line):
       next_line = True
     elif next_line and (b"inet addr:" in line):
       return True
@@ -110,10 +112,10 @@ def check_beehive_ping(hostname):
 # Connect to the local sshd
 def check_local_sshd():
   # To test, add "waggle" user to ThinkPad and setup passwordless key
-  command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
+  command = ['ssh -i /usr/lib/waggle/SSL/node/guest/id_rsa_waggle_aot_guest_node -x',
              '-o "PasswordAuthentication no"',
              '-o "StrictHostKeyChecking no"',
-             '-o "ConnectTimeout 1" waggle@localhost',
+             '-o "ConnectTimeout 1" waggle@10.31.81.10',
              'date > /dev/null 2>&1']
   #print(' '.join(command))
   rc = os.system(' '.join(command))

@@ -194,25 +194,25 @@ def get_certificates():
                 continue
             logger.info("position_rsa_priv_key_end: "+str(position_rsa_priv_key_end))
                 
-            position_priv_cert_start = html.find("-----BEGIN CERTIFICATE-----")
-            if position_priv_cert_start == -1:
-                logger.error("Could not parse PEM data from server. (position_priv_cert_start)")
+            position_cert_start = html.find("-----BEGIN CERTIFICATE-----")
+            if position_cert_start == -1:
+                logger.error("Could not parse PEM data from server. (position_cert_start)")
                 time.sleep(5)
                 continue
-            logger.info("position_priv_cert_start: "+str(position_priv_cert_start))
+            logger.info("position_cert_start: "+str(position_cert_start))
             
             end_cert = "-----END CERTIFICATE-----"
-            position_priv_cert_end = html.find(end_cert)
-            if position_priv_cert_end == -1:
-                logger.error("Could not parse PEM data from server. (position_priv_cert_end)")
+            position_cert_end = html.find(end_cert)
+            if position_cert_end == -1:
+                logger.error("Could not parse PEM data from server. (position_cert_end)")
                 time.sleep(5)
                 continue
-            logger.info("position_priv_cert_end: "+str(position_priv_cert_end))
+            logger.info("position_cert_end: "+str(position_cert_end))
 
-            html_tail = html[position_priv_cert_end+len(end_cert):]
+            html_tail = html[position_cert_end+len(end_cert):]
 
             CLIENT_KEY_string = html[position_rsa_priv_key_start:position_rsa_priv_key_end+len(priv_key_end)]+"\n"
-            CLIENT_CERT_string = html[position_priv_cert_start:position_priv_cert_end+len(end_cert)]+"\n"
+            CLIENT_CERT_string = html[position_cert_start:position_cert_end+len(end_cert)]+"\n"
 
 
             # find port for reverse ssh tunnel
@@ -246,12 +246,6 @@ def get_certificates():
             new_authorized_keys = old_authorized_keys
             
             change_authorized_keys = 0
-            
-            if RSA_PUBLIC_KEY in exisiting_rsa_keys:
-                logger.debug("RSA_PUBLIC_KEY already in authorized_keys")
-            else:
-                new_authorized_keys += "\n" + RSA_PUBLIC_KEY + RSA_PUBLIC_KEY_COMMENT
-                change_authorized_keys = 1
             
             
             if AOT_PUBLIC_KEY in exisiting_rsa_keys:
