@@ -77,11 +77,11 @@ def check_USB_modem():
 def check_network_interface():
   output = run_command(['ifconfig'])
   next_line = False
-   for line in output:
-     if (b"eth0" in line):
-       continue
-     if (b"Point-to-Point Protocol" in line) or \
-        (b"eth" in line):
+  for line in output:
+    if (b"eth0" in line):
+      continue
+    if (b"Point-to-Point Protocol" in line) or \
+       (b"eth" in line):
       next_line = True
     elif next_line and (b"inet addr:" in line):
       return True
