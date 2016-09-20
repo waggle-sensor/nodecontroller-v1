@@ -19,10 +19,10 @@ then
 
 echo "Resetting Coresense board to bootloader mode... (Step 1/2)"
 echo
-stty -F /dev/waggle_Coresense 1200 hupcl; sleep 2
+stty -F /dev/waggle_coresense 1200 hupcl; sleep 2
 echo "Flashing Coresense board with new firmware... (Step 2/2)"
 echo
-/usr/bin/bossac -i -d --port=waggle_Coresense -U true -e -w -v -b $1 -R
+/usr/bin/bossac -i -d --port=waggle_coresense -U true -e -w -v -b $1 -R
 echo 
 echo ">>>>>>>>>>>> Firmware flash process completed <<<<<<<<<<<<<"
 echo
