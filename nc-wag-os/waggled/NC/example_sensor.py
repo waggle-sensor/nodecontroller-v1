@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-import time, serial, sys, datetime, os, random
-sys.path.append('../../../')
+import time
+import sys
+import datetime
+import os
+import random
 from waggle.protocol.utils import packetmaker
 sys.path.append('../Communications/')
 sys.path.append('../DataCache/')
 from send2dc import send
-
 
 
 def unix_time(dt):
@@ -15,13 +17,13 @@ def unix_time(dt):
 
 def unix_time_millis(dt):
     return int(unix_time(dt) * 1000.0)
-    
+
 
 
 temperature_file = '/sys/class/thermal/thermal_zone0/temp'
 
 
-if os.path.isfile(temperature_file): 
+if os.path.isfile(temperature_file):
     count = 0
     while 1:
         tempC = int(open(temperature_file).read()) / 1e3
@@ -40,7 +42,7 @@ if os.path.isfile(temperature_file):
         #send a packet every 10 seconds
         time.sleep(10)
         count = count + 1
-        
+
 else:
     count = 0
     while 1:
@@ -55,6 +57,3 @@ else:
         #send a packet every 10 seconds
         time.sleep(10)
         count = count + 1
-
-
-

@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
-
-import sys, pika, ssl
-sys.path.append('../../../')
-from waggle.protocol.utils.packetmaker import *
+"""
+This file stores all of the configurable variables for the node controller.
+"""
+import sys
+import pika
+import ssl
 import string
 import random
 from multiprocessing import Manager
 import json
 import netifaces
-
-"""
-    This file stores all of the configurable variables for the node controller. 
-
-"""
-
+from waggle.protocol.utils.packetmaker import *
 
 
 def read_file( str ):
@@ -52,10 +49,10 @@ BEEHIVE_HOST=read_file('/etc/waggle/server_host')
 # the certificate server is optional and may only be accessible in an internal network
 CERT_SERVER_PORT=24181
 
-    
+
 def create_dev_dict():
     """
-        This function creates the device dictionary that maps each node with its location/ priority in the data cache. 
+        This function creates the device dictionary that maps each node with its location/ priority in the data cache.
     """
 
     # write a default devices file if one doesn't already exist
@@ -93,11 +90,11 @@ def update_dev_dict():
     """
     DEVICE_DICT = create_dev_dict()
     return DEVICE_DICT
-        
+
 #lists the order of device priority. Each device corresponds with a location in the data cache
 #The highest priority position is at the front of the list, the lowest priority is at the end.
 #The node controller is 5
-PRIORITY_ORDER = [5,4,3,2,1] 
+PRIORITY_ORDER = [5,4,3,2,1]
 
 #This specifies the maximum RAM available to the data cache
 #Here, we assume that each message stored is no larger than 1K
@@ -117,12 +114,12 @@ CA_ROOT_FILE="/usr/lib/waggle/SSL/waggleca/cacert.pem"
 
 
 pika_credentials = pika.PlainCredentials('node', 'waggle')
-    
-pika_params=pika.ConnectionParameters(  host=BEEHIVE_HOST, 
-                                        credentials=pika_credentials, 
-                                        virtual_host='/', 
-                                        port=RABBITMQ_PORT, 
-                                        ssl=USE_SSL, 
+
+pika_params=pika.ConnectionParameters(  host=BEEHIVE_HOST,
+                                        credentials=pika_credentials,
+                                        virtual_host='/',
+                                        port=RABBITMQ_PORT,
+                                        ssl=USE_SSL,
                                         ssl_options={"ca_certs": CA_ROOT_FILE , 'certfile': CLIENT_CERT_FILE, 'keyfile': CLIENT_KEY_FILE, 'cert_reqs' : ssl.CERT_REQUIRED},
                                         socket_timeout=10
                                          )
@@ -132,9 +129,9 @@ pika_params=pika.ConnectionParameters(  host=BEEHIVE_HOST,
 
 
 def get_config():
-    """ 
+    """
     This function sends all of the stored information to the cloud.
-    
+
     """
     #  node_id ascii PRIMARY KEY,
     #                        timestamp timestamp,
@@ -152,9 +149,9 @@ def get_config():
                     'device_dict' : DEVICE_DICT,
                     'priority_order' : PRIORITY_ORDER
                     }
-                    
+
     return json.dumps(config_dict)
-    
+
     #deprecated stuff below
     #add all the configuration
     config ='Node ID: ' + NODE_ID + '\n'
@@ -166,13 +163,8 @@ def get_config():
     #config = config + 'Cloud IP address and parameters: ' + CLOUD_ADDR + '\n'
 
     return config
-    
-    
-    
+
+
+
 def id_generator(size=30, chars=string.ascii_letters + string.digits + ".-_"):
-    return ''.join(random.choice(chars) for _ in range(size))    
-    
-    
-    
-    
-    
+    return ''.join(random.choice(chars) for _ in range(size))

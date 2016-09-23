@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
-
 from multiprocessing import Queue
-#from daemon import Daemon
-import sys, os, os.path, time, atexit, socket, datetime, argparse
-sys.path.append('../../../')
+import sys
+import os
+import os.path
+import time
+import socket
+import datetime
+import argparse
+from glob import glob
+import logging
+import logging.handlers
+import signal
 from waggle.protocol.PacketHandler import *
+from waggle.protocol.utils.pidfile import PidFile, AlreadyRunning
 sys.path.append('../NC/')
 from NC_configuration import *
-sys.path.append('../NC/')
 from msg_handler import msg_handler
-from glob import glob
-import logging, logging.handlers
-import signal
 
 
-from waggle.protocol.utils.pidfile import PidFile, AlreadyRunning
-
-
-
-""" 
+"""
     The Data Cache stores messages between the nodes and the cloud. The main function is a unix socket server. The internal and external facing communication classes connect to
-    the data cache to push or pull messages. The data cache consists of two buffers, which are matrixes of queues. Each queue cooresponds to a device location and message priority within the matrix. 
-    The data cache stores messages in the queues until the available memory runs out. When the number of messages exceeds the available memory, the messages queues are cleared and the messages are written to a file. 
+    the data cache to push or pull messages. The data cache consists of two buffers, which are matrixes of queues. Each queue cooresponds to a device location and message priority within the matrix.
+    The data cache stores messages in the queues until the available memory runs out. When the number of messages exceeds the available memory, the messages queues are cleared and the messages are written to a file.
 """
 
 #TODO make improvements. Suggestions for improvements are written as TODOs
@@ -54,18 +54,18 @@ stop_process = False
 
 
 
-    
-    
+
+
 def signal_term_handler(signal, frame):
     logger.debug('got SIGTERM')
-    
+
     if dc:
         logger.debug('execute dc.stop()')
         dc.stop()
-    # Can't exit here, the flush fiunction has to exit using variable "stop_process" 
+    # Can't exit here, the flush fiunction has to exit using variable "stop_process"
     #sys.exit(0)
- 
-# this would interrupt IO. Need to run everything in separate thread/process 
+
+# this would interrupt IO. Need to run everything in separate thread/process
 def signal_info_handler(signal, frame):
     logger.debug('got SIGUSR1')
     #print "status: ", str(dc.get_status())
@@ -73,17 +73,17 @@ def signal_info_handler(signal, frame):
 signal.signal(signal.SIGTERM, signal_term_handler)
 
 #signal.signal(signal.SIGUSR1, signal_info_handler)
-  
-            
-         
+
+
+
 
 
 class DataCache:
     def __init__(self):
         #self.data = []
-        
+
         self.socket_file = '/tmp/Data_Cache_server'
-        
+
         self.incoming_bffr = []
 
         self.outgoing_bffr = []
@@ -92,27 +92,27 @@ class DataCache:
         self.msg_counter = 0 #keeps track of total messages in queues
         #If the data cache flushed messages to files, this stores the the current outgoing file that messages are being read from
         self.outgoing_cur_file = '' #empty string if there are no files
-        #If the data cache flushed messages to files, this stores a list of current files for each device 
+        #If the data cache flushed messages to files, this stores a list of current files for each device
         self.incoming_cur_file =  ['', '', '', '', ''] #empty string if there are no files
-        
-        self.outgoing_available_queues = list() 
+
+        self.outgoing_available_queues = list()
         self.incoming_available_queues = list()
-    
+
     def run(self):
-        
+
         logger.info("Starting DataCache...")
 
-    
+
         #Each buffer is a matrix of queues for organization and indexing purposes.
         #make incoming buffer
         self.incoming_bffr = self.make_bffr(len(PRIORITY_ORDER))
-        #make outgoing buffer 
+        #make outgoing buffer
         self.outgoing_bffr = self.make_bffr(len(PRIORITY_ORDER))
-    
-       
+
+
         #the main server loop
         while True:
-            
+
             #indicates that the server is flushing the buffers. Shuts down the server until the all queues have been written to a file
             while self.flush ==1:
                 logger.debug("Cache is in flush state")
@@ -120,25 +120,25 @@ class DataCache:
             if os.path.exists(self.socket_file): #checking for the file
                 os.remove(self.socket_file)
             logger.debug("Opening server socket...")
-        
+
             #creates a UNIX, STREAMing socket
             server_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) # TODO should this not be a class variable ?
             server_sock.bind(self.socket_file) #binds to this file path
-        
+
             #become a server socket and start listening for clients
             server_sock.listen(6)
-            
+
             while True:
-               
+
                 if self.flush==1: #shuts down the server until the all queues have been written to a file
                     logger.debug('Server flush!')
-                
+
                     server_sock.close()
                     os.remove(self.socket_file)
                     logger.debug('Server flush closed socket')
-                
+
                     break
-            
+
                 #accept connections from outside
                 try:
                     client_sock, address = server_sock.accept()
@@ -150,12 +150,12 @@ class DataCache:
                     logger.info("server_sock.accept: "+str(e))
                     self.stop()
                     sys.exit(1)
-                    
-                
-                
+
+
+
                 try:
                     data = client_sock.recv(2048) #arbitrary
-                    
+
                     if logger.isEnabledFor(logging.DEBUG):
                         if data != '|o'.encode('iso-8859-1'):
                             logger.debug('(DataCache) received data.')
@@ -166,15 +166,15 @@ class DataCache:
                         if data == 'Flush'.encode('iso-8859-1'):
                             #flush all stored messages into files
                             logger.debug('External flush request made.')
-                        
+
                             self.DC_flush()
-                            
-                            
+
+
                             if stop_process:
                                 logger.info("DC has been flushed. Process will stop now.")
                                 sys.exit(0)
-                            
-                                
+
+
                         #Indicates that it is a pull request ( somebody want data from the DC)
                         elif data[0] == ord('|'): #TODO This could be improved if there is a better way to distinguish between push and pull requests and from incoming and outgoing requests
                             logger.debug('Somebody wants data')
@@ -192,20 +192,20 @@ class DataCache:
                                     client_sock.sendall(msg) #sends the message
                                 except:
                                     #pushes it back into the incoming queue if the client disconnects before the message is sent
-                                    try: #Will pass if data is a pull request instead of a full message 
+                                    try: #Will pass if data is a pull request instead of a full message
                                         #TODO default msg_p is 5 for messages pushed back into queue. Improvement recommended.
-                                        incoming_push(int(dest),5, msg) 
-                                    except: 
+                                        incoming_push(int(dest),5, msg)
+                                    except:
                                         pass
                             else:
                                 logger.debug('Somebody wants data, using o')
                                 msg = self.outgoing_pull() #pulls the highest priority message
-                                if not msg: 
+                                if not msg:
                                     msg = 'False'.encode('iso-8859-15')
                                     logger.debug("have no message for external_client_pull")
                                 else:
                                     logger.debug("sending message to external_client_pull, length %d" % (len(msg)))
-                                    
+
                                 try:
                                     client_sock.sendall(msg) #sends the message
                                 except Exception as e:
@@ -214,12 +214,12 @@ class DataCache:
                                     try:#Will pass if data is a pull request instead of a full message
                                         #TODO default msg_p is 5 for messages pushed back into queue. Improvement recommended.
                                         self.outgoing_push(int(dest),5,msg)
-                                    except Exception as e: 
+                                    except Exception as e:
                                         logger.error("outgoing_push: "+str(e))
                                         pass
-                    
-                            
-                        
+
+
+
                         else:
                             # somebody sends data to the DataCache
                             #logger.debug("datacache got: \""+str(data)+"\"")
@@ -228,7 +228,7 @@ class DataCache:
                                 header = get_header(data) #uses the packet handler function get_header to unpack the header data from the message
                                 flags = header['flags'] #extracts priorities
                                 order = flags[2] #lifo or fifo
-                                msg_p = flags[1] 
+                                msg_p = flags[1]
                                 recipient_int = header['r_uniqid'] #gets the recipient ID
                                 sender_int = header['s_uniqid']
                                 logger.debug("sender_int: %s recipient_int: %s" % (sender_int, recipient_int))
@@ -238,26 +238,26 @@ class DataCache:
                                 for i in range(2): #loops in case device dictionary is not up-to-date
                                     # message for the cloud
                                     if recipient_int == 0: #0 is the default ID for the cloud. Indicates an outgoing push.
-                                        try: 
+                                        try:
                                             dev_loc = DEVICE_DICT[sender] #looks up the location of the sender device ("location" refers to priority!)
-                                        except KeyError as e: 
+                                        except KeyError as e:
                                             logger.error("Rejecting message. Sender %s is unknown: %s" % ( sender, str(e)) )
                                             continue  # do not send message from unknown sender
-                                        
-                                        try:     
+
+                                        try:
                                             if order==False: #indicates lifo. lifo has highest message priority
                                                 msg_p=5
                                             #pushes the message into the outgoing buffer to the queue corresponding to the device location and message priority
                                             self.outgoing_push(int(dev_loc), msg_p, data)
                                             #If the device is registered and the push is successful, no need to try again, break the loop
-                                            
-                                            break 
-                                        except Exception as e: 
+
+                                            break
+                                        except Exception as e:
                                             logger.error("outgoing_push2: "+str(e))
                                             #The device dictionary may not be up to date. Need to update and try again.
                                             #If the device is still not found after first try, move on.
                                             update_dev_dict() #this function is in NC_configuration.py
-                                        
+
                                     #indicates an incoming push
                                     # message for the nodecontroller
                                     elif recipient == NODE_ID or recipient_int == 1:
@@ -277,19 +277,19 @@ class DataCache:
                                             #If the device is registered and the push is successful, no need to try again, break the loop
                                             self.incoming_push(int(dev_loc),msg_p,data)
                                             break
-                                        except Exception as e: 
+                                        except Exception as e:
                                             #The device dictionary may not be up to date. Need to update and try again.
                                             #If the device is still not found after first try, move on.
                                             update_dev_dict()
                             except Exception as e:
                                 logger.error('Message corrupt. Will not store in data cache.')
                                 logger.error(e)
-                    
+
                 except KeyboardInterrupt as k:
                     logger.info("Data Cache server shutting down...")
                     self.stop()
                     continue
-                    
+
             #server_sock.close()
             #os.remove(self.socket_file)
             #break
@@ -301,23 +301,23 @@ class DataCache:
     def stop(self):
         stop_process = True
         self.DC_flush()
-        
+
         logger.info("DC has been flushed. Process will stop now.")
-        sys.exit(0)   
-        
+        sys.exit(0)
+
         #try:
         #    logger.debug('Flushing data cache....')
         #    self.external_flush()
             #The data cache needs time to flush the messages before stopping the process
             #time.sleep(5)
-            #Daemon.stop(self) 
+            #Daemon.stop(self)
         #except Exception as e:
         #   logger.error(e)
 
     def external_flush(self):
         """
-            This function is called to force a flush of the data cache from an external source (i.e. before a system reboot). 
-            It connects to the server socket of the data cache to request a flush. 
+            This function is called to force a flush of the data cache from an external source (i.e. before a system reboot).
+            It connects to the server socket of the data cache to request a flush.
         """
          #connect to DC and send 'Flush'
         if os.path.exists(self.socket_file):
@@ -330,68 +330,68 @@ class DataCache:
                 logger.error(e)
                 client_sock.close()
             logger.debug("Sent flush command.")
-        else: 
+        else:
             logger.debug('Data cache running?')
-    
 
-    def outgoing_push(self,dev, msg_p, msg): 
+
+    def outgoing_push(self,dev, msg_p, msg):
         """
             Function that pushes outgoing messages into the outgoing buffer.
-        
+
             :param int dev: Specifies the device location in the matrix.
             :param int msg_p: Specifies the message priority location in the matrix
             :param int self.msg_counter: Keeps track of the number of total messags currently being stored in the buffers.
             :param int flush: Value indicating if the data cache needs to flush the buffers into files.
-        """ 
+        """
         logger.debug("outgoing_push: dev=%d msg_p=%d" % (dev, msg_p))
         #If the msg counter is greater than or equal to the available memory, flush the outgoing queues into a file
         if self.msg_counter>= AVAILABLE_MEM:
-        
+
             #Calls the data cache flush method and passes in the neccessary params
             logger.debug("(outgoing_push) flush because of self.msg_counter>= AVAILABLE_MEM")
             self.DC_flush() #Flushes all messages into a file
             self.msg_counter = 0 #resets the message counter after all buffers have been saved to a file
-    
+
         #Increments the self.msg_counter by 1 each time a message is pushed into the data cache
-        self.msg_counter += 1 
+        self.msg_counter += 1
         logger.debug("self.msg_counter: "+str(self.msg_counter))
         try:
             #pushes the message into the queue at the specified location in the matrix
             self.outgoing_bffr[(dev - 1)][(msg_p - 1)].put(msg)
-        
+
             #adds the queue to the list of available queues
             try:
                 self.outgoing_available_queues.index((dev, msg_p)) #throws an error if this is not already in the list
-            except: 
+            except:
                 self.outgoing_available_queues.append((dev, msg_p)) #prevents duplicates
         except:
             logger.error('Outgoing push unable to store in data cache...') #TODO Should an error message be sent back to the recipient?
-       
+
     def incoming_push(self,device, msg_p, msg):
-        """ 
+        """
             Function that pushes incoming messages to the incoming buffer.
-        
+
             :param int dev: Specifies the device location in the matrix.
             :param int msg_p: Specifies the message priority location in the matrix
             :param int self.msg_counter: Keeps track of total messages in the data cache.
             :param int flush: Value indicating if the data cache needs to flush the buffers into files.
-        """ 
+        """
         #print 'msg counter: ',self.msg_counter
         #print 'available mem: ', AVAILABLE_MEM
         #if the msg counter is greater than or equal to the available memory, flush the buffers into files
-        if self.msg_counter >= AVAILABLE_MEM: 
+        if self.msg_counter >= AVAILABLE_MEM:
             #Calls the data cache flush method
             logger.debug("(incoming_push) flush because of (self.msg_counter >= AVAILABLE_MEM)")
             self.DC_flush()
             self.msg_counter = 0 #resets the message counter after all buffers have been saved to a file
         else:
-            pass 
+            pass
         #increments the counter by 1 each time a message is put into the buffer
         self.msg_counter += 1
-    
+
         #pushes the message into the queue at the specified location in the matrix
         self.incoming_bffr[device - 1][msg_p - 1].put(msg)
-    
+
         #adds the queue to the list of available queues
         try:
             self.incoming_available_queues.index(device) #checks if the device is already in the list #TODO improve this
@@ -399,21 +399,21 @@ class DataCache:
             self.incoming_available_queues.append(device) #adds it to the list if it is not already there
 
     def outgoing_pull(self):
-        """ 
+        """
             Function that retrieves and removes outgoing messages from the outgoing buffer. Retrieves the highest priority messages first. Highest priority messages are determined based on message priority and device priority.
-        
+
             :param int self.msg_counter: Keeps track of total messages in the data cache.
-            :rtype string: Returns a packed message or 'False' if no messages are available. 
-        """ 
-    
+            :rtype string: Returns a packed message or 'False' if no messages are available.
+        """
+
         #TODO implement fairness, avoid starvation
-        #TODO might want to find a better way to remove empty queues from list 
-    
-    
-        #continues until a message is sent. 
+        #TODO might want to find a better way to remove empty queues from list
+
+
+        #continues until a message is sent.
         #Neccessary to check for empty queues whose index has not yet been removed from the list or files whose messages have all been read and sent
         #while True:
-    
+
         #are there outgoing messages stored as files?
         #if so, those need to be sent to the cloud first without needing to load all messages from the file and taking up too much RAM
         #so, send the messages one by one using a file generator object.
@@ -426,9 +426,9 @@ class DataCache:
                 #print 'cur_file is empty string.'
                 #set the first file in the outgoing_stored directory as the current file generator object
                 logger.debug('opening file %s' % (outgoing_msg_files[0]))
-                self.outgoing_cur_file = open(outgoing_msg_files[0]) 
+                self.outgoing_cur_file = open(outgoing_msg_files[0])
                 #print 'opened file'
-                try: 
+                try:
                     #print 'trying to read from file'
                     msg = next(self.outgoing_cur_file).strip() #reads the next message in file, strips the \n
                     #print 'returning msg'
@@ -440,7 +440,7 @@ class DataCache:
                     self.outgoing_cur_file = '' #reset to empty string
             else:
                 logger.debug('reading from exsiting file handle (data from /var/dc/outgoing_msgs/*)')
-                try: 
+                try:
                     msg = next(self.outgoing_cur_file).strip() #reads the next message in file, strips the \n
                     return msg
                 except:
@@ -448,44 +448,44 @@ class DataCache:
                     if os.path.isfile(self.outgoing_cur_file.name): #make sure the file exists
                         os.remove(self.outgoing_cur_file.name) #delete the file
                     self.outgoing_cur_file = '' #reset to empty string
-                
+
         #If there are no messages stored as files, pull messages from the queues
         else:
             logger.debug('trying to get message from queue...')
             #Are there any messages available?
             if len(self.outgoing_available_queues) == 0: #no messages available
                 #logger.debug('No messages available.')
-                return None 
+                return None
             else:
                 #Calls the function that returns the highest priority tuple in the list
                 cache_index = self.get_priority() #returns the index of the highest priority queue in fifo buffer
-                
+
                 sender_p, msg_p = cache_index
                 logger.debug("sender_p: %s msg_p: %s" % (str(sender_p), str(msg_p) ))
-                
+
                 current_q = self.outgoing_bffr[sender_p - 1][msg_p - 1]
-            
+
                 #checks if the queue is empty
                 if current_q.empty():
                     logger.debug("current_q.empty")
-                    #removes it from the list of available queues 
-                    self.outgoing_available_queues.remove(cache_index) 
+                    #removes it from the list of available queues
+                    self.outgoing_available_queues.remove(cache_index)
                 else:
                     logger.debug("getting message from current_q, size: %d" % (current_q.qsize()))
                     self.msg_counter -= 1 #decrements the counter by 1
                     return current_q.get()
-                    
+
         return None
-                        
-        
+
+
     def incoming_pull(self,dev):
-        """ 
-            Function that retrieves and removes incoming messages from the incoming buffer. Searches through all of the message priority queues for the specified device to return the highest priority message first. 
-        
+        """
+            Function that retrieves and removes incoming messages from the incoming buffer. Searches through all of the message priority queues for the specified device to return the highest priority message first.
+
             :param int dev: Specifies the device location in the matrix.
-        """ 
-    
-        #continues until something is returned. 
+        """
+
+        #continues until something is returned.
         #Neccessary to check for files whose messages have all been read and sent but have not yet been deleted
         while True:
             #are there incoming messages stored as files for the specified dev?
@@ -497,62 +497,62 @@ class DataCache:
                 #is there a file generator object already stored as the current file?
                 if self.incoming_cur_file[dev - 1] == '':
                     #set the first file in the incoming_stored/dev directory as the current file generator object
-                    self.incoming_cur_file[dev -1] = open(incoming_msg_files[0]) 
-                    try: 
+                    self.incoming_cur_file[dev -1] = open(incoming_msg_files[0])
+                    try:
                         msg = next(self.incoming_cur_file[dev -1]).strip() #reads the next message in file, strips the \n
                         return msg
-                        
+
                     except:
                         self.incoming_cur_file[dev -1].close() #close the file if stop iterator error occurs
                         if os.path.isfile(self.incoming_cur_file[dev -1].name): #make sure the file exists
                             os.remove(self.incoming_cur_file[dev -1].name)#delete the file
                         self.incoming_cur_file[dev -1] = '' #reset to empty string
                 else:
-                    try: 
+                    try:
                         msg = next(self.incoming_cur_file[dev -1]).strip() #reads the next message in file, strips the \n
                         return msg
-                        
+
                     except:
                         self.incoming_cur_file[dev -1].close() #close the file if stop iterator error occurs
                         if os.path.isfile(self.incoming_cur_file[dev -1].name): #make sure the file exists
                             os.remove(self.incoming_cur_file[dev -1].name)#delete the file
                         self.incoming_cur_file[dev -1] = '' #reset to empty string
-        
+
             #if no messages are stored in files, check for messages in queues
             else:
-                try: 
+                try:
                     #checks to see if there are messages for the device
                     #results in an error if that dev isn't in the list
                     self.incoming_available_queues.index(dev) #TODO Probably need a better way to do this
-                    msg = 'False' #default 
+                    msg = 'False' #default
                     for i in range(4,-1,-1): # loop to search for messages starting with highest priority
-                        if self.incoming_bffr[dev - 1][i].empty(): #checks for an empty queue 
+                        if self.incoming_bffr[dev - 1][i].empty(): #checks for an empty queue
                             pass #do nothing
-                        else: 
+                        else:
                             #decrements the counter by 1 each time a message is removed
-                            self.msg_counter -= 1 
+                            self.msg_counter -= 1
                             msg = self.incoming_bffr[dev - 1][i].get() #sets to message and breaks the loop
                             break
                     #if the message is still false (i.e. no messages are actually available for that device), remove dev from list
                     if msg == 'False':
                         self.incoming_available_queues.remove(dev)
                     return msg
-                    
+
                 except:
                     #returns false if no messages are available
                     return None
-                    
-           
+
+
     def DC_flush(self):
-        """ 
+        """
             Function that temporary closes the Data Cache server to write the outgoing and incoming queues into files.
             This function is called when the data cache reaches its maximum number of messages it can store in RAM or before the NC is shutdown by WagMan
-        """ 
+        """
         self.flush = 1
         cur_date = str(datetime.datetime.now().strftime('%Y%m%d%H:%M:%S'))
         logger.debug('Flushing at ' + cur_date)
         try:
-        
+
             filename = '/var/dc/outgoing_msgs/' + cur_date #file name is date of flush
             f = open(filename, 'w')
             logger.debug('Flushing outgoing')
@@ -563,7 +563,7 @@ class DataCache:
                     break
                 else:
                     #write the message to the file
-                    f.write(msg + '\n') 
+                    f.write(msg + '\n')
             f.close()
             logger.debug('Flushing incoming')
             for i in PRIORITY_ORDER: #write all incoming messages to file
@@ -589,29 +589,29 @@ class DataCache:
                     else:
                         #write the message to the file
                         f.write(msg + '\n')
-                        
-            if not stop_process:        
+
+            if not stop_process:
                 self.flush = 0 #restart server
                 logger.debug('Data cache restarted')
         except Exception as e:
             logger.error(e)
 
     def get_status(self):
-    #TODO This doesn't work. Needs to be a unix socket to communicate with the data cache as it is running. 
+    #TODO This doesn't work. Needs to be a unix socket to communicate with the data cache as it is running.
     #TODO Socket needs to send a status request message and data cache needs to respond with Data_cache.self.msg_counter
         """
-    
-            Function that returns the number of messages currently stored in the data cache. 
-    
+
+            Function that returns the number of messages currently stored in the data cache.
+
         """
-    
+
         return self.msg_counter
 
 
     def make_bffr(self, length):
-        """ 
-            Generates a buffer, which is a matrix containing queues. 
-    
+        """
+            Generates a buffer, which is a matrix containing queues.
+
             :param int length: Specifies the number of rows in the matrix
             :rtype list buff: The matrix containing queues
         """
@@ -623,14 +623,14 @@ class DataCache:
                 buff_in.append(Queue())
             buff.append(buff_in)
         return buff
-                
+
 
     def get_priority(self):
-        """ 
+        """
             Function that finds the highest priority queue in the list. Highest priority is determined by comparing message priority and device priority.
-        
+
             :rtype: tuple(device_priority, message_priority) or string 'False'
-        """ 
+        """
         #returns False if there are no messages available
         if len(self.outgoing_available_queues) == 0:
             return 'False'
@@ -652,13 +652,13 @@ class DataCache:
 
 
 if __name__ == "__main__":
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--logging', dest='enable_logging', help='write to log files instead of stdout', action='store_true')
     parser.add_argument('--force', dest='force', help='kill other processes and start', action='store_true')
     args = parser.parse_args()
-    
-        
+
+
     if args.enable_logging:
         # 5 times 10MB
         sys.stdout.write('logging to '+LOG_FILENAME+'\n')
@@ -666,23 +666,23 @@ if __name__ == "__main__":
         if not os.path.isdir(log_dir):
             os.makedirs(log_dir)
         handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=1485760, backupCount=5)
-    
+
         handler.setFormatter(formatter)
         root_logger.handlers = []
         root_logger.addHandler(handler)
-   
-        
-    
+
+
+
     try:
-        
+
         with PidFile(pid_file, force=args.force, name=os.path.basename(__file__) ):
             dc = DataCache()
-    
+
             dc.run()
-            
+
     except AlreadyRunning as e:
         logger.error(str(e))
-        logger.error("Please use supervisorctl to start and stop this script.")    
+        logger.error("Please use supervisorctl to start and stop this script.")
     except KeyboardInterrupt as k:
         #terminate the external communication processes
         #for name, subhash in name2func.iteritems():
@@ -691,6 +691,5 @@ if __name__ == "__main__":
         logger.info('exiting...')
     except Exception as e:
         logger.error("Error (%s): %s" % ( str(type(e)), str(e)))
-  
+
     #lists keeping track of which queues currently have messages stored in them
-    

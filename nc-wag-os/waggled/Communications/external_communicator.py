@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
-
 import socket, os, os.path, time, pika, logging, datetime, sys
-from multiprocessing import Process, Queue, Value
+from multiprocessing import Queue, Value
 import multiprocessing
-sys.path.append('../../../')
 from waggle.protocol.PacketHandler import *
-sys.path.append('../../../')
 from waggle.protocol.utils import packetmaker
 sys.path.append('../NC/')
 from NC_configuration import *

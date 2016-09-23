@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-
-import time, serial, sys, datetime, pprint
-sys.path.append('../../../')
+'''
+This connects to a sensor board via a serial connection. It reads and parses
+the sensor data into meaningful information, packs, and sends the data packet
+to the cloud.
+'''
+import time
+import serial
+import sys
+import datetime
+import pprint
 from waggle.protocol.utils import packetmaker
 sys.path.append('../Communications/')
 from internal_communicator import send
 
-"""
-   This connects to a sensor board via a serial connection. It reads and parses the sensor data into meaningful information, packs, and sends the data packet to the cloud. 
-   
-   
-"""
 
 print('Beginning sensor script...')
 
@@ -70,32 +72,32 @@ reading_note = [["PTAT",
                     "RMS_3Axis",
                     "",
                     "RH",
-                    "", 
+                    "",
                     "RH",
                     "non-standard",
                     "non-standard",
-                    "Voltage_Divider_5V_PDV_Tap_4K7_GND", 
+                    "Voltage_Divider_5V_PDV_Tap_4K7_GND",
                     "RH",
                     "Voltage_Divider_5V_NTC_Tap_68K_GND",
                     "",
                     "",
                     "",
-                    "RH", 
-                    "", 
+                    "RH",
+                    "",
                     "Barometric",
                     "",
-                    "", 
-                    "", 
-                    ""]    
+                    "",
+                    "",
+                    ""]
 
 sensor_array_index = [2,7,7,7,7,5,5,12,12,15,14,0,13,3,8,9,10,10,6,6,11,4,4,1]
 
-sensor_names = ["PDV_P8104.API.2006", "MLX90614ESF-DAA.Melexis.008-2013", "D6T-44L-06.Omron.2012", "Thermistor_NTC_PR103J2.US_Sensor.2003", 
-        "HIH6130.Honeywell.2011", "SHT15.Sensirion.4_3-2010", "BMP180.Bosch.2_5-2013", "MMA8452Q.Freescale.8_1-2013", 
-        "DS18B20.Maxim.2008", "TMP421.Texas_Instruments.2012", "RHT03.Maxdetect.2011", "TMP102.Texas_Instruments.2008", 
+sensor_names = ["PDV_P8104.API.2006", "MLX90614ESF-DAA.Melexis.008-2013", "D6T-44L-06.Omron.2012", "Thermistor_NTC_PR103J2.US_Sensor.2003",
+        "HIH6130.Honeywell.2011", "SHT15.Sensirion.4_3-2010", "BMP180.Bosch.2_5-2013", "MMA8452Q.Freescale.8_1-2013",
+        "DS18B20.Maxim.2008", "TMP421.Texas_Instruments.2012", "RHT03.Maxdetect.2011", "TMP102.Texas_Instruments.2008",
         "SHT75.Sensirion.5_2011", "HIH4030.Honeywell.2008", "GA1A1S201WP.Sharp.2007", "MAX4466.Maxim.1_2001"]
-        
-        
+
+
 
 # convert above tables into hash
 output2sensor={}
@@ -114,8 +116,8 @@ for i in range(len(Sensor_Index)):
     sensors[sensor_name][s_output]['data_type']=reading_type[i]
     sensors[sensor_name][s_output]['unit']=reading_unit[i]
     sensors[sensor_name][s_output]['reading_note']=reading_note[i]
-    
-   
+
+
 pp = pprint.PrettyPrinter(indent=4)
 pp.pprint(sensors)
 
@@ -131,7 +133,7 @@ try:
                 wxsensor = serial.Serial('/dev/ttyACM0',57600,timeout=300)
                 wxconnection = True
             except:
-                #Will not work if sensor board is not plugged in. 
+                #Will not work if sensor board is not plugged in.
                 #If sensor board is plugged in, check to see if it is trying to connect to the right port
                 #TODO may want to add a rule to the configuration to specify which port will be used.
                 print("Still waiting for connection... Is the sensor board plugged in?")
@@ -162,23 +164,23 @@ try:
 
                 if sensorDataAvail == True:
                     if sensorsData[0] == 'WXSensor' and sensorsData[-1]=='WXSensor\r\n':
-                        
+
                         timestamp_utc = datetime.datetime.utcnow()
                         timestamp_date = timestamp_utc.date()
                         timestamp_epoch =  int(float(timestamp_utc.strftime("%s.%f"))* 1000)
-                        
-                        
-                        # extract sensor name    
+
+
+                        # extract sensor name
                         output_array = sensorsData[1].split(':')
                         output_name = output_array[0]
-                       
-                        
+
+
                         try:
                             sensor_name = output2sensor[output_name]
                         except Exception as e:
                             print(("Output %s unknown" % (output_name)))
                             sensor_name = ''
-                        
+
                         if sensor_name:
                             sendData=[str(timestamp_date), 'env_sense', '1', 'default', str(timestamp_epoch), sensor_name, "meta.txt", sensorsData[1:-1]]
                             print(('Sending data: ', str(sendData)))
@@ -186,15 +188,12 @@ try:
                             packet = packetmaker.make_data_packet(sendData)
                             for pack in packet:
                                 send(pack)
-                            
-                                
-                       
-                        
+
+
+
+
 except KeyboardInterrupt as k:
     try:
         wxsensor.close()
-    except: 
+    except:
         pass
-
-
-
