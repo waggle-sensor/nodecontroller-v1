@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
-import os, os.path, pika, datetime, sys, logging, argparse, re
+import os
+import os.path
+import pika
+import datetime
+import sys
+import logging
+import argparse
+import re
 import logging.handlers
+import subprocess
 sys.path.append('../NC/')
-#from multiprocessing import Process
 from NC_configuration import *
 from external_communicator import *
 from internal_communicator import *
-
-import subprocess
-
 from waggle.protocol.utils.pidfile import PidFile, AlreadyRunning
 
-#pika is a bit too verbose...
+# pika is a bit too verbose...
 logging.getLogger('pika').setLevel(logging.ERROR)
 
 
