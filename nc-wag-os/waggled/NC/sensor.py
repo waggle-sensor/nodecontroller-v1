@@ -2,7 +2,7 @@
 
 import time, serial, sys, datetime, pprint
 sys.path.append('../../../')
-from waggle_protocol.utilities import packetmaker
+from waggle.protocol.utils import packetmaker
 sys.path.append('../Communications/')
 from internal_communicator import send
 

@@ -4,7 +4,7 @@ import socket, os, os.path, time, sys, logging, zmq
 from multiprocessing import Process, Queue
 import multiprocessing
 sys.path.append('../../../')
-from waggle_protocol.protocol.PacketHandler import *
+from waggle.protocol.PacketHandler import *
 sys.path.append('../NC/')
 from NC_configuration import *
 from crcmod.predefined import mkCrcFun

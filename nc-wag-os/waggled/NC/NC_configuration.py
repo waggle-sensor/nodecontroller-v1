@@ -2,7 +2,7 @@
 
 import sys, pika, ssl
 sys.path.append('../../../')
-from waggle_protocol.utilities.packetmaker import *
+from waggle.protocol.utils.packetmaker import *
 import string
 import random
 from multiprocessing import Manager

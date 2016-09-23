@@ -3,7 +3,7 @@ import socket, os, os.path, time, sys, logging
 
 
 sys.path.append('../../../')
-from waggle_protocol.protocol.PacketHandler import *
+from waggle.protocol.PacketHandler import *
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.ERROR)

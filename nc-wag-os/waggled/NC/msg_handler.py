@@ -4,9 +4,9 @@
 
 import os, os.path, sys
 sys.path.append('../../../')
-from waggle_protocol.protocol.PacketHandler import *
+from waggle.protocol.PacketHandler import *
 sys.path.append('../../../')
-from waggle_protocol.utilities import packetmaker
+from waggle.protocol.utils import packetmaker
 sys.path.append('../Communications/')
 from NC_configuration import conf
 

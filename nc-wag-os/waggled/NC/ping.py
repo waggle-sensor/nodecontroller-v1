@@ -3,7 +3,7 @@
 
 import sys
 sys.path.append('../../../')
-from waggle_protocol.utilities import packetmaker
+from waggle.protocol.utils import packetmaker
 sys.path.append('../DataCache/')
 from send2dc import send
 

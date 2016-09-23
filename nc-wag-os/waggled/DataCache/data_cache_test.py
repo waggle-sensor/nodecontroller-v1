@@ -27,22 +27,22 @@ def send2dc(message):
             return None
         logger.debug("Sending data from DC-push queue to Data_Cache socket")
         return "success"
-        
+
 """
 Script to test data cache by sending bulk messages to the data cache.
 """
 if __name__ == "__main__":
-    
+
     start = time.time()
     x = datetime.now()
     packettime = x-x
     sendingtime=x-x
     for i in range(1,10):
         tstart = datetime.now()
-        
+
         packet = packetmaker.make_data_packet("hello world_"+str(i))
         packettime = packettime + (datetime.now()-tstart)
-        
+
         print("huhu")
         logger.info("A")
         for pack in packet:
@@ -57,14 +57,13 @@ if __name__ == "__main__":
                     raise
                 except Exception as e:
                     logger.error("Could not send message to %s:%d : %s" % (self.HOST, self.PORT, str(e)))
-        
+
                     time.sleep(2)
                     continue
                 break
-                
+
     end = time.time()
     print("time in seconds: %s" % (end - start))
-    
+
     print("packettime: ", packettime.total_seconds())
     print("sendingtime: ", sendingtime.total_seconds())
-

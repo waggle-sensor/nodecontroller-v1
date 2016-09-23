@@ -4,7 +4,7 @@ from multiprocessing import Queue
 #from daemon import Daemon
 import sys, os, os.path, time, atexit, socket, datetime, argparse
 sys.path.append('../../../')
-from waggle_protocol.protocol.PacketHandler import *
+from waggle.protocol.PacketHandler import *
 sys.path.append('../NC/')
 from NC_configuration import *
 sys.path.append('../NC/')
@@ -14,7 +14,7 @@ import logging, logging.handlers
 import signal
 
 
-from waggle_protocol.utilities.pidfile import PidFile, AlreadyRunning
+from waggle.protocol.utils.pidfile import PidFile, AlreadyRunning
 
 
 
