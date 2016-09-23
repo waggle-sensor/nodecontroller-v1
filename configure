@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# install pywaggle module
+pip install git+https://github.com/waggle-sensor/pywaggle
+pip3 install git+https://github.com/waggle-sensor/pywaggle
+
 while [[ $# -gt 0 ]]; do
   key="$1"
   echo "Key: $key"
@@ -19,7 +23,7 @@ done
 
 set -e
 set -x
-#set -v 
+#set -v
 #This is configures an odroid to be a node controller
 export waggle_dir="$(pwd)"
 export waggled_dir="${waggle_dir}/nc-wag-os/waggled"
@@ -40,7 +44,7 @@ mkdir -p /var/log/waggle/
 # Create symlink if repository is not already at the expected location
 if [ `pwd` != "/usr/lib/waggle/nodecontroller" ] ; then
   mkdir -p /usr/lib/waggle/
-  if [ -d /usr/lib/waggle/nodecontroller ] && [ ! -L /usr/lib/waggle/nodecontroller ] ; then 
+  if [ -d /usr/lib/waggle/nodecontroller ] && [ ! -L /usr/lib/waggle/nodecontroller ] ; then
     echo "Error: Directory /usr/lib/waggle/nodecontroller already exists."
     exit 1
   fi
@@ -88,8 +92,8 @@ if [ ${BEEHIVE_HOST}x == "x" ] ; then
   BEEHIVE_HOST="beehive1.mcs.anl.gov"
 fi
 
-#We have to move away from manual input, and take it as an argument, with the 
-#default beehive server IP set to localhost. Also, we need a way to let the 
+#We have to move away from manual input, and take it as an argument, with the
+#default beehive server IP set to localhost. Also, we need a way to let the
 #user know that a wrong server was chosen.
 echo "The beehive server is set to ${BEEHIVE_HOST}."
 sleep 1
@@ -97,7 +101,7 @@ echo ${BEEHIVE_HOST} > /etc/waggle/server_host
 
 
 #make directory to store data cache log files and stored messages
-#make / as large as possible, all the cached data gets stored here. 
+#make / as large as possible, all the cached data gets stored here.
 mkdir -p /var/dc
 #store outoing messages here
 mkdir -p /var/dc/outgoing_msgs
@@ -125,4 +129,3 @@ cd wagman
 
 
 echo "done"
-
