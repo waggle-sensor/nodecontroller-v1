@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# install pywaggle module
+apt-get update && apt-get install python-pip python3-pip
+
 pip install git+https://github.com/waggle-sensor/pywaggle
 pip3 install git+https://github.com/waggle-sensor/pywaggle
 
