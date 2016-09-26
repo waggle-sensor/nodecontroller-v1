@@ -1,5 +1,6 @@
 #!/bin/bash
 
+CONFIGURE_SYSTEM=0
 while [[ $# -gt 0 ]]; do
   key="$1"
   echo "Key: $key"
@@ -11,11 +12,18 @@ while [[ $# -gt 0 ]]; do
     --server=*)
       BEEHIVE_HOST="${key#*=}"
       ;;
+    --system)
+      CONFIGURE_SYSTEM=1
+      ;;
       *)
       ;;
   esac
   shift
 done
+
+if [ $CONFIGURE_SYSTEM -eq 1 ]; then
+./scripts/configure-system.sh
+fi
 
 set -e
 set -x
