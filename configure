@@ -25,6 +25,9 @@ if [ $CONFIGURE_SYSTEM -eq 1 ]; then
 ./scripts/configure-system.sh
 fi
 
+pip install git+https://github.com/waggle-sensor/pywaggle
+pip3 install git+https://github.com/waggle-sensor/pywaggle
+
 set -e
 set -x
 #set -v 
