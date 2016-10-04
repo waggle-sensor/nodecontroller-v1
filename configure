@@ -21,8 +21,12 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+export current_dir="$(pwd)"
+
 if [ $CONFIGURE_SYSTEM -eq 1 ]; then
-./scripts/configure-system.sh
+  echo "configuring system..."
+  ./scripts/configure-system.sh
+  cd $current_dir
 fi
 
 pip install git+https://github.com/waggle-sensor/pywaggle
@@ -130,6 +134,13 @@ rm -f /etc/supervisor/conf.d/waggle_*
 cp ${waggle_dir}/upstart/waggle-* /etc/init/
 rm -f ${waggle_dir}/upstart/waggle_*
 
+
+cd ${current_dir}/device_rules/atmel_boards
+./install.sh
+
+
+cd ${current_dir}/device_rules/wwan_modems
+./install.sh
 
 cd wagman
 ./configure
