@@ -77,7 +77,7 @@ if [ ! -e /etc/waggle/node_controller_host ] ; then
 fi
 
 if [ ! -e /etc/waggle/node_id ] ; then
- source /usr/lib/waggle/core/create_node_id.sh
+ source /usr/lib/waggle/core/scripts/create_node_id.sh
 fi
 
 export NODE_ID=`cat /etc/waggle/node_id`
