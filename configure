@@ -142,7 +142,7 @@ cd ${current_dir}/device_rules/atmel_boards
 cd ${current_dir}/device_rules/wwan_modems
 ./install.sh
 
-cd wagman
+cd ${current_dir}/wagman
 ./configure
 
 
