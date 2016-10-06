@@ -146,6 +146,8 @@ def check_wagman_status(socket):
   try:
     while True:
       message = socket.recv_string()
+      if 'error: not connected to wagman' in message:
+        return False
   except zmq.ZMQError:
     pass
 
