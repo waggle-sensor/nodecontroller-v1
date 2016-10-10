@@ -427,9 +427,9 @@ LAST_UPDATED = 'last_updated'
 RESULT = 'result'
 MSG = 'message'
 
+logging.info("Wellness service started")
 while True:
   current_time = time.time()
-  logging.info("Wellness service started")
 
   # Recovery status check
   if in_recovery():
@@ -462,9 +462,11 @@ while True:
         item[MSG] = 'Function %s call failed: %s' % (str(func), str(e))
 
       if not result and report:
-        logging.info("Failure in checking %s" % str({'entity':entity}.update(item)))
+        logging.info("Failure in checking %s" % str({'category':category,'entity':entity}.update(item)))
         reporting.append({'entity':entity}.update(item))
 
+      logging.debug("update performed %s:%s -> %s" % (category, entity, str(item)))
+      item[LAST_UPDATED] = time.time()
       status[category][entity] = item
 
   if reporting:

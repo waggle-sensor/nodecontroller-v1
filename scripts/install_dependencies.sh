@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -x
 set -e
 apt-get install -y \
@@ -6,6 +7,14 @@ apt-get install -y \
     python-pip \
     && \
     pip install crcmod
+
+# install rabbitmq server
+echo 'deb http://www.rabbitmq.com/debian/ testing main' | sudo tee /etc/apt/sources.list.d/rabbitmq.list
+
+wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | sudo apt-key add -
+
+apt-get update
+apt-get install -y rabbitmq-server
 
 #install pika package from the git repo.
 cd nc-wag-os/packages/python/
