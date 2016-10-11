@@ -12,7 +12,7 @@ echo -e "127.0.0.1\tnodecontroller" >> /etc/hosts
 
 # Restrict SSH connections to local port bindings and ethernet card subnet
 sed -i 's/^#ListenAddress ::$/ListenAddress 127.0.0.1/' /etc/ssh/sshd_config
-sed -i 's/^#ListenAddress 0.0.0.0$/ListenAddress 10.31.81.10/' /etc/ssh/sshd_c
+sed -i 's/^#ListenAddress 0.0.0.0$/ListenAddress 10.31.81.10/' /etc/ssh/sshd_config
 
 cp ./etc/interfaces /etc/network/interfaces
 
