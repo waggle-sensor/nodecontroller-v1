@@ -21,9 +21,16 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+export current_dir="$(pwd)"
+
 if [ $CONFIGURE_SYSTEM -eq 1 ]; then
-./scripts/configure-system.sh
+  echo "configuring system..."
+  ./scripts/configure-system.sh
+  cd $current_dir
 fi
+
+pip install git+https://github.com/waggle-sensor/pywaggle
+pip3 install git+https://github.com/waggle-sensor/pywaggle
 
 set -e
 set -x
@@ -70,7 +77,7 @@ if [ ! -e /etc/waggle/node_controller_host ] ; then
 fi
 
 if [ ! -e /etc/waggle/node_id ] ; then
- source /usr/lib/waggle/waggle_image/create_node_id.sh
+ source /usr/lib/waggle/core/scripts/create_node_id.sh
 fi
 
 export NODE_ID=`cat /etc/waggle/node_id`
@@ -128,7 +135,14 @@ cp ${waggle_dir}/upstart/waggle-* /etc/init/
 rm -f ${waggle_dir}/upstart/waggle_*
 
 
-cd wagman
+cd ${current_dir}/device_rules/atmel_boards
+./install.sh
+
+
+cd ${current_dir}/device_rules/wwan_modems
+./install.sh
+
+cd ${current_dir}/wagman
 ./configure
 
 
