@@ -1,0 +1,13 @@
+[Unit]
+Description=Waggle data cache for sensor data. (Deprecated?)
+After=network.target
+
+[Service]
+WorkingDirectory=/usr/lib/waggle/nodecontroller/nc-wag-os/waggled/DataCache
+ExecStart=./Data_Cache.py --force --logging
+
+Restart=Always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
