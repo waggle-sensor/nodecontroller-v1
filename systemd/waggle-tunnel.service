@@ -1,5 +1,5 @@
 [Unit]
-Description=Opens a reverse SSH tunnel to the cloud.
+Description=Maintains an SSH reverse tunnel on Beehive.
 After=network.target
 
 [Service]
