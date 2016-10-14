@@ -2,10 +2,10 @@
 # Include files from /etc/network/interfaces.d:
 # created by /usr/lib/waggle/nodecontroller/scripts/configure-system.sh
 
-auto lo INTERFACE_NAME
+auto lo eth0
 iface lo inet loopback
 
-iface INTERFACE_NAME inet static
+iface eth0 inet static
       address 10.31.81.10
       netmask 255.255.255.0
       #gateway 10.31.81.10

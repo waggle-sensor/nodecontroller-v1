@@ -15,8 +15,6 @@ sed -i 's/^#ListenAddress ::$/ListenAddress 127.0.0.1/' /etc/ssh/sshd_config
 sed -i 's/^#ListenAddress 0.0.0.0$/ListenAddress 10.31.81.10/' /etc/ssh/sshd_config
 
 cp ./etc/interfaces /etc/network/interfaces
-interface_name="enx${MAC_STRING}"
-sed -i 's/INTERFACE_NAME/${interface_name}/' /etc/network/interfaces
 
 # set AoT_key
 mkdir -p /home/waggle/.ssh/
