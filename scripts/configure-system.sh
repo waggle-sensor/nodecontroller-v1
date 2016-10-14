@@ -31,13 +31,9 @@ echo >> /home/waggle/.ssh/authorized_keys
 echo "from=\"10.31.81.5?\" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4ohQv1Qksg2sLIqpvjJuZEsIkeLfbPusEaJQerRCqI71g8hwBkED3BBv5FehLcezTg+cFJFhf2vBGV5SbV0NzbouIM+n0lAr6+Ei/XYjO0B1juDm6cUmloD4HSzQWv+cSyNmb7aXjup7V0GP1DZH3zlmvwguhMUTDrWxQxDpoV28m72aZ4qPH7VmQIeN/JG3BF9b9F8P4myOPGuk5XTjY1rVG+1Tm2mxw0L3WuL6w3DsiUrvlXsGE72KcyFBDiFqOHIdnIYWXDLZz61KXctVLPVLMevwU0YyWg70F9pb0d2LZt7Ztp9GxXBRj5WnU9IClaRh58RsYGhPjdfGuoC3P AoT_guest_node_key" >> /home/waggle/.ssh/authorized_keys
 echo >> /home/waggle/.ssh/authorized_keys
 
-# Ensure that RabbitMQ server is running.
-service rabbitmq-server start
+# Setup RabbitMQ config files.
+cp -r ./etc/rabbitmq /etc/rabbitmq
 
-# Enable RabbitMQ plugins.
-rabbitmq-plugins enable rabbitmq_management rabbitmq_shovel rabbitmq_shovel_management
-
-# Configure RabbitMQ shovels.
-rabbitmqctl set_parameter shovel data-shovel "{\"src-uri\": \"amqp://localhost\", \"src-queue\": \"data\", \"dest-uri\": \"amqps://node:waggle@beehive1.mcs.anl.gov:23181?cacertfile=/usr/lib/waggle/SSL/waggleca/cacert.pem&certfile=/usr/lib/waggle/SSL/node/cert.pem&keyfile=/usr/lib/waggle/SSL/node/key.pem&verify=verify_peer\", \"dest-exchange\": \"data-pipeline-in\", \"ack-mode\": \"on-confirm\", \"reconnect-delay\": 60, \"publish-properties\": {\"delivery_mode\": 2, \"reply_to\": \"$WAGGLE_ID\"}}"
-rabbitmqctl set_parameter shovel logs-shovel "{\"src-uri\": \"amqp://localhost\", \"src-queue\": \"logs\", \"dest-uri\": \"amqps://node:waggle@beehive1.mcs.anl.gov:23181?cacertfile=/usr/lib/waggle/SSL/waggleca/cacert.pem&certfile=/usr/lib/waggle/SSL/node/cert.pem&keyfile=/usr/lib/waggle/SSL/node/key.pem&verify=verify_peer\", \"dest-exchange\": \"logs\", \"ack-mode\": \"on-confirm\", \"reconnect-delay\": 60, \"publish-properties\": {\"delivery_mode\": 2, \"reply_to\": \"$WAGGLE_ID\"}}"
-rabbitmqctl set_parameter shovel image-shovel "{\"src-uri\": \"amqp://localhost\", \"src-queue\": \"images\", \"dest-uri\": \"amqps://node:waggle@beehive1.mcs.anl.gov:23181?cacertfile=/usr/lib/waggle/SSL/waggleca/cacert.pem&certfile=/usr/lib/waggle/SSL/node/cert.pem&keyfile=/usr/lib/waggle/SSL/node/key.pem&verify=verify_peer\", \"dest-exchange\": \"images\", \"ack-mode\": \"on-confirm\", \"reconnect-delay\": 60, \"publish-properties\": {\"delivery_mode\": 2, \"reply_to\": \"$WAGGLE_ID\"}}"
+# Just in case for now...ideally this would be in /etc/envinronment already.
+WAGGLE_ID=$(ip link | awk '/ether 00:1e:06/ { print $2 }' | sed 's/://g')
+sed -i -e "s/%WAGGLE_ID%/$WAGGLE_ID/" /etc/rabbitmq/rabbitmq.config
