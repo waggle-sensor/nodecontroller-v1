@@ -131,8 +131,10 @@ rm -f /etc/supervisor/conf.d/waggle_*
 
 
 # copy upstart scripts
-cp ${waggle_dir}/upstart/waggle-* /etc/init/
-rm -f ${waggle_dir}/upstart/waggle_*
+#cp ${waggle_dir}/upstart/waggle-* /etc/init/
+
+# copy systemd scripts
+cp ${waggle_dir}/systemd/waggle-* /etc/systemd/system
 
 
 cd ${current_dir}/device_rules/atmel_boards
