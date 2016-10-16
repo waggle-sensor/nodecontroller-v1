@@ -35,9 +35,8 @@ pip3 install git+https://github.com/waggle-sensor/pywaggle
 set -e
 set -x
 #set -v
-#This is configures an odroid to be a node controller
-export waggle_dir="$(pwd)"
-export waggled_dir="${waggle_dir}/nc-wag-os/waggled"
+#This configures an odroid to be a node controller
+export waggled_dir="${current_dir}/nc-wag-os/waggled"
 
 export current_dir="$(pwd)"
 
@@ -131,10 +130,16 @@ rm -f /etc/supervisor/conf.d/waggle_*
 
 
 # copy upstart scripts
-#cp ${waggle_dir}/upstart/waggle-* /etc/init/
+#cp ${current_dir}/upstart/waggle-* /etc/init/
 
 # copy systemd scripts
-cp ${waggle_dir}/systemd/waggle-* /etc/systemd/system
+cp ${current_dir}/systemd/waggle-* /etc/systemd/system
+systemctl enable waggle-communications.service
+systemctl enable waggle-data-cache.service
+systemctl enable waggle-reverse-tunnel.service
+systemctl enable waggle-wagman-publisher.service
+systemctl enable waggle-wagman-server.service
+
 
 
 cd ${current_dir}/device_rules/atmel_boards
