@@ -50,7 +50,7 @@ def reset_deadman_trigger():
 def log_message(message):
   os.system("logger -t wellness " + message)
 
-def send_to_beehive(type="INFO", data):
+def send_to_beehive(data, type="INFO"):
   """
     Send message to beehive through RabbitMQ running on the node
   """
@@ -456,7 +456,7 @@ MSG = 'message'
 
 logging.info("Wellness service started")
 while True:
-  current_time = time.time()
+  # current_time = time.time()
 
   # Recovery status check
   if in_recovery():
@@ -489,8 +489,10 @@ while True:
         item[MSG] = 'Function %s call failed: %s' % (str(func), str(e))
 
       if not result and report:
-        logging.info("Failure in %s" % str({'category':category,'entity':entity}.update(item)))
-        reporting.append({'entity':entity}.update(item))
+        log = {'category':category,'entity':entity}
+        log.update(item)
+        logging.info("Failure in %s" % str(log))
+        reporting.append(log)
 
       logging.debug("update performed %s:%s -> %s" % (category, entity, str(item)))
       item[LAST_UPDATED] = time.time()
