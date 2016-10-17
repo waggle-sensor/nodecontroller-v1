@@ -3,7 +3,7 @@ Description=Publishes command and log data from the Wagman.
 After=network.target
 
 [Service]
-ExecStart=python3 /usr/lib/waggle/nodecontroller/wagman/wagman-publisher.py
+ExecStart=/usr/lib/waggle/nodecontroller/wagman/wagman-publisher.py
 
 Restart=always
 RestartSec=10
