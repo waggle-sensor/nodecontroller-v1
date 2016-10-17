@@ -12,10 +12,12 @@ import logging
 import sys
 import time
 import zmq
+import waggle.logging
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
+beehive_reporter = waggle.logging.getLogger('wellness')
 
 ############################
 ##### Helper Functions #####
@@ -48,11 +50,18 @@ def reset_deadman_trigger():
 def log_message(message):
   os.system("logger -t wellness " + message)
 
-def send_to_beehive(data):
+def send_to_beehive(type="INFO", data):
   """
     Send message to beehive through RabbitMQ running on the node
   """
-  dummy = []
+  if type == "INFO":
+    beehive_reporter.info(data)
+  elif type == "ERROR":
+    beehive_reporter.error(data)
+  elif type == "DEBUG":
+    beehive_reporter.debug(data)
+  else:
+    beehive_reporter.log(data)
 
 
 ###########################
@@ -217,6 +226,7 @@ class wagmanListener(threading.Thread):
     self.nc_hb = self.gn_hb = self.cs_hb = 0
     self.status = {}
     self.currents = self.temp = self.hb = {'nc':-100, 'gn':-100, 'cs':-100}
+    self.error = ""
 
   def close(self):
     self.isClosed = True
@@ -237,7 +247,9 @@ class wagmanListener(threading.Thread):
       self.isConnected = False
 
   def get(self, key):
-    if 'status' in key:
+    if 'error' in key:
+      return self.error
+    elif 'status' in key:
       return str(self.status)
     elif 'current' in key:
       return str(self.currents)
@@ -246,7 +258,7 @@ class wagmanListener(threading.Thread):
     elif 'hb' in key or 'heartbeat' in key:
       return str(self.hb)
     else:
-      return "No information requested"
+      return ""
 
   def run(self):
     while not self.isClosed:
@@ -263,6 +275,9 @@ class wagmanListener(threading.Thread):
         continue
 
       prefix, _, content = message.partition(':')
+      if prefix == "error":
+        self.error = content
+        continue
       prefix, _, content = (content.strip()).partition(' ')
 
       #********************************************#******************************************#
@@ -348,6 +363,16 @@ def check_wagman_status():
   else:
     return False, "Wagman listener not available"
 
+# Check that we can read any WagMan status messages
+def check_wagman_failure():
+  if not wagman_status.isClosed:
+    msg = wagman_status.get('error')
+    if not msg:
+      return False, "Warning %s" % msg
+    return True, msg
+  else:
+    return False, "Wagman listener not available"
+
 def get_wagman_curr():
   """
     Get from Wagman the currents being consumed in each power tab 
@@ -400,6 +425,7 @@ checklist = [
   ['system', 'Local sshd', check_local_sshd, 60, False],
   # Wagman check
   ['wagman', 'Wagman status', check_wagman_status, 60, False],
+  ['wagman', 'Wagman Comm. failure', check_wagman_failure, 1, True],
   ['wagman', 'Wagman power consumption', get_wagman_curr, 60, True],
   ['wagman', 'Wagman temp', get_wagman_temp, 60, True],
   ['wagman', 'Wagman heartbeats', get_wagman_hb, 6, False],
@@ -462,7 +488,7 @@ while True:
         item[MSG] = 'Function %s call failed: %s' % (str(func), str(e))
 
       if not result and report:
-        logging.info("Failure in checking %s" % str({'category':category,'entity':entity}.update(item)))
+        logging.info("Failure in %s" % str({'category':category,'entity':entity}.update(item)))
         reporting.append({'entity':entity}.update(item))
 
       logging.debug("update performed %s:%s -> %s" % (category, entity, str(item)))
