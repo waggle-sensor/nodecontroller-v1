@@ -263,14 +263,14 @@ def get_certificates():
                 f.write(CLIENT_KEY_string)
             f.close()
             logger.info("File '%s' has been written." % (CLIENT_KEY_FILE))
-            subprocess.call(['chown', 'waggle:waggle', CLIENT_KEY_FILE])
-            os.chmod(CLIENT_KEY_FILE, 0o600)
+            subprocess.call(['chown', 'root:beehive', CLIENT_KEY_FILE])
+            os.chmod(CLIENT_KEY_FILE, 0o640)
 
             with open(CLIENT_CERT_FILE, 'w') as f:
                 f.write(CLIENT_CERT_string)
             f.close()
-            subprocess.call(['chown', 'waggle:waggle', CLIENT_CERT_FILE])
-            os.chmod(CLIENT_CERT_FILE, 0o600)
+            subprocess.call(['chown', 'root:beehive', CLIENT_CERT_FILE])
+            os.chmod(CLIENT_CERT_FILE, 0o640)
 
             logger.info("File '%s' has been written." % (CLIENT_CERT_FILE))
 
