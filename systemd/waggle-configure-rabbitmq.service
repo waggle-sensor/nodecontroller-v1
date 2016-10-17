@@ -1,0 +1,10 @@
+[Unit]
+Description=Ensures RabbitMQ configuration files are up to date.
+Before=rabbitmq-server.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/waggle/nodecontroller/scripts/configure-rabbitmq.sh
+
+[Install]
+WantedBy=multi-user.target
