@@ -4,9 +4,9 @@ After=network.target
 
 [Service]
 WorkingDirectory=/usr/lib/waggle/nodecontroller/nc-wag-os/waggled/Communications
-ExecStart=./communications_main.py --force --logging
+ExecStart=/usr/lib/waggle/nodecontroller/nc-wag-os/waggled/Communications/communications_main.py --force --logging
 
-Restart=Always
+Restart=always
 RestartSec=5
 
 [Install]
