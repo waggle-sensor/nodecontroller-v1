@@ -152,7 +152,6 @@ cd ${current_dir}/device_rules/wwan_modems
 cd ${current_dir}/wagman
 ./configure
 
-./scripts/rmq_setup.sh
 
 
 echo "done"
