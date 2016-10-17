@@ -1,0 +1,12 @@
+[Unit]
+Description=Listens for commands to execute on the Wagman.
+After=network.target
+
+[Service]
+ExecStart=python3 /usr/lib/waggle/nodecontroller/wagman/wagman-server.py
+
+Restart=Always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
