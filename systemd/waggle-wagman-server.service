@@ -5,7 +5,7 @@ After=network.target
 [Service]
 ExecStart=python3 /usr/lib/waggle/nodecontroller/wagman/wagman-server.py
 
-Restart=Always
+Restart=always
 RestartSec=10
 
 [Install]

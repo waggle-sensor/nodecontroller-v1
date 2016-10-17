@@ -135,7 +135,7 @@ rm -f /etc/supervisor/conf.d/waggle_*
 # copy systemd scripts
 cp ${current_dir}/systemd/waggle-* /etc/systemd/system
 systemctl enable waggle-communications.service
-systemctl enable waggle-data-cache.service
+#systemctl enable waggle-data-cache.service
 systemctl enable waggle-reverse-tunnel.service
 systemctl enable waggle-wagman-publisher.service
 systemctl enable waggle-wagman-server.service
