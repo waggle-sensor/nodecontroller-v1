@@ -14,7 +14,7 @@ import time
 import zmq
 import waggle.logging
 
-logging.basicConfig(level=logging.INFO,
+logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 beehive_reporter = waggle.logging.getLogger('wellness')
@@ -368,9 +368,9 @@ def check_wagman_status():
 def check_wagman_failure():
   if not wagman_status.isClosed:
     msg = wagman_status.get('error')
-    if not msg:
+    if msg != "":
       return False, "Warning %s" % msg
-    return True, msg
+    return True, "Wagman alive"
   else:
     return False, "Wagman listener not available"
 
