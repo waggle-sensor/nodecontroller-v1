@@ -1,5 +1,7 @@
 #!/bin/bash
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # this will make sure that an empty eMMC card will get the waggle image
 touch /root/do_recovery
 
@@ -30,7 +32,7 @@ echo "from=\"10.31.81.5?\" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4ohQv1Qksg2sLI
 echo >> /home/waggle/.ssh/authorized_keys
 
 # Setup RabbitMQ config files.
-cp -r ./etc/rabbitmq /etc/rabbitmq
+cp -r /usr/lib/waggle/nodecontroller/etc/rabbitmq /etc
 
 # Just in case for now...ideally this would be in /etc/envinronment already.
 WAGGLE_ID=$(ip link | awk '/ether 00:1e:06/ { print $2 }' | sed 's/://g')
