@@ -3,7 +3,6 @@
 set -x
 set -e
 
-
 # python 2
 
 apt-get install -y wvdial autossh bossa-cli curl
