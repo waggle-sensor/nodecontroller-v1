@@ -6,7 +6,7 @@ set -e
 
 # python 2
 
-apt-get install -y wvdial autossh bossa-cli
+apt-get install -y wvdial autossh bossa-cli curl
 
 pip install crcmod
 pip install pyserial
