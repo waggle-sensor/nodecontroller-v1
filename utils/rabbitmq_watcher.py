@@ -2,6 +2,7 @@
 
 import argparse
 import pika
+import time
 
 LOGS_EXCHANGE = 'logs.fanout'
 
@@ -25,15 +26,15 @@ def watch(dest, type='queue'):
 	init()
 	if not channel:
 		print("connection failed")
-		exit()
+		# exit()
 
-	if type == "exchange":
+	if "exchange" in type:
 		result = channel.queue_declare(exclusive=True)
 		channel.queue_bind(exchange=dest, queue=result.method.queue)
-		channel.basic_consume(callback, queue=result.method.queue, no_act=True)
+		channel.basic_consume(callback, queue=result.method.queue, no_ack=True)
 		# channel.basic_consume(callback, exchange=dest, no_act=True)
-	elif type == "queue":
-		channel.basic_consume(callback, queue=dest, no_act=True)
+	elif "queue" in type:
+		channel.basic_consume(callback, queue=dest, no_ack=True)
 	channel.start_consuming()
 
 if __name__ == "__main__":
@@ -47,4 +48,7 @@ if __name__ == "__main__":
 			watch(args.queue)
 		elif args.exchange:
 			watch(args.exchange, type='exchange')
-	except 
+	except (KeyboardInterrupt, Exception) as e:
+		pass
+
+	deinit()

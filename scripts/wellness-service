@@ -469,12 +469,16 @@ while True:
   # Do checking
   # TODO: checking in parallel might be necessary as items in the list increases
   for category, entity, func, period, report in checklist:
+    # Report all for the first time
+    first_time_report = False
+
     # Create item if not exist
     if category not in status:
       status[category] = {}
     if entity not in status[category]:
       status[category][entity] = {}
       status[category][entity][LAST_UPDATED] = time.time() - 100000
+      first_time_report = True
 
     item = status[category][entity]
     # If the item needs to be checked
@@ -492,6 +496,11 @@ while True:
         log = {'category':category,'entity':entity}
         log.update(item)
         logging.info("Failure in %s" % str(log))
+        reporting.append(log)
+      elif first_time_report:
+        log = {'category':category,'entity':entity}
+        log.update(item)
+        logging.info("First time reporting: %s" % str(log))
         reporting.append(log)
 
       logging.debug("update performed %s:%s -> %s" % (category, entity, str(item)))
