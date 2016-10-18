@@ -139,6 +139,7 @@ systemctl enable waggle-communications.service
 systemctl enable waggle-reverse-tunnel.service
 systemctl enable waggle-wagman-publisher.service
 systemctl enable waggle-wagman-server.service
+systemctl enable waggle-configure-rabbitmq.service
 
 
 
