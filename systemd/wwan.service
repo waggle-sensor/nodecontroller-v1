@@ -1,0 +1,9 @@
+[Unit]
+Description=ATT WWAN Client
+
+[Service]
+ExecStart=/usr/bin/wvdial
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=always
+RestartSec=10

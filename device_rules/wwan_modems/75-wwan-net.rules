@@ -1,13 +1,7 @@
 SUBSYSTEM!="usb", ACTION!="add", GOTO="rules_end"
 
 #Product: 6 CDC-ACM Manufacturer: Telit (Multitech QuickCarrier USB-D)
-SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="1bc7", ATTRS{idProduct}=="0021", SYMLINK+="attwwan%n", RUN+="/usr/bin/wvwaggle.sh"
 
-#Product: MC8700 Manufacturer: Sierra Wireless Inc.
-SUBSYSTEM=="tty", KERNEL=="ttyUSB[0-9]*", ATTRS{idVendor}=="1199", ATTRS{idProduct}=="68a3", SYMLINK+="attwwan%n", RUN+="/usr/bin/wvwaggle.sh"
-
-#Product: 6 CDC-ACM Manufacturer: Telit (MultiConnect Cell 100)
-SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="058b", ATTRS{idProduct}=="0041", SYMLINK+="attwwan%n", RUN+="/usr/bin/wvwaggle.sh"
+SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="1bc7", ATTRS{idProduct}=="0021", SYMLINK+="attwwan%n", RUN+="/usr/bin/wvwaggle.sh",  TAG+="systemd", ENV{SYSTEMD_WANTS}="wwan.service"
 
 LABEL="rules_end"
-
