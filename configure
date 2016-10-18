@@ -129,6 +129,10 @@ mkdir -p /var/log/comms
 rm -f /etc/supervisor/conf.d/waggle_*
 
 
+# install RabbitMQ configuration
+cp -r /usr/lib/waggle/nodecontroller/etc/rabbitmq /etc
+
+
 # copy upstart scripts
 #cp ${current_dir}/upstart/waggle-* /etc/init/
 
