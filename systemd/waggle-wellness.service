@@ -1,0 +1,12 @@
+[Unit]
+Description=Monitors node controller status.
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/lib/waggle/nodecontroller/scripts/wellness-service
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
