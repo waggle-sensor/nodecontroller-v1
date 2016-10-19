@@ -37,7 +37,7 @@ def get_beehive_hostname():
   return server_host
 
 def reset_deadman_trigger():
-  file = "/usr/lib/waggle/waggle_image/alive"
+  file = "/usr/lib/waggle/core/alive"
   rc = os.system("touch " + file + " > /dev/null 2>&1")
   if rc != 0:
     return False
@@ -166,7 +166,7 @@ def check_wagman_status(socket):
 #########################
 
 def reset_wagman():
-  os.system("/usr/lib/waggle/waggle_image/scripts/reset_wagman.sh")
+  os.system("/usr/lib/waggle/core/scripts/reset_wagman.sh")
 
 
 # Human readable names for the tests in the same sequence that they are run
