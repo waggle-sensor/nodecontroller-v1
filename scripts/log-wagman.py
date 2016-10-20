@@ -14,22 +14,31 @@ def wagman_output(args):
     return subprocess.check_output(command, shell=True).decode().strip()
 
 
-def catlines(s):
-    return ' '.join(s.strip().split())
+def intlist(s):
+    return list(map(int, s.split()))
 
+
+def parse_version(s):
+    result = {}
+
+    for line in s.splitlines():
+        key, _, value = line.partition(' ')
+        result[key.strip()] = value.strip()
+
+    return result
 
 for attempt in range(10):
     try:
         results = {}
 
         results['id'] = wagman_output('id').lower()
-        results['version'] = catlines(wagman_output('ver'))
+        results['version'] = parse_version(wagman_output('ver'))
         results['uptime'] = int(wagman_output('up'))
-        results['date'] = list(map(int, wagman_output('date').split()))
-        results['current'] = list(map(int, wagman_output('cu').split()))
-        results['therm'] = list(map(int, wagman_output('th').split()))
-        results['heartbeat'] = list(map(int, wagman_output('hb').split()))
-        results['fails'] = list(map(int, wagman_output('fc').split()))
+        results['date'] = intlist(wagman_output('date'))
+        results['current'] = intlist(wagman_output('cu'))
+        results['therm'] = intlist(wagman_output('th'))
+        results['heartbeat'] = intlist(wagman_output('hb'))
+        results['fails'] = intlist(wagman_output('fc'))
         results['media'] = [wagman_output('bs 0'),
                             wagman_output('bs 1')]
 
