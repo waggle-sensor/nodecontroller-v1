@@ -24,14 +24,14 @@ for attempt in range(10):
 
         results['id'] = wagman_output('id').lower()
         results['version'] = catlines(wagman_output('ver'))
-        results['uptime'] = wagman_output('up')
-        results['date'] = wagman_output('date')
-        results['current'] = catlines(wagman_output('cu'))
-        results['therm'] = catlines(wagman_output('th'))
-        results['heartbeat'] = catlines(wagman_output('hb'))
-        results['fails'] = catlines(wagman_output('fc'))
-        results['media'] = ' '.join([wagman_output('bs 0'),
-                                     wagman_output('bs 1')])
+        results['uptime'] = int(wagman_output('up'))
+        results['date'] = list(map(int, wagman_output('date').split()))
+        results['current'] = list(map(int, wagman_output('cu').split()))
+        results['therm'] = list(map(int, wagman_output('th').split()))
+        results['heartbeat'] = list(map(int, wagman_output('hb').split()))
+        results['fails'] = list(map(int, wagman_output('fc').split()))
+        results['media'] = [wagman_output('bs 0'),
+                            wagman_output('bs 1')]
 
         logger.info(json.dumps(results))
         break
