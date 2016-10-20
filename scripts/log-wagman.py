@@ -2,6 +2,7 @@
 import subprocess
 import logging
 import waggle.logging
+import json
 
 
 logger = waggle.logging.getLogger('wagman')
@@ -16,18 +17,6 @@ def wagman_output(args):
 def catlines(s):
     return ' '.join(s.strip().split())
 
-
-template = '''
-id={id}
-version={version}
-uptime={uptime}
-date={date}
-current={current}
-therm={therm}
-heartbeat={heartbeat}
-fails={fails}
-media={media}
-'''.strip()
 
 for attempt in range(10):
     try:
@@ -44,7 +33,7 @@ for attempt in range(10):
         results['media'] = ' '.join([wagman_output('bs 0'),
                                      wagman_output('bs 1')])
 
-        logger.info(template.format(**results))
+        logger.info(json.dumps(results))
         break
     except:
         pass
