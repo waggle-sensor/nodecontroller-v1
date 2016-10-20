@@ -3,7 +3,7 @@ Description=Logs Wagman status periodically.
 
 [Timer]
 OnBootSec=2min
-OnUnitActiveSec=30min
+OnUnitActiveSec=5min
 
 [Install]
 WantedBy=timers.target
