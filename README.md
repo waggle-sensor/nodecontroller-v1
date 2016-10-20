@@ -14,7 +14,6 @@ Alternatively you can do a git clone on any Linux:
 ```bash
 mkdir -p /usr/lib/waggle/
 cd /usr/lib/waggle/
-git clone https://github.com/waggle-sensor/waggle_image.git
 git clone --recursive https://github.com/waggle-sensor/nodecontroller.git
 cd nodecontroller
 ```
