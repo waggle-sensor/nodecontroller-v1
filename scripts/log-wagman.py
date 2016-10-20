@@ -46,6 +46,7 @@ for attempt in range(10):
 
         logger.info(template.format(**results))
         break
-    except Exception as e:
-        print(e)
-        continue
+    except:
+        pass
+else:
+    raise RuntimeError('failed to collect results')
