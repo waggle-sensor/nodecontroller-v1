@@ -1,5 +1,6 @@
 [Unit]
 Description=ATT WWAN Client
+After=multi-user.target
 
 [Service]
 ExecStart=/usr/bin/wvdial
@@ -7,3 +8,6 @@ ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
 Restart=always
 RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
