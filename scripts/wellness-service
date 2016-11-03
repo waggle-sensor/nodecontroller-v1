@@ -26,6 +26,17 @@ def run_command(command):
                                 stderr=subprocess.PIPE)
   return iter(p.stdout.readline, b'')
 
+# Configure the heartbeat mode ('calibration' or something else)
+def get_heartbeat_mode():
+  try:
+    with open('/etc/waggle/hbmode', 'r') as f:
+      mode = f.readline().rstrip()
+  except Exception:
+    pass
+  return mode
+
+
+
 # Get the Beehive server hostname
 def get_beehive_hostname():
   server_host = ''
@@ -168,10 +179,19 @@ def check_wagman_status(socket):
 def reset_wagman():
   os.system("/usr/lib/waggle/core/scripts/reset_wagman.sh")
 
+#########################
+########## Main #########
+#########################
+
+mode = get_heartbeat_mode()
+
 
 # Human readable names for the tests in the same sequence that they are run
-test_names = ['USB Modem', 'Network Interface', 'Local sshd',
-              'Beehive DNS', 'Beehive Ping', 'Beehive sshd']
+if (mode == 'calibration'):
+  test_names = ['USB Modem', 'Local sshd',]
+else:
+  test_names = ['USB Modem', 'Network Interface', 'Local sshd',
+                'Beehive DNS', 'Beehive Ping', 'Beehive sshd']
 
 # base_sleep_time = 2  # s
 beehive_hostname = get_beehive_hostname()
@@ -207,9 +227,12 @@ while True:
 
   # Local checks (done every minute)
   #print("Performing local checks...")
-  local_check_results = [check_USB_modem(),
-                         check_network_interface(),
-                         check_local_sshd()]
+  if (mode == 'calibration'):
+    local_check_results = [check_USB_modem(), check_local_sshd()]
+  else:
+    local_check_results = [check_USB_modem(),
+                           check_network_interface(),
+                           check_local_sshd()]
 
   # Beehive checks
   beehive_check_results = []
