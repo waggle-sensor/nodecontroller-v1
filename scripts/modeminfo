@@ -5,13 +5,24 @@ import sys
 import re
 
 
+try:
+    device = sys.argv[1]
+except:
+    device = '/dev/attwwan4'
+
+try:
+    baudrate = int(sys.argv[2])
+except:
+    baudrate = 57600
+
+
 def getid(command):
     command = (command + '\r').encode()
     pattern = re.compile('[0-9]+')
 
     while True:
         try:
-            with closing(Serial(sys.argv[1], int(sys.argv[2]), timeout=1.5)) as s:
+            with closing(Serial(device, baudrate, timeout=1.5)) as s:
                 s.flushInput()
                 s.write(command)
                 output = s.read(256).decode()
