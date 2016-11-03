@@ -1,27 +1,31 @@
 #!/usr/bin/env python3
 from serial import Serial
+from contextlib import closing
 import sys
-import time
+import re
 
-while True:
-    try:
-        s = Serial(sys.argv[1])
-        break
-    except:
-        time.sleep(1)
 
-s.write(b'AT+CGSN\r')
+def getid(command):
+    command = (command + '\r').encode()
+    pattern = re.compile('[0-9]+')
 
-s.readline()
-print('+IMEI:', s.readline().decode().strip())
-s.readline()
-s.readline()
+    while True:
+        try:
+            with closing(Serial(sys.argv[1], int(sys.argv[2]), timeout=1.5)) as s:
+                s.flushInput()
+                s.write(command)
+                output = s.read(256).decode()
+                match = pattern.search(output)
+                if match:
+                    return match.group()
+        except:
+            continue
 
-s.write(b'AT+CCID\r')
+imei = getid('AT+CGSN')
+assert len(imei) == 15
 
-s.readline()
-print(s.readline().decode().strip())
-s.readline()
-s.readline()
+ccid = getid('AT+CCID')
+assert len(ccid) == 20
 
-print()
+print('IMEI={}'.format(imei))
+print('CCID={}'.format(ccid))
