@@ -1,0 +1,141 @@
+#!/usr/bin/python3
+
+import time
+import logging
+import os
+import subprocess
+import waggle.logging
+import json
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+beehive_reporter = waggle.logging.getLogger('system-monitor')
+
+def get_host_name():
+	"""
+	Returns host name containing which device (from uSD and eMMC) is used to boot 
+	"""
+	ret = ""
+	try:
+		ret = subprocess.getoutput(["uname -n"])
+	except Exception as e:
+		return False, "error on getting host name: %s" % str(e), False
+	return True, ret, False
+
+def get_boot_info(history_count=3):
+	"""
+	Returns history of reboot and shutdown.
+	"""
+	ret = ""
+	try:
+		ret = subprocess.getoutput(["last -x reboot | head -n %d" % (history_count)])
+	except Exception as e:
+		return False, "error on getting boot messages: %s" % str(e), False
+	return True, ret, False
+
+def get_shutdown_info(history_count=4):
+	"""
+	Returns history of reboot and shutdown.
+	"""
+	ret = ""
+	try:
+		ret = subprocess.getoutput(["last -x shutdown | head -n %d" % (history_count)])
+	except Exception as e:
+		return False, "error on getting shutdown messages: %s" % str(e), False
+	return True, ret, False
+
+disk_threshold_percentage = 5.0
+def disk_usage(path="/"):
+	"""
+	Return disk usage statistics about the given path.
+	Returned valus is a named tuple with attributes 'total', 'used' and
+	'free', which are the amount of total, used and free space, in bytes.
+	"""
+	total = used = free = 0
+	ret = ""
+	try:
+		st = os.statvfs(path)
+		free = st.f_bavail * st.f_frsize
+		total = st.f_blocks * st.f_frsize
+		used = (st.f_blocks - st.f_bfree) * st.f_frsize
+		ret = "(total=%d, used=%d, free=%d)" % (total, used, free)
+	except Exception as e:
+		return False, "Failed", False
+
+	# If available space is less than 5%, report it
+	available_in_percentage = free / total * 100.0
+	if available_in_percentage < disk_threshold_percentage:
+		return True, ret, True
+	return True, ret, False
+
+# TODO: threshold should be set appropriately
+temp_threshold = 90.0
+def get_current_cpu_temp():
+	temperature_file = '/sys/class/thermal/thermal_zone0/temp'
+	if os.path.isfile(temperature_file):
+		tempC = int(open(temperature_file).read()) / 1e3
+		# If temperature is higher than 90 degree Celsius, report it
+		if tempC > temp_threshold:
+			return True, str(tempC), True
+		else:
+			# return True, str(tempC), False
+			return True, str(tempC), True # Just for now
+	else:
+		return False, "Temp not available", False
+
+checklist = [
+	['Disk available', disk_usage, 1800],
+	['Host name', get_host_name, 31536000],	# once a year
+	['Reboots', get_boot_info, 31536000],
+	['Shutdowns', get_shutdown_info, 31536000],
+	['Temperature', get_current_cpu_temp, 60]
+]
+
+status = {}
+sleep_time = 1
+
+logging.info("waggle-system-monitor service is running...")
+
+while True:
+	current_time = time.time()
+	sleep_time = 1000000
+	for entity, func, period in checklist:
+		ret = False
+		msg = ""
+		report = False
+		if entity not in status:
+			status[entity] = {'entity':entity}
+
+		check = status[entity]
+
+		if 'last_updated' not in check:
+			ret, msg, report = func()
+			check['result'] = ret
+			check['msg'] = msg
+			check['last_updated'] = current_time
+			check['datetime'] = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(current_time))
+			# always report for the first time
+			report = True
+		elif current_time - check['last_updated'] > period:
+			ret, msg, report = func()
+			check['result'] = ret
+			check['msg'] = msg
+			check['last_updated'] = current_time
+			check['datetime'] = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(current_time))
+		else:
+			continue
+
+		logging.info("%s performed: %s" % (entity, str(check)))
+		
+		next_time = period - (current_time - check['last_updated'])
+		if next_time < sleep_time:
+			sleep_time = next_time
+			
+		if report:
+			beehive_reporter.info(json.dumps(check))
+
+		status[entity] = check
+
+	logging.info("sleep for %d seconds" % sleep_time)
+	time.sleep(sleep_time)
+
