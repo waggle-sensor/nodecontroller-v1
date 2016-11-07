@@ -55,16 +55,14 @@ def thermistor_conversion(raw, nc = True):
 	R = 23000.0 # 23k ohm
 
 	rt = R * (Vin / V - 1)
-    logrt = math.log(rt)
-    temp = 1 / (A + (B * logrt) + (C * logrt * logrt * logrt))
-    tempC = temp - 273.15
-    return ''.join("%.2f" % tempC)
-
-
-  
+	logrt = math.log(rt)
+	temp = 1 / (A + (B * logrt) + (C * logrt * logrt * logrt))
+	tempC = temp - 273.15
+	return ''.join("%.2f C" % tempC)
 
 class wagmanListener(object):
 	'''
+	For Wagman V3!
 	A thread to listen Wagman status from the ZMQ publisher
 	Available information from this class will be...
 		nc_heartbeat: last heartbeat time from nc
@@ -88,6 +86,13 @@ class wagmanListener(object):
 		wagman_curr: int_current and last_updated
 		wagman_temp: temperature of Wagman
 		wagman_humid: humidity of Wagman
+
+		bettery_temp: temperature of the battery of Wagman
+
+		body_temp: temperature of the middle plane between Wagman and XU4
+
+		ps_temp: temperature of the power supply
+
 		error: when no connection available to Wagman
 	* some of the entities have 'ENTITY_lastupdated', telling the time when updated
 	'''
@@ -137,18 +142,21 @@ class wagmanListener(object):
 			pass
 		return ret
 
-	def get(self, key):
-		if key in self.status:
-			value = self.status[key]
-			key_updated = key + "_lastupdated"
-			if key_updated in self.status:
-				last_updated = self.status[key_updated]
-				return value, last_updated
-			return value, None
-		return None, None
+	def get_all(self):
+		current_time = time.time()
+		for k in self.status:
+			if "_lastupdated" in k or "heartbeat" in k:
+				time_diff = current_time - self.status[k]
+				yield {k: str(time_diff) + " sec ago"}
+			else:
+				yield {k:self.status[k]}
 
 	def report(self):
-		beehive_reporter.info(self.status)
+		s = {}
+		ret = self.get_all()
+		for e in ret:
+			s.update(e)
+		beehive_reporter.info(s)
 		self.timer = time.time()
 
 	def run(self):
@@ -168,7 +176,7 @@ class wagmanListener(object):
 				msg = self.socket.recv_string()
 			except (zmq.ZMQError, Exception) as e:
 				self.disconnect()
-				logging.info("Connection broken. Retrying in 3 sec...")
+				logging.info("No msg received within 5 sec. Retrying in 3 sec...")
 				time.sleep(3)
 				self.connect()
 
@@ -205,7 +213,8 @@ class wagmanListener(object):
 				self.status['wagmans_date_lastupdated'] = time.time()
 			elif "cu" in prefix:
 				splits = self.ssplit(content)
-				if len(splits) < 4:
+				# Wagman V3 always reports 6 values
+				if len(splits) < 6:
 					pass
 				else:
 					self.status['wagman_curr'] = splits[0]
@@ -218,23 +227,28 @@ class wagmanListener(object):
 					self.status['cs_curr_lastupdated'] = time.time()
 			elif "th" in prefix:
 				splits = self.ssplit(content)
-				if len(splits) < 3:
+				# Wagman V3 always reports 5 values 
+				if len(splits) < 5:
 					pass
 				else:
 					self.status['nc_temp'] = thermistor_conversion(splits[0], nc=True)
 					self.status['nc_temp_lastupdated'] = time.time()
 					self.status['gn_temp'] = thermistor_conversion(splits[1], nc=False)
 					self.status['gn_temp_lastupdated'] = time.time()
-					self.status['cs_temp'] = thermistor_conversion(splits[2], nc=False)
-					self.status['cs_temp_lastupdated'] = time.time()
+					self.status['bettery_temp'] = thermistor_conversion(splits[2], nc=False)
+					self.status['battery_temp_lastupdated'] = time.time()
+					self.status['body_temp'] = thermistor_conversion(splits[3], nc=True)
+					self.status['body_temp_lastupdated'] = time.time()
+					self.status['ps_temp'] = thermistor_conversion(splits[4], nc=False)
+					self.status['ps_temp_lastupdated'] = time.time()
 			elif "env" in prefix:
 				splits = self.ssplit(content)
 				if len(splits) < 2:
 					pass
 				else:
-					self.status['wagman_temp'] = splits[0]
+					self.status['wagman_temp'] = splits[0] + " C"
 					self.status['wagman_temp_lastupdated'] = time.time()
-					self.status['wagman_humid'] = splits[1]
+					self.status['wagman_humid'] = splits[1] + " %"
 					self.status['wagman_humid_lastupdated'] = time.time()
 			elif "fails" in prefix:
 				splits = self.ssplit(content)
