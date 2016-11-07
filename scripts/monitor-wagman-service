@@ -149,7 +149,7 @@ class wagmanListener(object):
 		current_time = time.time()
 		for k in self.status:
 			if "_lastupdated" in k or "heartbeat" in k:
-				time_diff = current_time - self.status[k]
+				time_diff = int(current_time - self.status[k])
 				yield {k: str(time_diff) + " sec ago"}
 			else:
 				yield {k:self.status[k]}
@@ -240,7 +240,7 @@ class wagmanListener(object):
 					self.status['gn_temp_lastupdated'] = time.time()
 					self.status['bettery_temp'] = thermistor_conversion(splits[2], nc=False)
 					self.status['battery_temp_lastupdated'] = time.time()
-					self.status['body_temp'] = thermistor_conversion(splits[3], nc=True)
+					self.status['body_temp'] = thermistor_conversion(splits[3], nc=False)
 					self.status['body_temp_lastupdated'] = time.time()
 					self.status['ps_temp'] = thermistor_conversion(splits[4], nc=False)
 					self.status['ps_temp_lastupdated'] = time.time()
