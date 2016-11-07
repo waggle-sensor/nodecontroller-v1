@@ -83,12 +83,27 @@ def get_current_cpu_temp():
 	else:
 		return False, "Temp not available", False
 
+if os.path.isfile('/etc/waggle/node_id'):
+	node_id = open('/etc/waggle/node_id').read().strip()
+else:
+	node_id = ""
+	
+def send_node_connectivity():
+	cmd = "curl -X POST http://beehive1.mcs.anl.gov/alive/%s"
+	if node_id:
+		os.system(cmd % node_id)
+		return True, "success", False
+	else:
+		return False, "No node_id presented", True
+	return False, "Failed", True
+
 checklist = [
 	['Disk available', disk_usage, 1800],
 	['Host name', get_host_name, 31536000],	# once a year
 	['Reboots', get_boot_info, 31536000],
 	['Shutdowns', get_shutdown_info, 31536000],
-	['Temperature', get_current_cpu_temp, 60]
+	['Temperature', get_current_cpu_temp, 60],
+	['basic-connectivity', send_node_connectivity, 60]
 ]
 
 status = {}
