@@ -37,6 +37,9 @@ def thermistor_conversion(raw, nc = True):
 		# we cannot convert it
 		return raw
 
+	if raw == 0:
+		return raw
+
 	Vin = V = 0.0
 	if nc:
 		Vin = 5.0
