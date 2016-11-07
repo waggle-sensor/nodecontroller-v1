@@ -106,10 +106,11 @@ print_result "Node ID Set" $?
 cat /etc/hostname | fgrep "${MAC_STRING}SD"
 print_result "Hostname Set" $?
 
-parted -s /dev/mmcblk1p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB'
+. /usr/lib/waggle/core/detect_disk_devices.sh
+parted -s ${CURRENT_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB'
 print_result "SD Resize" $?
 
-parted -s /dev/mmcblk0p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB'
+parted -s ${OTHER_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB'
 print_result "Recovery to eMMC" $?
 
 units=("waggle-communications" "waggle-epoch" "waggle-heartbeat" \
