@@ -106,7 +106,7 @@ print_result "Node ID Set" $?
 cat /etc/hostname | fgrep "${MAC_STRING}SD"
 print_result "Hostname Set" $?
 
-. /usr/lib/waggle/core/detect_disk_devices.sh
+. /usr/lib/waggle/core/scripts/detect_disk_devices.sh
 parted -s ${CURRENT_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB'
 print_result "SD Resize" $?
 
