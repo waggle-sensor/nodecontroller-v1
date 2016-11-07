@@ -5,8 +5,11 @@ set +e
 print_result() {
   local test_description=$1
   local result=$2
+  local optional=$3
   if [ $result == 0 ]; then
     echo "[0;30;32m[PASS][0;30;37m $test_description"
+  elif [[ ! -z ${optional+x} && $optional == 1 ]]; then
+    echo "[0;30;33m[FAIL][0;30;37m $test_description"
   else
     echo "[0;30;31m[FAIL][0;30;37m $test_description"
   fi
@@ -39,39 +42,55 @@ for dir in $directories; do
 done
 
 perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node)
-[ $perms == "root root 600" ]
+[ "$perms" == "root root 600" ]
 print_result "Guest Key Permissions" $?
 
-perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/SSL/node/key.pem)
-[ $perms == "rabbitmq rabbitmq 600" ]
+perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/node/key.pem)
+[ "$perms" == "rabbitmq rabbitmq 600" ]
 print_result "Node Key Permissions" $?
 
-perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/SSL/node/cert.pem)
-[ $perms == "rabbitmq rabbitmq 600" ]
+perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/node/cert.pem)
+[ "$perms" == "rabbitmq rabbitmq 600" ]
 print_result "Node Key Permissions" $?
 
-perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/SSL/waggleca/cacert.pem)
-[ $perms == "root root 644" ]
+perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/waggleca/cacert.pem)
+[ "$perms" == "root root 644" ]
 print_result "Waggle CA Cert Permissions" $?
 
 # Ethernet IP Address (NC)
 ifconfig | fgrep "          inet addr:10.31.81.10  Bcast:10.31.81.255  Mask:255.255.255.0"
-print_result "Ethernet IP Address" $?
+print_result "Built-in Ethernet IP Address" $?
 
-devices=("waggle_sysmon" "waggle_coresense" "alphasense" "gps_module" "attwwan")
-device_names=("WagMan" "Coresense" "Alphasense" "GPS" "Modem")
+devices=("waggle_sysmon" "waggle_coresense")
+device_names=("WagMan" "Coresense")
 for i in $(seq 0 `expr ${#devices[@]} - 1`); do
   device=${devices[i]}
   device_name=${device_names[i]}
-  [ -e $device ]
+  [ -e /dev/$device ]
   print_result "$device_name Device" $?
 done
 
-lsusb | grep 1bc7:0021
-print_result "Modem USB" $?
+devices=("alphasense" "gps_module" "attwwan")
+device_names=("Alphasense" "GPS" "Modem")
+for i in $(seq 0 `expr ${#devices[@]} - 1`); do
+  device=${devices[i]}
+  device_name=${device_names[i]}
+  [ -e /dev/$device ]
+  print_result "Optional $device_name Device" $? 1
+done
 
-ifconfig | grep ppp0 -A 1 | fgrep "inet addr:"
-print_result "Modem IP Address" $?
+lsusb | grep 1bc7:0021
+if [ $? -eq 0 ]; then
+  # Found USB Modem Device
+  print_result "Modem USB" 0
+
+  ifconfig | grep ppp0 -A 1 | fgrep "inet addr:"
+  print_result "Modem IP Address" $?
+else
+  # No USB Modem Device Present
+  ifconfig | grep -A 1 enx | grep 'inet addr:'
+  print_result "USB Ethernet IP Address" $?
+fi
 
 line_count=$(cat /etc/ssh/sshd_config | fgrep -e 'ListenAddress 127.0.0.1' -e 'ListenAddress 10.31.81.10' | wc -l)
 [ $line_count -eq 2 ]
