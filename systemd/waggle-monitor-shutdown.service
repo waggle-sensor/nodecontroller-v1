@@ -3,7 +3,7 @@ Description=Monitors shutdown signals.
 After=multi-user.target
 
 [Service]
-ExecStart=/usr/lib/waggle/nodecontroller/scripts/shutdown-monitor-service
+ExecStart=/usr/lib/waggle/nodecontroller/scripts/monitor-shutdown-service
 
 Restart=always
 RestartSec=5
