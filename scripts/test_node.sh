@@ -58,7 +58,7 @@ perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/waggleca/cacert.pem)
 print_result "Waggle CA Cert Permissions" $?
 
 # Ethernet IP Address (NC)
-ifconfig | fgrep "          inet addr:10.31.81.10  Bcast:10.31.81.255  Mask:255.255.255.0"
+ifconfig | fgrep "          inet addr:10.31.81.10  Bcast:10.31.81.255  Mask:255.255.255.0" && true
 print_result "Built-in Ethernet IP Address" $?
 
 devices=("waggle_sysmon" "waggle_coresense")
@@ -79,16 +79,16 @@ for i in $(seq 0 `expr ${#devices[@]} - 1`); do
   print_result "Optional $device_name Device" $? 1
 done
 
-lsusb | grep 1bc7:0021
+lsusb | grep 1bc7:0021 && true
 if [ $? -eq 0 ]; then
   # Found USB Modem Device
   print_result "Modem USB" 0
 
-  ifconfig | grep ppp0 -A 1 | fgrep "inet addr:"
+  ifconfig | grep ppp0 -A 1 | fgrep "inet addr:" && true
   print_result "Modem IP Address" $?
 else
   # No USB Modem Device Present
-  ifconfig | grep -A 1 enx | grep 'inet addr:'
+  ifconfig | grep -A 1 enx | grep 'inet addr:' && true
   print_result "USB Ethernet IP Address" $?
 fi
 
@@ -96,78 +96,42 @@ line_count=$(cat /etc/ssh/sshd_config | fgrep -e 'ListenAddress 127.0.0.1' -e 'L
 [ $line_count -eq 2 ]
 print_result "sshd Listen Addresses" $?
 
-cat /etc/ssh/sshd_config | fgrep 'PermitRootLogin no'
+cat /etc/ssh/sshd_config | fgrep 'PermitRootLogin no' && true
 print_result "sshd No Root Login" $?
 
-cat /etc/waggle/node_id | egrep '[0-9a-f]{16}'
+cat /etc/waggle/node_id | egrep '[0-9a-f]{16}' && true
 print_result "Node ID Set" $?
 
 . /usr/lib/waggle/core/scripts/detect_mac_address.sh
-cat /etc/hostname | fgrep "${MAC_STRING}SD"
+cat /etc/hostname | fgrep "${MAC_STRING}${CURRENT_DISK_DEVICE_TYPE}" && true
 print_result "Hostname Set" $?
 
 . /usr/lib/waggle/core/scripts/detect_disk_devices.sh
-parted -s ${CURRENT_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB'
+parted -s ${CURRENT_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB' && true
 print_result "SD Resize" $?
 
-parted -s ${OTHER_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB'
+parted -s ${OTHER_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB' && true
 print_result "Recovery to eMMC" $?
 
 units=("waggle-communications" "waggle-epoch" "waggle-heartbeat" \
        "waggle-plugin-manager" "waggle-wagman-publisher" \
        "waggle-wagman-server" "waggle-wellness")
 for unit in $units; do
-  systemctl status $unit | fgrep 'Active: active (running)'
+  systemctl status $unit | fgrep 'Active: active (running)' && true
   print_result "$unit Service" $?
 done
 
 units=("waggle-wwan" "waggle-reverse-tunnel")
 for unit in $units; do
-  systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: activating (auto-restart)'
+  systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: activating (auto-restart)' && true
   print_result "$unit Service" $?
 done
 
 unit='waggle-log-wagman.timer'
-systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: active (waiting)'
+systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: active (waiting)' && true
 print_result "$unit Service" $?
 
 # ssh to GN
 ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" /bin/date
 print_result "ssh to GN" $?
-
-##### Repeat above as necessary for GN tests #####
-# Node ID Set (GN)
-# Hostname Set (GN)
-# sudo Disabled (GN)
-# su (GN)
-# SD Resize (GN)
-# Recovery to eMMC (GN)
-# Directory /etc/waggle Exists (GN)
-# Directory /usr/lib/waggle Exists (GN)
-# Directory /usr/lib/waggle/core Exists (GN)
-# Directory /usr/lib/waggle/plugin_manager Exists (GN)
-# Directory /usr/lib/waggle/guestnode Exists (GN)
-# Directory /usr/lib/waggle/SSL Exists (GN)
-# Directory /usr/lib/waggle/SSL/guest Exists (GN)
-# waggle-epoch Service (GN)
-# waggle-heartbeat Service (GN)
-# waggle-plugin-manager Service (GN)
-# sshd Listen Addresses (GN)
-# sshd No Root Login (GN)
-##################################################
-
-# Microphone USB
-#send -- "lsusb | grep --color=never 0d8c:013c\r"
-#expect {
-#  -exact "ID 0d8c:013c C-Media Electronics, Inc. CM108 Audio Controller" {
-#
-## Top Camera USB
-#send -- "lsusb | grep --color=never 05a3:9830\r"
-#expect {
-#  -exact "ID 05a3:9830 ARC International" {
-#
-## Bottom Camera USB
-#send -- "lsusb | grep --color=never 05a3:9520\r"
-#expect {
-#  -exact "ID 05a3:9520 ARC International" {
