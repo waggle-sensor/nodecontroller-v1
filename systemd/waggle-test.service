@@ -1,0 +1,10 @@
+[Unit]
+Description=Tests the Waggle controller node.
+
+[Service]
+Type=oneshot
+WorkingDirectory=/usr/lib/waggle/nodecontroller/
+ExecStart=/usr/lib/waggle/nodecontroller/scripts/test-service.sh
+
+[Install]
+WantedBy=multi-user.target
