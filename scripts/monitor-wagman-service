@@ -122,7 +122,7 @@ class wagmanListener(object):
 		try: 
 			context = zmq.Context()
 			self.socket = context.socket(zmq.SUB)
-			self.socket.setsockopt(zmq.RCVTIMEO, 5000)
+			self.socket.setsockopt(zmq.RCVTIMEO, 10000)
 			self.socket.setsockopt(zmq.SUBSCRIBE, b'')
 			self.socket.connect ('ipc:///tmp/zeromq_wagman-pub')
 			self.isConnected = True
@@ -145,21 +145,8 @@ class wagmanListener(object):
 			pass
 		return ret
 
-	def get_all(self):
-		current_time = time.time()
-		for k in self.status:
-			if "_lastupdated" in k or "heartbeat" in k:
-				time_diff = int(current_time - self.status[k])
-				yield {k: str(time_diff) + " sec ago"}
-			else:
-				yield {k:self.status[k]}
-
 	def report(self):
-		s = {}
-		ret = self.get_all()
-		for e in ret:
-			s.update(e)
-		beehive_reporter.info(s)
+		beehive_reporter.info(self.status)
 		self.timer = time.time()
 
 	def run(self):
@@ -179,7 +166,7 @@ class wagmanListener(object):
 				msg = self.socket.recv_string()
 			except (zmq.ZMQError, Exception) as e:
 				self.disconnect()
-				logging.info("No msg received within 5 sec. Retrying in 3 sec...")
+				logging.info("No msg received within 10 sec. Retrying in 3 sec...")
 				time.sleep(3)
 				self.connect()
 
