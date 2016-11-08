@@ -54,22 +54,22 @@ run_tests() {
     run_gn_tests
   fi
   /usr/lib/waggle/nodecontroller/scripts/test_node.sh \
-    > /home/waggle/test_node_${ODROID_MODEL}_${CURRENT_DISK_DEVICE_TYPE}.log
+    > /home/waggle/test_node_NC_${CURRENT_DISK_DEVICE_TYPE}.log
 }
 
 generate_report() {
   # Retrieve the eMMC test log
-  cp /media/test/home/waggle/test_node_${ODROID_MODEL}_${OTHER_DISK_DEVICE_TYPE}.log /home/waggle/
+  cp /media/test/home/waggle/test_node_NC_${OTHER_DISK_DEVICE_TYPE}.log /home/waggle/
 
   local report_file="/home/waggle/test-report.txt"
   echo "Node Controller SD Test Results" >> $report_file
   echo "-------------------------------" >> $report_file
-  cat /home/waggle/test_node_C_SD.log >> $report_file
+  cat /home/waggle/test_node_NC_SD.log >> $report_file
 
   echo >> $report_file
   echo "Node Controller eMMC Test Results" >> $report_file
   echo "---------------------------------" >> $report_file
-  cat /home/waggle/test_node_C_MMC.log >> $report_file
+  cat /home/waggle/test_node_NC_MMC.log >> $report_file
 
   # wait a reasonable amount of time for the GN to finish its tests
   local tries=0
@@ -90,12 +90,12 @@ generate_report() {
     echo >> $report_file
     echo "Guest Node SD Test Results" >> $report_file
     echo "--------------------------" >> $report_file
-    cat /home/waggle/test_node_XU3_SD.log >> $report_file
+    cat /home/waggle/test_node_GN_SD.log >> $report_file
 
     echo >> $report_file
     echo "Guest Node eMMC Test Results" >> $report_file
     echo "----------------------------" >> $report_file
-    cat /home/waggle/test_node_XU3_MMC.log >> $report_file
+    cat /home/waggle/test_node_GN_MMC.log >> $report_file
   else
     echo >> $report_file
     echo "########################" >> $report_file
