@@ -29,24 +29,28 @@ run_gn_tests() {
   ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.10 \
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
     /usr/lib/waggle/guestnode/scripts/start_test.sh
+
+  # Reboot to the alternate disk medium to continue the test cycle
   local current_gn_device_type=$(wagman-client bs 1)
   local other_gn_device_type=''
   if [ "${current_gn_device_type}" == "sd" ]; then
     other_gn_device_type='emmc'
   fi
   wagman-client bs 1 $other_gn_device_type
-  wagman-client stop 0 0
-
+  wagman-client stop 1 0
   wait_for_gn_reboot
 
   # Run tests on the eMMC or SD
   ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.10 \
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
     /usr/lib/waggle/guestnode/scripts/start_test.sh
-  wagman-client bs 1 $current_gn_device_type
-  wagman-client stop 0 0
 
-  wait_for_gn_reboot
+  # Reboot to SD if we started the GN test cycle on the eMMC
+  if [ "$current_gn_device_type" == "sd" ]; then
+		wagman-client bs 1 $current_gn_device_type
+		wagman-client stop 1 0
+    wait_for_gn_reboot
+	fi
 }
 
 run_tests() {
@@ -114,25 +118,25 @@ continue_file=/home/waggle/continue_test
 finish_file=/home/waggle/finish_test
 if [ -e ${start_file} ] ; then
   run_tests
-  rm ${start_file}
   if [ "${CURRENT_DISK_DEVICE_TYPE}" == "SD" ]; then
-    touch /media/test${continue_file}
     wagman-client bs 0 emmc
   else
-    touch /media/test${finish_file}
     wagman-client bs 0 sd
   fi
+  touch /media/test${continue_file}
+  rm ${start_file}
   #wagman-client stop 0 0
 elif [ -e ${continue_file} ]; then
   run_tests
+  if [ "${CURRENT_DISK_DEVICE_TYPE}" == "MMC" ]; then
+    touch /media/test${finish_file}
+  elif [ "${CURRENT_DISK_DEVICE_TYPE}" == "SD" ]; then
+    generate_report
+  fi
   rm ${continue_file}
-  touch /media/test${finish_file}
   wagman-client bs 0 sd
   #wagman-client stop 0 0
 elif [ -e ${finish_file} ]; then
-  if [ ! -e /home/waggle/test_node_NC_SD.log ]; then
-    run_tests
-  fi
   generate_report
   rm ${finish_file}
 fi
