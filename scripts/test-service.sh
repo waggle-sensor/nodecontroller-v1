@@ -130,6 +130,9 @@ elif [ -e ${continue_file} ]; then
   wagman-client bs 0 sd
   #wagman-client stop 0 0
 elif [ -e ${finish_file} ]; then
+  if [ ! -e /home/waggle/test_node_NC_SD.log ]; then
+    run_tests
+  fi
   generate_report
   rm ${finish_file}
 fi
