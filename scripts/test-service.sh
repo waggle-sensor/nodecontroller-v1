@@ -50,6 +50,11 @@ run_gn_tests() {
     wagman-client bs 1 $current_gn_device_type
     wagman-client stop 1 0
     wait_for_gn_reboot
+
+    # Finish tests on the SD
+    ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
+      -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
+      /usr/lib/waggle/guestnode/scripts/run_tests.sh
   fi
 }
 
