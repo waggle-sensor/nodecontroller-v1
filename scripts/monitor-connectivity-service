@@ -9,7 +9,7 @@ import waggle.logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-beehive_reporter = waggle.logging.getLogger('monitor-communication')
+beehive_reporter = waggle.logging.getLogger('monitor-connectivity')
 
 
 ############################
