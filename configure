@@ -137,6 +137,7 @@ systemctl enable waggle-configure-rabbitmq.service
 #systemctl enable waggle-wellness.service
 systemctl enable waggle-monitor-connectivity.service
 systemctl enable waggle-monitor-wagman.service
+systemctl enable waggle-monitor-system.service
 systemctl enable waggle-wwan.service
 #systemctl enable waggle-log-wagman.timer
 
