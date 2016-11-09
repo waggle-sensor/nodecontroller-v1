@@ -26,7 +26,7 @@ wait_for_gn_reboot() {
 
 run_gn_tests() {
   # Run tests on the SD or eMMC
-  ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.10 \
+  ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
     /usr/lib/waggle/guestnode/scripts/run_tests.sh
 
@@ -41,7 +41,7 @@ run_gn_tests() {
   wait_for_gn_reboot
 
   # Run tests on the eMMC or SD
-  ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.10 \
+  ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
     /usr/lib/waggle/guestnode/scripts/run_tests.sh
 
