@@ -30,8 +30,6 @@ run_gn_tests() {
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
     /usr/lib/waggle/guestnode/scripts/run_tests.sh
 
-  # FIXME: reboot is happening too fast
-
   # Reboot to the alternate disk medium to continue the test cycle
   local current_gn_device_type=$(wagman-client bs 1)
   local other_gn_device_type=''
