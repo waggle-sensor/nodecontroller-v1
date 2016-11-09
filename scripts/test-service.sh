@@ -47,10 +47,10 @@ run_gn_tests() {
 
   # Reboot to SD if we started the GN test cycle on the eMMC
   if [ "$current_gn_device_type" == "sd" ]; then
-		wagman-client bs 1 $current_gn_device_type
-		wagman-client stop 1 0
+    wagman-client bs 1 $current_gn_device_type
+    wagman-client stop 1 0
     wait_for_gn_reboot
-	fi
+  fi
 }
 
 run_tests() {
@@ -62,9 +62,6 @@ run_tests() {
 }
 
 generate_report() {
-  # Retrieve the eMMC test log
-  cp /media/test/home/waggle/test_node_NC_${OTHER_DISK_DEVICE_TYPE}.log /home/waggle/
-
   local report_file="/home/waggle/test-report.txt"
   echo "Node Controller SD Test Results" >> $report_file
   echo "-------------------------------" >> $report_file
@@ -73,7 +70,7 @@ generate_report() {
   echo >> $report_file
   echo "Node Controller eMMC Test Results" >> $report_file
   echo "---------------------------------" >> $report_file
-  cat /home/waggle/test_node_NC_MMC.log >> $report_file
+  cat /media/test/home/waggle/test_node_NC_MMC.log >> $report_file
 
   # wait a reasonable amount of time for the GN to finish its tests
   local tries=0
@@ -92,14 +89,10 @@ generate_report() {
 
   if [ $gn_done -eq 1 ]; then
     echo >> $report_file
-    echo "Guest Node SD Test Results" >> $report_file
-    echo "--------------------------" >> $report_file
-    cat /home/waggle/test_node_GN_SD.log >> $report_file
-
-    echo >> $report_file
-    echo "Guest Node eMMC Test Results" >> $report_file
-    echo "----------------------------" >> $report_file
-    cat /home/waggle/test_node_GN_MMC.log >> $report_file
+    cat /home/waggle/gn-test-report.txt >> $report_file
+    ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
+      -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
+      cat /home/waggle/test-report.txt >> $report_file
   else
     echo >> $report_file
     echo "########################" >> $report_file
