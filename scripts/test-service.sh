@@ -28,7 +28,9 @@ run_gn_tests() {
   # Run tests on the SD or eMMC
   ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.10 \
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
-    /usr/lib/waggle/guestnode/scripts/start_test.sh
+    /usr/lib/waggle/guestnode/scripts/run_tests.sh
+
+  # FIXME: reboot is happening too fast
 
   # Reboot to the alternate disk medium to continue the test cycle
   local current_gn_device_type=$(wagman-client bs 1)
@@ -43,7 +45,7 @@ run_gn_tests() {
   # Run tests on the eMMC or SD
   ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.10 \
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
-    /usr/lib/waggle/guestnode/scripts/start_test.sh
+    /usr/lib/waggle/guestnode/scripts/run_tests.sh
 
   # Reboot to SD if we started the GN test cycle on the eMMC
   if [ "$current_gn_device_type" == "sd" ]; then
