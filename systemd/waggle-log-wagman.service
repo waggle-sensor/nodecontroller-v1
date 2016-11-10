@@ -1,6 +1,0 @@
-[Unit]
-Description=Logs Wagman info to Beehive.
-
-[Service]
-Type=oneshot
-ExecStart=/usr/lib/waggle/nodecontroller/scripts/log-wagman.py
