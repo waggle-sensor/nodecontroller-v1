@@ -1,0 +1,45 @@
+#!/usr/bin/python3
+
+import os
+import time
+import zmq
+import logging
+
+def subscribe_wagman_status():
+	context = zmq.Context()
+	socket = context.socket(zmq.SUB)
+	socket.setsockopt(zmq.RCVTIMEO, 5000)
+	socket.setsockopt(zmq.SUBSCRIBE, b'')
+	socket.connect ('ipc:///tmp/zeromq_wagman-pub')
+	return socket
+
+def unsubscribe_wagman_status(socket):
+	socket.close()
+
+# Check that we can read any WagMan status messages
+def check_wagman_shutdown_nc(socket):
+	message = ""
+	try:
+		message = socket.recv_string()
+		if 'nc stopp' in message:
+			return True
+		if 'error: not connected to wagman' in message:
+			return False
+	except zmq.ZMQError:
+		pass
+	return False
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+wagman_status = subscribe_wagman_status()
+
+logging.info("waggle-shutdown-monitor service is running...")
+
+while True:
+	if check_wagman_shutdown_nc(wagman_status):
+		logging.info("Wagman is shutting the system down in a minute; shutdown in 30 seconds")
+		os.system("shutdown -h -k +1")
+		time.sleep(30)
+		logging.info("shutdown now")
+		os.system("shutdown -h now")
+
+	time.sleep(1)

@@ -1,0 +1,181 @@
+#!/usr/bin/python3
+
+import os
+import socket
+import time
+import subprocess
+import logging
+import waggle.logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+beehive_reporter = waggle.logging.getLogger('monitor-connectivity')
+
+
+############################
+##### Helper Functions #####
+############################
+
+# Run a command and capture it's output
+def run_command(command):
+	p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	return iter(p.stdout.readline, b'')
+
+# Get the Beehive server hostname
+def get_beehive_hostname():
+	server_host = ''
+	try:
+		with open('/etc/waggle/server_host', 'r') as f:
+			server_host = f.readline().rstrip()
+	except Exception:
+		pass
+	return server_host
+
+def reset_deadman_trigger():
+	file = "/usr/lib/waggle/core/alive"
+	rc = os.system("touch " + file + " > /dev/null 2>&1")
+	if rc != 0:
+		return False
+
+###########################
+##### Wellness Checks #####
+###########################
+
+# See whether file system recovery to the alternate bood medium
+# has completed by checking for the existance of /root/do_recovery
+def in_recovery():
+	return os.path.isfile('/root/do_recovery')
+
+# Check that there is a "Wireless" or "Realtek" (LAN) device
+# connected to the USB hub
+def check_USB_modem():
+	output = run_command(['lsusb'])
+	for line in output:
+		if (b"Wireless" in line) or (b"Realtek" in line):
+			return True
+
+	return False
+
+# Check that there is an IP address listed in either the PPP or
+# eth1 info of ifconfig
+def check_network_interface():
+	output = run_command(['ifconfig'])
+	next_line = False
+	for line in output:
+		if (b"eth0" in line):
+			continue
+		if (b"Point-to-Point Protocol" in line) or \
+			(b"enx" in line) or \
+			(b"eth" in line):
+			next_line = True
+		elif next_line and (b"inet addr:" in line):
+			return True
+		else:
+			next_line = False
+	return False
+
+# DNS lookup of the Beehive server hostname
+def check_beehive_DNS(hostname):
+	beehive_ip = ''
+	try:
+		beehive_ip = socket.gethostbyname(hostname)
+	except Exception:
+		return False
+
+	return True
+
+# Ping the Beehive server
+# The ICMP port is disabled on the beehive servers for external IPs, so
+# just check that the beehive web portal is up
+def check_beehive_ping(hostname):
+	rc = os.system("curl " + hostname + "/api/ > /dev/null 2>&1")
+	if rc != 0:
+		return False
+
+	return True
+
+# Connect to the local sshd
+def check_local_sshd():
+	# To test, add "waggle" user to ThinkPad and setup passwordless key
+	command = ['ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node -x',
+				'-o "ProxyCommand ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node -o \\\"StrictHostKeyChecking no\\\" -q waggle@10.31.81.51 nc -q0 10.31.81.10 22"',
+				'-o "PasswordAuthentication no"',
+				'-o "StrictHostKeyChecking no"',
+				'-o "ConnectTimeout 5" waggle@10.31.81.10',
+				'date > /dev/null 2>&1']
+	#print(' '.join(command))
+	rc = os.system(' '.join(command))
+	if rc != 0:
+		return False
+
+	return True
+
+
+# Connect to the Beehive server's sshd
+def check_beehive_sshd(hostname):
+	command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
+				'-o "PasswordAuthentication no"',
+				'-o "StrictHostKeyChecking no"',
+				'root@'+hostname, '-p 20022',
+				'date > /dev/null 2>&1']
+	#print(' '.join(command))
+	rc = os.system(' '.join(command))
+	if rc != 0:
+		return False
+
+	return True
+
+#########################
+##### Interventions #####
+#########################
+
+# base_sleep_time = 2  # s
+beehive_hostname = get_beehive_hostname()
+
+base_sleep_time = 60  # (seconds)
+
+beehive_check_duration = 1800  # (seconds) 30 minutes
+# check Beehive on start up
+beehive_check_time = time.time() - beehive_check_duration - 1
+
+while True:
+	current_time = time.time()
+
+	# Recovery status check
+	if in_recovery():
+		reset_deadman_trigger()
+		logging.info("Node Controller is performing a file system recovery.")
+		beehive_reporter.info("Node Controller is performing a file system recovery.")
+
+	# Local checks (done every minute)
+	#print("Performing local checks...")
+	local_check_results = [check_USB_modem(),
+							check_network_interface(),
+							check_local_sshd()]
+
+	# Beehive checks
+	beehive_check_results = []
+	logging.info("Performing Beehive checks...")
+	if (current_time - beehive_check_time) > beehive_check_duration:
+		beehive_check_results = [check_beehive_DNS(beehive_hostname),
+								check_beehive_ping(beehive_hostname),
+								check_beehive_sshd(beehive_hostname),]
+		if all(beehive_check_results):
+			beehive_check_time = time.time()
+
+	# Reset deadman trigger if all local and Beehive checks have passed
+	results = local_check_results + beehive_check_results
+	if all(results):
+		#print("Resetting deadman trigger...")
+		reset_deadman_trigger()
+		#print("Node Controller is well.")
+		logging.info("Node Controller is well.")
+		beehive_reporter.info("Node Controller is well.")
+	else:
+		#print("Logging test failures...")
+		logging.info("The following tests failed: " + 
+					str([n for x,n in zip(results,test_names) if not x]) + "\n")
+		beehive_reporter.error("The following tests failed: " +
+					str([n for x,n in zip(results,test_names) if not x]) + "\n")
+
+	time.sleep(base_sleep_time)

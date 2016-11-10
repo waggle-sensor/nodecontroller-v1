@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/lib/waggle/nodecontroller/scripts/modeminfo $(ls /dev/attwwan?* | sort | sed -n '4p')
