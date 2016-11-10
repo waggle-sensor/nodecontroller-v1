@@ -77,33 +77,11 @@ generate_report() {
   echo "---------------------------------" >> $report_file
   cat /media/test/home/waggle/test_node_NC_MMC.log >> $report_file
 
-  # wait a reasonable amount of time for the GN to finish its tests
-  local tries=0
-  local max_tries=6
-  local gn_done=0
-  while [ $tries -lt $max_tries ]; do
-    if [[ ! -e /home/waggle/test_node_XU3_SD.log || ! -e /home/waggle/test_node_XU3_MMC.log ]]; then
-      tries=$(expr $tries + 1)
-      echo "Waiting for GN test logs..."
-      sleep 10
-    else
-      gn_done=1
-      tries=$max_tries
-    fi
-  done
-
-  if [ $gn_done -eq 1 ]; then
-    echo >> $report_file
-    cat /home/waggle/gn-test-report.txt >> $report_file
-    ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
-      -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
-      cat /home/waggle/test-report.txt >> $report_file
-  else
-    echo >> $report_file
-    echo "########################" >> $report_file
-    echo "Guest Node Tests Failed!" >> $report_file
-    echo "########################" >> $report_file
-  fi
+  echo >> $report_file
+  cat /home/waggle/gn-test-report.txt >> $report_file
+  ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
+    -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
+    cat /home/waggle/test-report.txt >> $report_file
 }
 
 mount | grep '/media/test' && true
