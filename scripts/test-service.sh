@@ -78,6 +78,13 @@ generate_report() {
   cat /media/test/home/waggle/test_node_NC_MMC.log >> $report_file
 
   echo >> $report_file
+  echo >> $report_file
+  echo "########################################" >> $report_file
+  echo "Guest Node Test Results Should Follow..." >> $report_file
+  echo "########################################" >> $report_file
+  echo >> $report_file
+
+  echo >> $report_file
   cat /home/waggle/gn-test-report.txt >> $report_file
   ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
@@ -101,7 +108,7 @@ if [ -e ${start_file} ] ; then
   fi
   touch /media/test${continue_file}
   rm ${start_file}
-  #wagman-client stop 0 0
+  wagman-client stop 0 0
 elif [ -e ${continue_file} ]; then
   run_tests
   if [ "${CURRENT_DISK_DEVICE_TYPE}" == "MMC" ]; then
@@ -111,7 +118,7 @@ elif [ -e ${continue_file} ]; then
   fi
   rm ${continue_file}
   wagman-client bs 0 sd
-  #wagman-client stop 0 0
+  wagman-client stop 0 0
 elif [ -e ${finish_file} ]; then
   generate_report
   rm ${finish_file}
