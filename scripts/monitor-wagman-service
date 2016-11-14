@@ -225,12 +225,12 @@ class wagmanListener(object):
 					self.status['nc_temp_lastupdated'] = time.time()
 					self.status['gn_temp'] = thermistor_conversion(splits[1], nc=False)
 					self.status['gn_temp_lastupdated'] = time.time()
-					self.status['bettery_temp'] = thermistor_conversion(splits[2], nc=False)
-					self.status['battery_temp_lastupdated'] = time.time()
-					self.status['body_temp'] = thermistor_conversion(splits[3], nc=False)
+					self.status['body_temp'] = thermistor_conversion(splits[2], nc=False)
 					self.status['body_temp_lastupdated'] = time.time()
-					self.status['ps_temp'] = thermistor_conversion(splits[4], nc=False)
+					self.status['ps_temp'] = thermistor_conversion(splits[3], nc=False)
 					self.status['ps_temp_lastupdated'] = time.time()
+					self.status['bettery_temp'] = thermistor_conversion(splits[4], nc=False)
+					self.status['battery_temp_lastupdated'] = time.time()
 			elif "env" in prefix:
 				splits = self.ssplit(content)
 				if len(splits) < 2:
