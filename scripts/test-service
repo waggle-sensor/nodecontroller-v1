@@ -96,10 +96,13 @@ if [ $? -eq 1 ]; then
   mount "${OTHER_DISK_DEVICE}p2" /media/test
 fi
 
+recovery_file=/root/do_recovery
 start_file=/home/waggle/start_test
 continue_file=/home/waggle/continue_test
 finish_file=/home/waggle/finish_test
-if [ -e ${start_file} ] ; then
+if [ -e ${recovery_file} ] ; then
+ echo "Disk recovery operation in progress. Aborting..."
+elif [ -e ${start_file} ] ; then
   run_tests
   if [ "${CURRENT_DISK_DEVICE_TYPE}" == "SD" ]; then
     wagman-client bs 0 emmc
