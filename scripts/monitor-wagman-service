@@ -5,6 +5,7 @@ import time
 import logging
 import math
 import waggle.logging
+import json
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -146,7 +147,10 @@ class wagmanListener(object):
 		return ret
 
 	def report(self):
-		beehive_reporter.info(self.status)
+		try:
+			beehive_reporter.info(json.dumps(self.status))
+		except:
+			beehive_reporter.info(self.status)
 		self.timer = time.time()
 
 	def run(self):
@@ -229,7 +233,7 @@ class wagmanListener(object):
 					self.status['body_temp_lastupdated'] = time.time()
 					self.status['ps_temp'] = thermistor_conversion(splits[3], nc=False)
 					self.status['ps_temp_lastupdated'] = time.time()
-					self.status['bettery_temp'] = thermistor_conversion(splits[4], nc=False)
+					self.status['battery_temp'] = thermistor_conversion(splits[4], nc=False)
 					self.status['battery_temp_lastupdated'] = time.time()
 			elif "env" in prefix:
 				splits = self.ssplit(content)
