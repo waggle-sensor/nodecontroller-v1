@@ -29,15 +29,9 @@ if [ $CONFIGURE_SYSTEM -eq 1 ]; then
   cd $current_dir
 fi
 
-branch=$(git rev-parse --abbrev-ref HEAD)
-pip install git+https://github.com/waggle-sensor/pywaggle@${branch}
-if [ $? -ne 0 ]; then
-  pip install git+https://github.com/waggle-sensor/pywaggle
-fi
-pip3 install git+https://github.com/waggle-sensor/pywaggle@${branch}
-if [ $? -ne 0 ]; then
-  pip3 install git+https://github.com/waggle-sensor/pywaggle
-fi
+pywaggle_tag="v0.8.0"
+pip install git+https://github.com/waggle-sensor/pywaggle@${pywaggle_tag}
+pip3 install git+https://github.com/waggle-sensor/pywaggle@${pywaggle_tag}
 
 set -e
 set -x
