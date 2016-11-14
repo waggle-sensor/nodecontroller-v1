@@ -101,7 +101,9 @@ start_file=/home/waggle/start_test
 continue_file=/home/waggle/continue_test
 finish_file=/home/waggle/finish_test
 if [ -e ${recovery_file} ] ; then
- echo "Disk recovery operation in progress. Aborting..."
+  echo "Disk recovery operation in progress. Aborting..."
+  echo "Disk recovery operation in progress. Aborting..." \
+    > /home/waggle/test_node_NC_${CURRENT_DISK_DEVICE_TYPE}.log
 elif [ -e ${start_file} ] ; then
   run_tests
   if [ "${CURRENT_DISK_DEVICE_TYPE}" == "SD" ]; then
