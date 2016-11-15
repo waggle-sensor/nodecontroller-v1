@@ -1,7 +1,12 @@
 #!/bin/bash
 
-# Determine root and alternate boot medium root device paths
-. /usr/lib/waggle/core/scripts/detect_disk_devices.sh
+wait_for_init() {
+  systemctl status --no-pager waggle-init
+  while [ $? -eq 0 ]; do
+    sleep 2
+    systemctl status --no-pager waggle-init
+  done
+}
 
 wait_for_gn_reboot() {
   local rebooting=0
@@ -91,6 +96,12 @@ generate_report() {
     cat /home/waggle/test-report.txt >> $report_file || true
 }
 
+# Determine root and alternate boot medium root device paths
+. /usr/lib/waggle/core/scripts/detect_disk_devices.sh
+
+# Wait for waggle-init to finish
+wait_for_init
+
 mount | grep '/media/test' && true
 if [ $? -eq 1 ]; then
   mount "${OTHER_DISK_DEVICE}p2" /media/test
@@ -100,11 +111,6 @@ init_file=/root/init_finished
 start_file=/home/waggle/start_test
 continue_file=/home/waggle/continue_test
 finish_file=/home/waggle/finish_test
-if [ ! -e ${init_file} ] ; then
-  # Give waggle-init a chance to finish if it's not in recovery mode
-  sleep 5
-fi
-
 if [ ! -e ${init_file} ] ; then
   echo "Proper Waggle initialization has not finished. Aborting..."
   echo "Proper Waggle initialization has not finished. Aborting..." \
@@ -124,6 +130,7 @@ elif [ -e ${start_file} ] ; then
   fi
   touch /media/test${continue_file}
   rm ${start_file}
+  sync
   wagman-client stop 0 0
 elif [ -e ${continue_file} ]; then
   run_tests
@@ -134,6 +141,7 @@ elif [ -e ${continue_file} ]; then
   fi
   rm ${continue_file}
   wagman-client bs 0 sd
+  sync
   wagman-client stop 0 0
 elif [ -e ${finish_file} ]; then
   generate_report
