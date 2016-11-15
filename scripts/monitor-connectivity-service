@@ -41,11 +41,6 @@ def reset_deadman_trigger():
 ##### Wellness Checks #####
 ###########################
 
-# See whether file system recovery to the alternate bood medium
-# has completed by checking for the existance of /root/do_recovery
-def in_recovery():
-	return os.path.isfile('/root/do_recovery')
-
 # Check that there is a "Wireless" or "Realtek" (LAN) device
 # connected to the USB hub
 def check_USB_modem():
@@ -144,12 +139,6 @@ beehive_check_time = time.time() - beehive_check_duration - 1
 
 while True:
 	current_time = time.time()
-
-	# Recovery status check
-	if in_recovery():
-		reset_deadman_trigger()
-		logging.info("Node Controller is performing a file system recovery.")
-		beehive_reporter.info("Node Controller is performing a file system recovery.")
 
 	# Local checks (done every minute)
 	#print("Performing local checks...")
