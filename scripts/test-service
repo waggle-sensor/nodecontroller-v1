@@ -101,6 +101,11 @@ start_file=/home/waggle/start_test
 continue_file=/home/waggle/continue_test
 finish_file=/home/waggle/finish_test
 if [ ! -e ${init_file} ] ; then
+  # Give waggle-init a chance to finish if it's not in recovery mode
+  sleep 5
+fi
+
+if [ ! -e ${init_file} ] ; then
   echo "Proper Waggle initialization has not finished. Aborting..."
   echo "Proper Waggle initialization has not finished. Aborting..." \
     > /home/waggle/test_node_NC_${CURRENT_DISK_DEVICE_TYPE}.log

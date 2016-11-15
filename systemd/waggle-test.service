@@ -1,5 +1,6 @@
 [Unit]
 Description=Tests the Waggle controller node.
+After=waggle-init.service
 
 [Service]
 Type=oneshot
