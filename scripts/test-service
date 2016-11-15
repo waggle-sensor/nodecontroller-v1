@@ -104,6 +104,12 @@ if [ -e ${init_file} ] ; then
   echo "Proper Waggle initialization has not finished. Aborting..."
   echo "Proper Waggle initialization has not finished. Aborting..." \
     > /home/waggle/test_node_NC_${CURRENT_DISK_DEVICE_TYPE}.log
+  if [ "${CURRENT_DISK_DEVICE_TYPE}" == "SD" ]; then
+    generate_report
+  else
+    cp /home/waggle/test_node_NC_${CURRENT_DISK_DEVICE_TYPE}.log \
+       /home/waggle/test-report.txt
+  fi
 elif [ -e ${start_file} ] ; then
   run_tests
   if [ "${CURRENT_DISK_DEVICE_TYPE}" == "SD" ]; then
