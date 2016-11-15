@@ -68,14 +68,14 @@ run_tests() {
 
 generate_report() {
   local report_file="/home/waggle/test-report.txt"
-  echo "Node Controller SD Test Results" >> $report_file
+  echo "Node Controller SD Test Results" > $report_file
   echo "-------------------------------" >> $report_file
-  cat /home/waggle/test_node_NC_SD.log >> $report_file
+  cat /home/waggle/test_node_NC_SD.log >> $report_file || true
 
   echo >> $report_file
   echo "Node Controller eMMC Test Results" >> $report_file
   echo "---------------------------------" >> $report_file
-  cat /media/test/home/waggle/test_node_NC_MMC.log >> $report_file
+  cat /media/test/home/waggle/test_node_NC_MMC.log >> $report_file || true
 
   echo >> $report_file
   echo >> $report_file
@@ -88,7 +88,7 @@ generate_report() {
   cat /home/waggle/gn-test-report.txt >> $report_file
   ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
-    cat /home/waggle/test-report.txt >> $report_file
+    cat /home/waggle/test-report.txt >> $report_file || true
 }
 
 mount | grep '/media/test' && true
@@ -100,7 +100,7 @@ init_file=/root/init_finished
 start_file=/home/waggle/start_test
 continue_file=/home/waggle/continue_test
 finish_file=/home/waggle/finish_test
-if [ -e ${init_file} ] ; then
+if [ ! -e ${init_file} ] ; then
   echo "Proper Waggle initialization has not finished. Aborting..."
   echo "Proper Waggle initialization has not finished. Aborting..." \
     > /home/waggle/test_node_NC_${CURRENT_DISK_DEVICE_TYPE}.log
