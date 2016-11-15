@@ -96,13 +96,13 @@ if [ $? -eq 1 ]; then
   mount "${OTHER_DISK_DEVICE}p2" /media/test
 fi
 
-recovery_file=/root/do_recovery
+init_file=/root/init_finished
 start_file=/home/waggle/start_test
 continue_file=/home/waggle/continue_test
 finish_file=/home/waggle/finish_test
-if [ -e ${recovery_file} ] ; then
-  echo "Disk recovery operation in progress. Aborting..."
-  echo "Disk recovery operation in progress. Aborting..." \
+if [ -e ${init_file} ] ; then
+  echo "Proper Waggle initialization has not finished. Aborting..."
+  echo "Proper Waggle initialization has not finished. Aborting..." \
     > /home/waggle/test_node_NC_${CURRENT_DISK_DEVICE_TYPE}.log
 elif [ -e ${start_file} ] ; then
   run_tests
