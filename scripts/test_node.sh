@@ -9,16 +9,24 @@ print_result() {
   local software=$4
   local pretext=""
   local posttext=""
-  if [[ ! -z ${software+x} && $software == 1 ]]; then
-    pretest="[0;30;34m"
-    posttest="[0;30;37m"
-  fi
   if [ $result == 0 ]; then
-    echo "[0;30;32m[PASS][0;30;37m ${pretext}${test_description}${posttext}"
+    if [[ ! -z ${software+x} && $software == 1 ]]; then
+      echo "[0;30;32m[PASS][0;30;37m [0;30;34m${test_description}[0;30;37m"
+    else
+      echo "[0;30;32m[PASS][0;30;37m ${test_description}"
+    fi
   elif [[ ! -z ${optional+x} && $optional == 1 ]]; then
-    echo "[0;30;33m[FAIL][0;30;37m ${pretext}${test_description}${posttext}"
+    if [[ ! -z ${software+x} && $software == 1 ]]; then
+      echo "[0;30;33m[FAIL][0;30;37m [0;30;34m${test_description}[0;30;37m"
+    else
+      echo "[0;30;33m[FAIL][0;30;37m ${test_description}"
+    fi
   else
-    echo "[0;30;31m[FAIL][0;30;37m ${pretext}${test_description}${posttext}"
+    if [[ ! -z ${software+x} && $software == 1 ]]; then
+      echo "[0;30;31m[FAIL][0;30;37m [0;30;34m${test_description}[0;30;37m"
+    else
+      echo "[0;30;31m[FAIL][0;30;37m ${test_description}"
+    fi
   fi
 }
 
