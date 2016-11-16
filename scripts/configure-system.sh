@@ -5,6 +5,9 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # this will make sure that an empty eMMC card will get the waggle image
 touch /root/do_recovery
 
+# this will trigger a self test on the first full boot
+touch /home/waggle/start_test
+
 echo -e "10.31.81.51\textensionnode1 extensionnode" >> /etc/hosts
 for i in 2 3 4 5 ; do
 	echo -e "10.31.81.5${i}\textensionnode${i}" >> /etc/hosts
