@@ -9,12 +9,26 @@ import waggle.logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-beehive_reporter = waggle.logging.getLogger('monitor-connectivity')
-
+beehive_reporter = None
 
 ############################
 ##### Helper Functions #####
 ############################
+
+def report(msg, lvl="info"):
+	try:
+		if beehive_reporter == None:
+			beehive_reporter = waggle.logging.getLogger('monitor-connectivity')
+
+		if lvl=="info":
+			beehive_reporter.info(msg)
+		elif lvl=="error":
+			beehive_reporter.error(msg)
+		else:
+			beehive_reporter.debug(msg)
+	except Exception as e:
+		logging.error("Could not send message: %s" % str(e))
+
 
 # Run a command and capture it's output
 def run_command(command):
@@ -163,12 +177,12 @@ while True:
 		reset_deadman_trigger()
 		#print("Node Controller is well.")
 		logging.info("Node Controller is well.")
-		beehive_reporter.info("Node Controller is well.")
+		report("Node Controller is well.", "info")
 	else:
 		#print("Logging test failures...")
 		logging.info("The following tests failed: " + 
 					str([n for x,n in zip(results,test_names) if not x]) + "\n")
-		beehive_reporter.error("The following tests failed: " +
-					str([n for x,n in zip(results,test_names) if not x]) + "\n")
+		report("The following tests failed: " +
+					str([n for x,n in zip(results,test_names) if not x]) + "\n", "error")
 
 	time.sleep(base_sleep_time)
