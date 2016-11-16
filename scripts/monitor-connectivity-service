@@ -28,6 +28,7 @@ def report_beehive(msg, lvl="info"):
 		else:
 			beehive_reporter.debug(msg)
 	except Exception as e:
+		beehive_reporter = None
 		logging.error("Could not send message: %s" % str(e))
 
 
