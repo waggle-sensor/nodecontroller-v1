@@ -114,8 +114,9 @@ parted -s ${OTHER_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print
 print_result "Recovery to eMMC" $?
 
 units=("waggle-communications" "waggle-epoch" "waggle-heartbeat" \
-       "waggle-plugin-manager" "waggle-wagman-publisher" \
-       "waggle-wagman-server" "waggle-wellness")
+       "waggle-monitor-connectivity" "waggle-monitor-shutdown" \
+       "waggle-monitor-system" "waggle-monitor-wagman" \
+       "waggle-wagman-publisher" "waggle-wagman-server")
 for unit in $units; do
   systemctl status $unit | fgrep 'Active: active (running)' && true
   print_result "$unit Service" $?
@@ -124,12 +125,13 @@ done
 units=("waggle-wwan" "waggle-reverse-tunnel")
 for unit in $units; do
   systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: activating (auto-restart)' && true
+  if [ $? -ne 0 ]; then
+    # give systemctl status another try after a brief rest
+    sleep 2
+    systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: activating (auto-restart)' && true
+  fi
   print_result "$unit Service" $?
 done
-
-unit='waggle-log-wagman.timer'
-systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: active (waiting)' && true
-print_result "$unit Service" $?
 
 # ssh to GN
 ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
