@@ -15,7 +15,8 @@ beehive_reporter = None
 ##### Helper Functions #####
 ############################
 
-def report(msg, lvl="info"):
+def report_beehive(msg, lvl="info"):
+	global beehive_reporter
 	try:
 		if beehive_reporter == None:
 			beehive_reporter = waggle.logging.getLogger('monitor-wagman')
@@ -162,9 +163,9 @@ class wagmanListener(object):
 
 	def report(self):
 		try:
-			report(json.dumps(self.status), "info")
+			report_beehive(json.dumps(self.status), "info")
 		except:
-			report(self.status, "info")
+			report_beehive(self.status, "info")
 		self.timer = time.time()
 
 	def run(self):
