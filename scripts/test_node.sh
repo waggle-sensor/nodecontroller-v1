@@ -36,7 +36,7 @@ print_result "sudo Disabled" $?
 
 directories=("/etc/waggle" "/usr/lib/waggle" "/usr/lib/waggle/core" "/usr/lib/waggle/plugin_manager" "/usr/lib/waggle/nodecontroller" \
              "/usr/lib/waggle/SSL" "/usr/lib/waggle/SSL/guest" "/usr/lib/waggle/SSL/node" "/usr/lib/waggle/SSL/waggleca")
-for dir in $directories; do
+for dir in ${directories[@]}; do
   [ -e $dir ]
   print_result "$dir Directory" $?
 done
@@ -124,13 +124,13 @@ units=("waggle-communications" "waggle-epoch" "waggle-heartbeat" \
        "waggle-monitor-connectivity" "waggle-monitor-shutdown" \
        "waggle-monitor-system" "waggle-monitor-wagman" \
        "waggle-wagman-publisher" "waggle-wagman-server")
-for unit in $units; do
+for unit in ${units[@]}; do
   systemctl status $unit | fgrep 'Active: active (running)' && true
   print_result "$unit Service" $?
 done
 
 units=("waggle-wwan" "waggle-reverse-tunnel")
-for unit in $units; do
+for unit in ${units[@]}; do
   systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: activating (auto-restart)' && true
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
