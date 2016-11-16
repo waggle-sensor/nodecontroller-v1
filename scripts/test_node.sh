@@ -89,7 +89,14 @@ if [ $? -eq 0 ]; then
 else
   # No USB Modem Device Present
   ifconfig | grep -A 1 enx | grep 'inet addr:' && true
-  print_result "USB Ethernet IP Address" $?
+  exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+    # give networking another try after a brief rest
+    sleep 10
+    ifconfig | grep -A 1 enx | grep 'inet addr:' && true
+    exit_code=$?
+  fi
+  print_result "USB Ethernet IP Address" $exit_code
 fi
 
 line_count=$(cat /etc/ssh/sshd_config | fgrep -e 'ListenAddress 127.0.0.1' -e 'ListenAddress 10.31.81.10' | wc -l)
@@ -125,12 +132,14 @@ done
 units=("waggle-wwan" "waggle-reverse-tunnel")
 for unit in $units; do
   systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: activating (auto-restart)' && true
-  if [ $? -ne 0 ]; then
+  exit_code=$?
+  if [ $exit_code -ne 0 ]; then
     # give systemctl status another try after a brief rest
     sleep 2
     systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: activating (auto-restart)' && true
+    exit_code=$?
   fi
-  print_result "$unit Service" $?
+  print_result "$unit Service" $exit_code
 done
 
 # ssh to GN
