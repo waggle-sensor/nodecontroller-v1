@@ -128,7 +128,7 @@ logging.info("waggle-system-monitor service is running...")
 
 while True:
 	current_time = time.time()
-	sleep_time = 1000000
+	sleep_time = 60
 	for entity, func, period in checklist:
 		ret = False
 		msg = ""
