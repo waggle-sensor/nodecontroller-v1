@@ -38,7 +38,4 @@ echo >> /home/waggle/.ssh/authorized_keys
 
 # Setup RabbitMQ config files.
 cp -r /usr/lib/waggle/nodecontroller/etc/rabbitmq /etc
-
-# Just in case for now...ideally this would be in /etc/envinronment already.
-WAGGLE_ID=$(ip link | awk '/ether 00:1e:06/ { print $2 }' | sed 's/://g')
-sed -i -e "s/%WAGGLE_ID%/$WAGGLE_ID/" /etc/rabbitmq/rabbitmq.config
+/usr/lib/waggle/nodecontroller/scripts/configure-rabbitmq.sh
