@@ -91,7 +91,7 @@ def responder(serial):
             serial.write(server_socket.recv() + b'\n')
         except Exception as e:
             server_socket.send_string('ERROR')
-            raise e
+            break
         else:
             server_socket.send_string('OK')
 
@@ -102,18 +102,22 @@ if __name__ == '__main__':
     except IndexError:
         wagman_device = '/dev/waggle_sysmon'
 
-    serial = Serial(wagman_device, 57600, timeout=10, writeTimeout=10)
-
-    processes = [
-        Process(target=publisher, args=(serial,)),
-        Process(target=responder, args=(serial,)),
-    ]
-
-    for p in processes:
-        p.start()
-
     while True:
-        for p in processes:
-            assert p.is_alive()
-        print('alive')
+        try:
+            with Serial(wagman_device, 57600, timeout=10, writeTimeout=10) as serial:
+                processes = [
+                    Process(target=publisher, args=(serial,)),
+                    Process(target=responder, args=(serial,)),
+                ]
+
+                for p in processes:
+                    p.start()
+
+                while all(p.is_alive() for p in processes):
+                    time.sleep(1)
+
+                for p in processes:
+                    p.terminate()
+        except OSError:
+            print('could not connect to device')
         time.sleep(1)
