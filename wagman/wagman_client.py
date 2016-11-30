@@ -4,11 +4,11 @@ Client script/library to talk to the WagMan. The library uses zeromq to talk
 with WagMan publisher and server.
 """
 import sys
-from serial import Serial
 from tabulate import tabulate
 import zmq
 import logging
 from datetime import datetime
+import time
 
 
 logging.basicConfig(level=logging.INFO,
@@ -64,7 +64,7 @@ def send_request(command):
         raise RuntimeError('wagman-server returned: {}'.format(message))
 
 
-def wagman_client(args):
+def wagman_client(args, retries=5):
     command = ' '.join(args)
 
     session_id = random_id()
@@ -75,7 +75,16 @@ def wagman_client(args):
     socket.connect('ipc:///tmp/zeromq_wagman-pub')
 
     socket.setsockopt_string(zmq.SUBSCRIBE, session_id)
-    send_request('@{} {}'.format(session_id, command))
+
+    for attempt in range(retries):
+        try:
+            send_request('@{} {}'.format(session_id, command))
+            break
+        except:
+            time.sleep(3)
+    else:
+        raise RuntimeError('wagman-server returned: ERROR')
+
     response = socket.recv_string()
 
     socket.setsockopt_string(zmq.UNSUBSCRIBE, session_id)
