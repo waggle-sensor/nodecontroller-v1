@@ -1,14 +1,16 @@
 #!/bin/bash
 
 wait_for_init() {
-  systemctl status --no-pager waggle-init
+  echo "In wait_for_gn_reboot"
+  systemctl status --no-pager waggle-init > /dev/null
   while [ $? -eq 0 ]; do
     sleep 2
-    systemctl status --no-pager waggle-init
+    systemctl status --no-pager waggle-init > /dev/null
   done
 }
 
 wait_for_gn_reboot() {
+  echo "In wait_for_gn_reboot"
   local rebooting=0
   while [ $rebooting -eq 0 ]; do
     last_hb=$(wagman-client hb | sed -n '2p')
@@ -30,6 +32,7 @@ wait_for_gn_reboot() {
 }
 
 run_gn_tests() {
+  echo "In run_gn_tests"
   # Run tests on the SD or eMMC
   ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
@@ -42,7 +45,7 @@ run_gn_tests() {
     other_gn_device_type='emmc'
   fi
   wagman-client bs 1 $other_gn_device_type
-  wagman-client stop 1 75
+  wagman-client stop 1 60
   wait_for_gn_reboot
 
   # Run tests on the eMMC or SD
@@ -53,7 +56,7 @@ run_gn_tests() {
   # Reboot to SD if we started the GN test cycle on the eMMC
   if [ "$current_gn_device_type" == "sd" ]; then
     wagman-client bs 1 $current_gn_device_type
-    wagman-client stop 1 75
+    wagman-client stop 1 60
     wait_for_gn_reboot
 
     # Finish tests on the SD
@@ -64,14 +67,18 @@ run_gn_tests() {
 }
 
 run_tests() {
+  echo "In run_tests"
   if [ "${CURRENT_DISK_DEVICE_TYPE}" == "SD" ]; then
+    echo "On SD. Running GN tests..."
     run_gn_tests
   fi
+  echo "Running tests..."
   /usr/lib/waggle/nodecontroller/scripts/test_node.sh \
     > /home/waggle/test_node_NC_${CURRENT_DISK_DEVICE_TYPE}.log
 }
 
 generate_report() {
+  echo "In generate_report"
   local report_file="/home/waggle/test-report.txt"
   echo "Node Controller SD Test Results" > $report_file
   echo "-------------------------------" >> $report_file
@@ -104,6 +111,7 @@ wait_for_init
 
 mount | grep '/media/test' && true
 if [ $? -eq 1 ]; then
+  echo "Mounting alternate boot medium..."
   mount "${OTHER_DISK_DEVICE}p2" /media/test
 fi
 
@@ -122,28 +130,43 @@ if [ ! -e ${init_file} ] ; then
        /home/waggle/test-report.txt
   fi
 elif [ -e ${start_file} ] ; then
+  echo "Found start_test."
   run_tests
   if [ "${CURRENT_DISK_DEVICE_TYPE}" == "SD" ]; then
+    echo "Setting boot medium to eMMC..."
     wagman-client bs 0 emmc
   else
+    echo "Setting boot medium to sd..."
     wagman-client bs 0 sd
   fi
+  echo "Creating /media/test${continue_file}..."
   touch /media/test${continue_file}
-  wagman-client stop 0 75
+  echo "Requesting reboot in 60 seconds..."
+  wagman-client stop 0 60
+  echo "Removing start_file..."
   rm ${start_file}
   sync
 elif [ -e ${continue_file} ]; then
+  echo "Found continue_test."
   run_tests
   if [ "${CURRENT_DISK_DEVICE_TYPE}" == "MMC" ]; then
+    echo "Creating /media/test${finish_file}..."
     touch /media/test${finish_file}
+    echo "Setting boot medium to SD..."
+    wagman-client bs 0 sd
+    echo "Requesting reboot in 60 seconds..."
+    wagman-client stop 0 60
   elif [ "${CURRENT_DISK_DEVICE_TYPE}" == "SD" ]; then
+    echo "On SD already. Generating report..."
     generate_report
   fi
-  wagman-client bs 0 sd
-  wagman-client stop 0 75
+  echo "Removing continue_test..."
   rm ${continue_file}
   sync
 elif [ -e ${finish_file} ]; then
+  echo "Found finish_test..."
+  echo "Generating report.."
   generate_report
+  echo "Removing finish_test..."
   rm ${finish_file}
 fi
