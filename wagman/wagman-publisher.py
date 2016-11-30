@@ -7,7 +7,6 @@ from serial import Serial
 import zmq
 import time
 import sys
-import os.path
 import re
 import logging
 

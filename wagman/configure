@@ -18,11 +18,10 @@ fi
 cp ${current_dir}/../upstart/waggle-wagman-* /etc/init/
 
 
-ln -sf ${current_dir}/wagman_client.py /usr/bin/wagman-client
+ln -sf ${current_dir}/wagman-client.py /usr/bin/wagman-client
 
 # bash_completion scripts
 cp ${current_dir}/wagman-client.bash_completion /etc/bash_completion.d/wagman-client
 
 
 echo "done"
-
