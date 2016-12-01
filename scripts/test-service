@@ -1,11 +1,29 @@
 #!/bin/bash
 
 wait_for_init() {
-  echo "In wait_for_gn_reboot"
+  echo "In wait_for_init"
   systemctl status --no-pager waggle-init > /dev/null
   while [ $? -eq 0 ]; do
     sleep 2
     systemctl status --no-pager waggle-init > /dev/null
+  done
+}
+
+wait_for_gn_boot() {
+  echo "In wait_for_gn_boot"
+  local last_hb=0
+  local current_hb=0
+  local booting=1
+  while [[ $booting -eq 1 ]]; do
+    current_hb=$(wagman-client hb | sed -n '2p')
+    if [ $current_hb -lt $last_hb ]; then
+      # done booting
+      booting=0
+    elif [ $current_hb -gt 120000 ]; then
+      # boot failed
+      return 1
+    fi
+    last_hb=$current_hb
   done
 }
 
@@ -33,6 +51,15 @@ wait_for_gn_reboot() {
 
 run_gn_tests() {
   echo "In run_gn_tests"
+
+  # wait for GN to power on
+  wait_for_gn_boot
+  exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+    echo "ERROR: failed to detect a GN heartbeat after 2 minutes"
+    exit $exit_code
+  fi
+
   # Run tests on the SD or eMMC
   ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
@@ -58,11 +85,6 @@ run_gn_tests() {
     wagman-client bs 1 $current_gn_device_type
     wagman-client stop 1 60
     wait_for_gn_reboot
-
-    # Finish tests on the SD
-    ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
-      -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
-      /usr/lib/waggle/guestnode/scripts/run_tests.sh
   fi
 }
 
