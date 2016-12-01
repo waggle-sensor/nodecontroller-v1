@@ -79,7 +79,7 @@ def publisher(serial):
         socket.send_string('error: not connected to wagman')
 
 
-def responder(serial):
+def server(serial):
     context = zmq.Context()
 
     server_socket = context.socket(zmq.REP)
@@ -107,7 +107,7 @@ if __name__ == '__main__':
             with Serial(wagman_device, 57600, timeout=10, writeTimeout=10) as serial:
                 processes = [
                     Process(target=publisher, args=(serial,)),
-                    Process(target=responder, args=(serial,)),
+                    Process(target=server, args=(serial,)),
                 ]
 
                 for p in processes:
