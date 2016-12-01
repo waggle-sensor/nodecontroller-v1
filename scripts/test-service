@@ -123,7 +123,6 @@ generate_report() {
   echo >> $report_file
 
   echo >> $report_file
-  cat /home/waggle/gn-test-report.txt >> $report_file
   ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
     cat /home/waggle/test-report.txt >> $report_file || true
