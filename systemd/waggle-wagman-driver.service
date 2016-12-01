@@ -1,0 +1,12 @@
+[Unit]
+Description=Wagman Driver
+After=network.target
+
+[Service]
+ExecStart=/usr/lib/waggle/nodecontroller/wagman/wagman-driver.py
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
