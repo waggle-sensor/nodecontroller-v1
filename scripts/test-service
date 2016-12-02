@@ -12,6 +12,10 @@ wait_for_init() {
 cleanup() {
   rm -f /home/waggle/test_node_*.log /home/waggle/continue_test /home/waggle/finish_test /home/waggle/test-report.txt \
         /media/test/home/waggle/*_test /media/test/home/waggle/test_node_*.log /media/test/home/waggle/test-report.txt
+
+  ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
+    -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
+    rm -f /home/waggle/test_node_*.log /home/waggle/continue_test /home/waggle/finish_test /home/waggle/test-report.txt
 }
 
 wait_for_gn_boot() {
