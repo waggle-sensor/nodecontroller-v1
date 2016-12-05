@@ -6,28 +6,37 @@ import zmq
 import logging
 
 def subscribe_wagman_status():
-	context = zmq.Context()
-	socket = context.socket(zmq.SUB)
-	socket.setsockopt(zmq.RCVTIMEO, 5000)
-	socket.setsockopt(zmq.SUBSCRIBE, b'')
-	socket.connect ('ipc:///tmp/zeromq_wagman-pub')
-	return socket
+  context = zmq.Context()
+  socket = context.socket(zmq.SUB)
+  socket.setsockopt(zmq.RCVTIMEO, 5000)
+  socket.setsockopt(zmq.SUBSCRIBE, b'')
+  socket.connect ('ipc:///tmp/zeromq_wagman-pub')
+  return socket
 
 def unsubscribe_wagman_status(socket):
-	socket.close()
+  socket.close()
 
-# Check that we can read any WagMan status messages
+# Check for NC shutdown message
 def check_wagman_shutdown_nc(socket):
-	message = ""
-	try:
-		message = socket.recv_string()
-		if 'nc stopp' in message:
-			return True
-		if 'error: not connected to wagman' in message:
-			return False
-	except zmq.ZMQError:
-		pass
-	return False
+  message = ""
+  try:
+    message = socket.recv_string()
+    if 'nc stopp' in message:
+      return True
+  except zmq.ZMQError:
+    pass
+  return False
+
+# Check for GN shutdown message
+def check_wagman_shutdown_gn(socket):
+  message = ""
+  try:
+    message = socket.recv_string()
+    if 'gn stopp' in message:
+      return True
+  except zmq.ZMQError:
+    pass
+  return False
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 wagman_status = subscribe_wagman_status()
@@ -35,11 +44,24 @@ wagman_status = subscribe_wagman_status()
 logging.info("waggle-shutdown-monitor service is running...")
 
 while True:
-	if check_wagman_shutdown_nc(wagman_status):
-		logging.info("Wagman is shutting the system down in a minute; shutdown in 30 seconds")
-		os.system("shutdown -h -k +1")
-		time.sleep(30)
-		logging.info("shutdown now")
-		os.system("shutdown -h now")
+  if check_wagman_shutdown_nc(wagman_status):
+    logging.info("Wagman is cycling the node controller power in one minute; shutdown in 30 seconds")
+    os.system("shutdown -h -k +1")
+    time.sleep(30)
+    logging.info("node controller shutdown now")
+    os.system("shutdown -h now")
 
-	time.sleep(1)
+  if check_wagman_shutdown_gn(wagman_status):
+    logging.info("Wagman is cycling the guest node power in one minute; shutdown in 30 seconds")
+    os.system('shutdown -h -k +1')
+    os.system('ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node 10.31.81.51 \
+                 -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
+                 shutdown -h -k +1')
+    time.sleep(30)
+    logging.info("guest node shutdown now")
+    os.system("shutdown -h now")
+    os.system('ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node 10.31.81.51 \
+                 -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
+                 shutdown -h now')
+
+  time.sleep(1)
