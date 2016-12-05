@@ -23,7 +23,7 @@ def check_wagman_shutdown(socket):
     message = socket.recv_string()
     if 'nc stopp' in message:
       return "nc"
-    elif 'nc stopp' in message:
+    elif 'gn stopp' in message:
       return "gn"
   except zmq.ZMQError:
     pass
