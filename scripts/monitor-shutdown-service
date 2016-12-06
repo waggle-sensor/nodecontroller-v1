@@ -19,18 +19,19 @@ class GuestNodeShutdownThread(threading.Thread):
     self.running = False
 
   def run(self):
-    self.running = True
-    logging.info("Wagman is cycling the guest node power in one minute; shutdown in 30 seconds")
-    os.system('ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node 10.31.81.51 \
-                 -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
-                 shutdown -h -k +1')
-    time.sleep(30)
-    logging.info("guest node shutdown now")
-    os.system('ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node 10.31.81.51 \
-                 -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
-                 shutdown -h now')
-    time.sleep(30)
-    self.running = False
+    while True:
+      if self.running == True:
+        logging.info("Wagman is cycling the guest node power in one minute; shutdown in 30 seconds")
+        os.system('ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node 10.31.81.51 \
+                     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
+                     shutdown -h -k +1')
+        time.sleep(30)
+        logging.info("guest node shutdown now")
+        os.system('ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node 10.31.81.51 \
+                     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
+                     shutdown -h now')
+        time.sleep(30)
+        self.running = False
 
 def subscribe_wagman_status():
   context = zmq.Context()
@@ -63,10 +64,11 @@ logging.info("waggle-shutdown-monitor service is running...")
 
 nc_stopper = NodeControllerShutdownThread()
 gn_stopper = GuestNodeShutdownThread()
+gn_stopper.start()
 while True:
   shutdown = check_wagman_shutdown(wagman_status)
   if (shutdown == 'nc'):
     nc_stopper.start()
   elif (shutdown == 'gn' and not gn_stopper.running):
-    gn_stopper.start()
+    gn_stopper.running = True
   time.sleep(1)
