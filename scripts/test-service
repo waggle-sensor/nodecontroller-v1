@@ -20,19 +20,18 @@ cleanup() {
 
 wait_for_gn_boot() {
   echo "In wait_for_gn_boot"
-  local last_hb=0
-  local current_hb=0
+  local gn_current=0
   local booting=1
   while [[ $booting -eq 1 ]]; do
-    current_hb=$(wagman-client hb | sed -n '2p')
-    if [ $current_hb -lt $last_hb ]; then
+    gn_current=$(wagman-client cu | awk '{print $3}')
+    gn_heartbeat==$(wagman-client hb | sed -n '2p')
+    if [ $gn_current -gt 200 ]; then
       # done booting
       booting=0
-    elif [ $current_hb -gt 120000 ]; then
+    elif [ $gn_heartbeat -gt 120000 ]; then
       # boot failed
       return 1
     fi
-    last_hb=$current_hb
   done
 }
 
@@ -40,19 +39,23 @@ wait_for_gn_reboot() {
   echo "In wait_for_gn_reboot"
   local rebooting=0
   while [ $rebooting -eq 0 ]; do
-    last_hb=$(wagman-client hb | sed -n '2p')
-    if [ $last_hb -gt 10000 ]; then
+    gn_current=$(wagman-client cu | awk '{print $3}')
+    if [ $gn_current -lt 180 ]; then
+      echo "GN Rebooting..."
       rebooting=1
     fi
   done
 
-  while [[ $rebooting -eq 1 ]]; do
-    last_hb=$(wagman-client hb | sed -n '2p')
-    if [ $last_hb -lt 10000 ]; then
+  while [ $rebooting -eq 1 ]; do
+    gn_current=$(wagman-client cu | awk '{print $3}')
+    gn_heartbeat=$(wagman-client hb | sed -n '2p')
+    if [ $gn_current -gt 180 ]; then
       # reboot succeeded
+      echo "GN Rebooted."
       rebooting=0
-    elif [ $last_hb -gt 70000 ]; then
+    elif [ $gn_heartbeat -gt 70000 ]; then
       # reboot failed
+      echo "ERROR: GN Reboot Failed!"
       return 1
     fi
   done
