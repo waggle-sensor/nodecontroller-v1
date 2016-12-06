@@ -24,7 +24,7 @@ wait_for_gn_boot() {
   local booting=1
   while [[ $booting -eq 1 ]]; do
     gn_current=$(wagman-client cu | awk '{print $3}')
-    gn_heartbeat==$(wagman-client hb | sed -n '2p')
+    gn_heartbeat=$(wagman-client hb | sed -n '2p')
     if [ $gn_current -gt 180 ]; then
       # done booting
       booting=0
