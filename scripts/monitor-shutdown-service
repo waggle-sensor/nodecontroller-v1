@@ -16,6 +16,7 @@ class NodeControllerShutdownThread(threading.Thread):
 
 class GuestNodeShutdownThread(threading.Thread):
   def __init__(self):
+    threading.Thread.__init__(self, group=None, target=None, name=None)
     self.running = False
 
   def run(self):
