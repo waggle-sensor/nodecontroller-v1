@@ -14,7 +14,7 @@ cleanup() {
         /media/test/home/waggle/*_test /media/test/home/waggle/test_node_*.log /media/test/home/waggle/test-report.txt
 
   ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
-    -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
+    -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
     rm -f /home/waggle/test_node_*.log /home/waggle/continue_test /home/waggle/finish_test /home/waggle/test-report.txt
 }
 
@@ -56,6 +56,9 @@ wait_for_gn_reboot() {
       return 1
     fi
   done
+
+  echo "Waiting 30 seconds for GN services to finish starting..."
+  sleep 30
 }
 
 run_gn_tests() {
@@ -63,7 +66,7 @@ run_gn_tests() {
 
   # Run tests on the SD or eMMC
   ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
-    -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
+    -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
     /usr/lib/waggle/guestnode/scripts/run_tests.sh
 
   # Reboot to the alternate disk medium to continue the test cycle
@@ -78,7 +81,7 @@ run_gn_tests() {
 
   # Run tests on the eMMC or SD
   ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
-    -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
+    -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
     /usr/lib/waggle/guestnode/scripts/run_tests.sh
 
   # Reboot to SD if we started the GN test cycle on the eMMC
@@ -88,7 +91,7 @@ run_gn_tests() {
     wait_for_gn_reboot
 
     ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
-      -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
+      -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
       /usr/lib/waggle/guestnode/scripts/run_tests.sh
   fi
 }
@@ -125,7 +128,7 @@ generate_report() {
 
   echo >> $report_file
   ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node waggle@10.31.81.51 \
-    -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" \
+    -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
     cat /home/waggle/test-report.txt >> $report_file || true
 }
 

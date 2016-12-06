@@ -33,28 +33,28 @@ class GuestNodeShutdownThread(threading.Thread):
     self.running = False
 
 def subscribe_wagman_status():
-	context = zmq.Context()
-	socket = context.socket(zmq.SUB)
-	socket.setsockopt(zmq.RCVTIMEO, 5000)
-	socket.setsockopt(zmq.SUBSCRIBE, b'')
-	socket.connect ('ipc:///tmp/zeromq_wagman-pub')
-	return socket
+  context = zmq.Context()
+  socket = context.socket(zmq.SUB)
+  socket.setsockopt(zmq.RCVTIMEO, 5000)
+  socket.setsockopt(zmq.SUBSCRIBE, b'')
+  socket.connect ('ipc:///tmp/zeromq_wagman-pub')
+  return socket
 
 def unsubscribe_wagman_status(socket):
-	socket.close()
+  socket.close()
 
-# Check that we can read any WagMan status messages
-def check_wagman_shutdown_nc(socket):
-	message = ""
-	try:
-		message = socket.recv_string()
-		if 'nc stopp' in message:
-			return True
-		if 'error: not connected to wagman' in message:
-			return False
-	except zmq.ZMQError:
-		pass
-	return False
+# Check for shutdown messages
+def check_wagman_shutdown(socket):
+  message = ""
+  try:
+    message = socket.recv_string()
+    if 'nc stopp' in message:
+      return "nc"
+    elif 'gn stopp' in message:
+      return "gn"
+  except zmq.ZMQError:
+    pass
+  return 'no'
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 wagman_status = subscribe_wagman_status()
