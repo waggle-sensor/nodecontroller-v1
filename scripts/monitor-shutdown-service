@@ -1,9 +1,36 @@
 #!/usr/bin/python3
 
+import logging
 import os
+import threading
 import time
 import zmq
-import logging
+
+class NodeControllerShutdownThread(threading.Thread):
+  def run(self):
+    logging.info("Wagman is cycling the node controller power in one minute; shutdown in 30 seconds")
+    os.system("shutdown -h -k +1")
+    time.sleep(30)
+    logging.info("node controller shutdown now")
+    os.system("shutdown -h now")
+
+class GuestNodeShutdownThread(threading.Thread):
+  def __init__(self):
+    self.running = False
+
+  def run(self):
+    self.running = True
+    logging.info("Wagman is cycling the guest node power in one minute; shutdown in 30 seconds")
+    os.system('ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node 10.31.81.51 \
+                 -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
+                 shutdown -h -k +1')
+    time.sleep(30)
+    logging.info("guest node shutdown now")
+    os.system('ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node 10.31.81.51 \
+                 -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
+                 shutdown -h now')
+    time.sleep(30)
+    self.running = False
 
 def subscribe_wagman_status():
   context = zmq.Context()
@@ -34,23 +61,12 @@ wagman_status = subscribe_wagman_status()
 
 logging.info("waggle-shutdown-monitor service is running...")
 
+nc_stopper = NodeControllerShutdownThread()
+gn_stopper = GuestNodeShutdownThread()
 while True:
   shutdown = check_wagman_shutdown(wagman_status)
   if (shutdown == 'nc'):
-    logging.info("Wagman is cycling the node controller power in one minute; shutdown in 30 seconds")
-    os.system("shutdown -h -k +1")
-    time.sleep(30)
-    logging.info("node controller shutdown now")
-    os.system("shutdown -h now")
-  elif (shutdown == 'gn'):
-    logging.info("Wagman is cycling the guest node power in one minute; shutdown in 30 seconds")
-    os.system('ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node 10.31.81.51 \
-                 -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
-                 shutdown -h -k +1')
-    time.sleep(30)
-    logging.info("guest node shutdown now")
-    os.system('ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node 10.31.81.51 \
-                 -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
-                 shutdown -h now')
-
+    nc_stopper.start()
+  elif (shutdown == 'gn' and not gn_stopper.running):
+    gn_stopper.start()
   time.sleep(1)
