@@ -131,8 +131,7 @@ cp -r /usr/lib/waggle/nodecontroller/etc/rabbitmq /etc
 cp ${current_dir}/systemd/* /etc/systemd/system
 systemctl enable waggle-communications.service
 systemctl enable waggle-reverse-tunnel.service
-systemctl enable waggle-wagman-publisher.service
-systemctl enable waggle-wagman-server.service
+systemctl enable waggle-wagman-driver.service
 systemctl enable waggle-configure-rabbitmq.service
 systemctl enable waggle-monitor-connectivity.service
 systemctl enable waggle-monitor-wagman.service
