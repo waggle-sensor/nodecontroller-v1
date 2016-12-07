@@ -1,0 +1,16 @@
+#!/bin/bash
+
+wait_for_init() {
+  echo "In wait_for_init"
+  systemctl status --no-pager waggle-init > /dev/null
+  while [ $? -eq 0 ]; do
+    sleep 2
+    systemctl status --no-pager waggle-init > /dev/null
+  done
+}
+
+# Wait for waggle-init to finish
+wait_for_init
+
+wagman-client stop 1 60 || true
+wagman-client stop 0 60 || true

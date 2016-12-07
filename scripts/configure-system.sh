@@ -19,9 +19,10 @@ echo -e "127.0.0.1\tnodecontroller" >> /etc/hosts
 sed -i 's/^#ListenAddress ::$/ListenAddress 127.0.0.1/' /etc/ssh/sshd_config
 sed -i 's/^#ListenAddress 0.0.0.0$/ListenAddress 10.31.81.10/' /etc/ssh/sshd_config
 
-cp ./etc/interfaces /etc/network/interfaces
+cp ./etc/network/interfaces /etc/network/interfaces
 
-cp ./etc/waggle-test-service /etc/sudoers.d/
+rm -f /etc/sudoers.d/waggle*
+cp ./etc/sudoers.d/* /etc/sudoers.d/
 
 # set AoT_key
 mkdir -p /home/waggle/.ssh/
