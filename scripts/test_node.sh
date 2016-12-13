@@ -118,9 +118,6 @@ line_count=$(cat /etc/ssh/sshd_config | fgrep -e 'ListenAddress 127.0.0.1' -e 'L
 [ $line_count -eq 2 ]
 print_result "sshd Listen Addresses" $? 0 1
 
-cat /etc/ssh/sshd_config | fgrep 'PermitRootLogin no' && true
-print_result "sshd No Root Login" $? 0 1
-
 cat /etc/waggle/node_id | egrep '[0-9a-f]{16}' && true
 print_result "Node ID Set" $? 0 1
 
