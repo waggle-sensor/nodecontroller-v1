@@ -33,6 +33,8 @@ class GuestNodeShutdownThread(threading.Thread):
                      shutdown -h now')
         time.sleep(30)
         self.running = False
+      else:
+        time.sleep(1)
 
 def subscribe_wagman_status():
   context = zmq.Context()
