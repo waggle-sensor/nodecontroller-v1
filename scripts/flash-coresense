@@ -3,19 +3,22 @@ echo
 echo "___Coresense Flashing Utility___"
 echo
 if [ $# -eq 0 ]
-  then
-      echo "No Coresense firmware file provided."
-      echo "Correct usage - coresenseflash firmware.ino.bin"
-      echo
-      exit
-      fi
+then
+    echo "No Coresense firmware file provided."
+    echo "Correct usage - coresenseflash firmware.ino.bin"
+    echo
+    exit
+fi
 
 if [ ${1: -8} != ".ino.bin" ]
 then
-      echo "Incorrect Coresense firmware file provided. The firmware file has .ino.bin extension."
-      echo
-      exit
-      fi
+    echo "Incorrect Coresense firmware file provided. The firmware file has .ino.bin extension."
+    echo
+    exit
+fi
+
+if [ -e "/dev/waggle_coresense" ]
+then
 
 echo "Resetting Coresense board to bootloader mode... (Step 1/2)"
 echo
@@ -26,3 +29,9 @@ echo
 echo 
 echo ">>>>>>>>>>>> Firmware flash process completed <<<<<<<<<<<<<"
 echo
+
+else 
+
+echo "Coresense device not found."
+
+fi
