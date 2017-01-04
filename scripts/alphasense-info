@@ -1,0 +1,25 @@
+#!/usr/bin/python3
+
+import os
+import sys 
+sys.path.append(os.path.abspath("/usr/lib/waggle/plugin_manager/plugins/alphasense"))
+from alphasense import *
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print(('Usage: {} device-name'.format(sys.argv[0])))
+        sys.exit(1)
+
+    alphasense = Alphasense(sys.argv[1])
+    sleep(3)
+
+    version = alphasense.get_firmware_version()
+    sleep(1)
+
+    sn = alphasense.get_serial_number()
+    sleep(1)
+
+    print('Firmware Version: ', version.decode('utf-8')[:28])
+    print('Alphasense_id: ', sn.decode('utf-8'))
+
+    alphasense.close()

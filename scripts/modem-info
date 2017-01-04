@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/lib/waggle/nodecontroller/scripts/modem_info.py $(ls /dev/attwwan?* | sort | sed -n '4p')
