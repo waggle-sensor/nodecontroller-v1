@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#download the file 
+rm /tmp/coresense_fw.ino.bin
+wget http://www.mcs.anl.gov/research/projects/waggle/downloads/coresense/firmware.ino.bin -O /tmp/coresense_fw.ino.bin
+
+# Ask wagman to powerdown the coresense board
+wagman-client stop 2 0
+sleep 2
+#Ask wagman to powerup the coresense board
+wagman-client start 2
+
+sleep 2
+
+#then call coresense flash
+/usr/lib/waggle/nodecontroller/scripts/flash-coresense /tmp/coresense_fw.ino.bin
+sleep 5
+echo ""
+echo ">>>> Waiting for the board to reboot to extract hardware and firmware IDs <<<<"
+echo ""
+sleep 5
+/usr/lib/waggle/nodecontroller/scripts/coresense-info
