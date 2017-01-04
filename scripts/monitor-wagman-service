@@ -17,7 +17,7 @@ beehive_reporter = waggle.logging.getLogger('monitor-wagman')
 ############################
 
 def reset_wagman():
-	os.system("/usr/lib/waggle/core/scripts/reset_wagman.sh")
+	os.system("/usr/lib/waggle/nodecontroller/scripts/reset-wagman")
 
 def thermistor_conversion(raw, nc = True):
 	'''
