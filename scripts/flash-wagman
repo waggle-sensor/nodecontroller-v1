@@ -17,6 +17,8 @@ then
       exit
       fi
 
+if [ -e "/dev/waggle_sysmon" ]
+then 
 echo "Resetting Wagman to bootloader mode... (Step 1/2)"
 echo
 stty -F /dev/waggle_sysmon 1200 hupcl; sleep 5
@@ -27,5 +29,7 @@ echo
 echo ">>>>>>>>>>>> Firmware flash process completed <<<<<<<<<<<<<"
 echo
 
-
+else
+echo "Wagman device not found."
+fi
 
