@@ -16,7 +16,7 @@ if __name__ == '__main__':
     sn = alphasense.get_serial_number()
     sleep(1)
 
-    print('Firmware Version: ', version.decode('utf-8')[:28])
-    print('Alphasense_id: ', sn.decode('utf-8'))
+    print('Firmware Version: ', version[24:28].decode('utf-8')[:28])
+    print('Alphasense_id: ', sn[7:].decode('utf-8'))
 
     alphasense.close()
