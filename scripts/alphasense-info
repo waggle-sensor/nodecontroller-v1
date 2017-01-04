@@ -6,11 +6,8 @@ sys.path.append(os.path.abspath("/usr/lib/waggle/plugin_manager/plugins/alphasen
 from alphasense import *
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print(('Usage: {} device-name'.format(sys.argv[0])))
-        sys.exit(1)
 
-    alphasense = Alphasense(sys.argv[1])
+    alphasense = Alphasense('/dev/alphasense')
     sleep(3)
 
     version = alphasense.get_firmware_version()
