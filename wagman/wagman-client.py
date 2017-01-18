@@ -3,6 +3,7 @@
 Client script/library to talk to the WagMan. The library uses zeromq to talk
 with WagMan publisher and server.
 """
+import os
 import sys
 from tabulate import tabulate
 import zmq
@@ -51,17 +52,23 @@ def random_id():
 
 
 def send_request(command):
+    message = ''
     socket_client = context.socket(zmq.REQ)
-    socket_client.setsockopt(zmq.SNDTIMEO, 5000)
-    socket_client.setsockopt(zmq.RCVTIMEO, 5000)
+    try:
+      socket_client.setsockopt(zmq.SNDTIMEO, 5000)
+      socket_client.setsockopt(zmq.RCVTIMEO, 5000)
 
-    socket_client.connect('ipc:///tmp/zeromq_wagman-server')
+      socket_client.connect('ipc:///tmp/zeromq_wagman-server')
 
-    socket_client.send_string(command)
-    message = socket_client.recv_string()
+      socket_client.send_string(command)
+      message = socket_client.recv_string()
+      socket_client.close()
+    except:
+      socket_client.close()
+      pass
 
     if message != 'OK':
-        raise RuntimeError('wagman-server returned: {}'.format(message))
+      raise RuntimeError('wagman-server returned: {}'.format(message))
 
 
 def wagman_client(args, retries=5):
@@ -83,6 +90,7 @@ def wagman_client(args, retries=5):
         except:
             time.sleep(3)
     else:
+        socket.close()
         raise RuntimeError('wagman-server returned: ERROR')
 
     response = socket.recv_string()
@@ -160,6 +168,7 @@ def usage():
 
 
 if __name__ == "__main__":
+  try:
     if len(sys.argv) <= 1:
         usage()
     elif len(sys.argv) == 2 and sys.argv[1] == 'epoch':
@@ -180,3 +189,5 @@ if __name__ == "__main__":
             sys.exit(0)
         result = wagman_client(sys.argv[1:])
         print(result[1])
+  except:
+    os._exit(1)
