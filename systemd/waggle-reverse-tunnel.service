@@ -9,4 +9,4 @@ Restart=always
 RestartSec=60
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=waggle-core.target

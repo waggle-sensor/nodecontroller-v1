@@ -1,0 +1,7 @@
+[Unit]
+Description=Waggle Core
+Requires=multi-user.target
+Wants=waggle-heartbeat.service waggle-epoch.service waggle-init.service waggle-reverse-tunnel.service waggle-wwan.service
+Conflicts=rescue.service rescue.target
+After=multi-user.target rescue.service rescue.target waggle-heartbeat.service waggle-epoch.service waggle-init.service waggle-reverse-tunnel.service waggle-wwan.service
+AllowIsolate=yes

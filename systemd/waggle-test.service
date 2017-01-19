@@ -7,4 +7,4 @@ WorkingDirectory=/usr/lib/waggle/nodecontroller/
 ExecStart=/usr/lib/waggle/nodecontroller/scripts/test-service
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=waggle-platform.target

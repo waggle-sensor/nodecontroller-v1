@@ -33,7 +33,7 @@ def publisher(serial):
 
         while True:
             line = serial.readline().decode().strip()
-            print('message:', line)
+            print(line)
 
             if incommand:
                 if line.startswith(footer_prefix):
@@ -120,4 +120,4 @@ if __name__ == '__main__':
                     p.terminate()
         except OSError:
             print('could not connect to device')
-        time.sleep(1)
+        time.sleep(3)
