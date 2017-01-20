@@ -1,7 +1,6 @@
 [Unit]
 Description=Waggle Platform
+After=waggle-core.target rescue.service rescue.target
 Requires=waggle-core.target
-Wants=waggle-communications.service waggle-monitor-system.service waggle-wagman-driver.service waggle-configure-rabbitmq.service waggle-monitor-wagman.service waggle-wagman-publisher.service waggle-monitor-connectivity.service waggle-wagman-server.service waggle-monitor-shutdown.service
 Conflicts=rescue.service rescue.target
-After=waggle-core.target rescue.service rescue.target waggle-communications.service waggle-monitor-system.service waggle-wagman-driver.service waggle-configure-rabbitmq.service waggle-monitor-wagman.service waggle-wagman-publisher.service waggle-monitor-connectivity.service waggle-wagman-server.service waggle-monitor-shutdown.service
 AllowIsolate=yes

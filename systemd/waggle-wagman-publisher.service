@@ -1,6 +1,6 @@
 [Unit]
 Description=Publishes command and log data from the Wagman.
-After=network.target
+After=waggle-platform.target
 
 [Service]
 ExecStart=/usr/lib/waggle/nodecontroller/wagman/wagman-publisher.py

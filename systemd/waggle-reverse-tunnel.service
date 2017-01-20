@@ -1,6 +1,6 @@
 [Unit]
 Description=Maintains an SSH reverse tunnel on Beehive.
-After=network.target
+After=waggle-core.target
 
 [Service]
 ExecStart=/usr/lib/waggle/nodecontroller/scripts/autossh.sh

@@ -1,6 +1,6 @@
 [Unit]
 Description=Monitors node controller status.
-After=multi-user.target
+After=waggle-platform.target
 
 [Service]
 ExecStart=/usr/lib/waggle/nodecontroller/scripts/monitor-system-service

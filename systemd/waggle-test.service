@@ -1,6 +1,6 @@
 [Unit]
 Description=Tests the Waggle controller node.
-After=waggle-init.service
+After=waggle-platform.target
 
 [Service]
 WorkingDirectory=/usr/lib/waggle/nodecontroller/
