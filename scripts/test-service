@@ -11,8 +11,8 @@ generate_report() {
   local report_file="/home/waggle/test-report.txt"
   echo "Node Controller eMMC Test Results" > $report_file
   echo "-------------------------------" >> $report_file
-  cat /home/waggle/test_node_NC_MMC.log >> $report_file || true
-  rm -f /home/waggle/test_node_NC_MMC.log
+  cat /home/waggle/test_node_NC_${CURRENT_DISK_DEVICE_TYPE}.log >> $report_file || true
+  rm -f /home/waggle/test_node_NC_${CURRENT_DISK_DEVICE_TYPE}.log
 
   mount | grep '/media/test' && true
   if [ $? -eq 1 ]; then
@@ -23,8 +23,8 @@ generate_report() {
   echo >> $report_file
   echo "Node Controller SD Test Results" >> $report_file
   echo "---------------------------------" >> $report_file
-  cat /media/test/home/waggle/test_node_NC_SD.log >> $report_file || true
-  rm -f /media/test/home/waggle/test_node_NC_SD.log
+  cat /media/test/home/waggle/test_node_NC_${OTHER_DISK_DEVICE_TYPE}.log >> $report_file || true
+  rm -f /media/test/home/waggle/test_node_NC_${OTHER_DISK_DEVICE_TYPE}.log
 
   umount /media/test
 }
