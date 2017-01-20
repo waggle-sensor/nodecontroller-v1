@@ -141,13 +141,10 @@ systemctl enable waggle-wwan.service
 systemctl enable waggle-test.service
 
 
+cp ${current_dir}/etc/udev/rules.d/* /etc/udev/rules.d/
 
-cd ${current_dir}/device_rules/atmel_boards
-./install.sh
-
-
-cd ${current_dir}/device_rules/wwan_modems
-./install.sh
+cp ${current_dir}/scripts/wvwaggle.sh /usr/bin/
+chmod +x /usr/bin/wvwaggle.sh
 
 cd ${current_dir}/wagman
 ./configure
