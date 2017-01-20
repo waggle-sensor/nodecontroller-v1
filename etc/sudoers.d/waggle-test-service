@@ -1,1 +1,1 @@
-waggle ALL=(ALL) NOPASSWD: /bin/systemctl start waggle-test.service
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/run-tests
