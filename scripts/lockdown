@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# disable special priviliges for the waggle user
+rm -f /etc/sudoers.d/waggle-assembler-api
+
+# disable console login for the waggle user
+sed -i 's/^waggle:..*$/waggle:%%NP%%/' /etc/shadow

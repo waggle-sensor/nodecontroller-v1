@@ -1,0 +1,33 @@
+#!/bin/bash
+
+wait_for_init() {
+  echo "In wait_for_init"
+  systemctl status --no-pager waggle-init > /dev/null
+  while [ $? -eq 0 ]; do
+    sleep 2
+    systemctl status --no-pager waggle-init > /dev/null
+  done
+}
+
+if [ $# -ne 2 ]; then
+	exit 1
+elif [[ "$0" != "emmc" && "$0"  "sd" ]]; then
+	exit 2
+elif [[ "$1" -ne "nc" && "$1" -ne "ep" ]]; then
+	exit 3
+fi
+
+# Wait for waggle-init to finish
+wait_for_init
+
+port=''
+if [ "$1" -eq "nc" ]; then
+	port='0'
+elif [ "$1" -eq "ep" ]; then
+	port='1'
+else
+	exit 4
+fi
+
+wagman-client bs $port $0
+wagman-client stop $port 60

@@ -1,0 +1,7 @@
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/shutdown-node
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/run-tests
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot emmc nc
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot emmc ep
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot sd nc
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot sd ep
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/lockdown
