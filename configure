@@ -151,6 +151,8 @@ cp ${current_dir}/etc/udev/rules.d/* /etc/udev/rules.d/
 cp ${current_dir}/scripts/wvwaggle.sh /usr/bin/
 chmod +x /usr/bin/wvwaggle.sh
 
+ln -s ${current_dir}/scripts/serial/interface.py /usr/local/bin/interface.py
+
 cd ${current_dir}/wagman
 ./configure
 
@@ -159,5 +161,6 @@ cd ${current_dir}/scripts
 chmod 700 *
 chmod 744 test_node.sh *-service
 chmod 755 alphasense-info coresense-info coresense-ids modem-info modem_info.py
+
 
 echo "done"

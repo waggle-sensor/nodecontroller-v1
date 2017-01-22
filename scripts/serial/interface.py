@@ -28,6 +28,8 @@ def process_loop():
     if command == "quit":
       print(json.dumps({"rc":0}))
       return
+    elif command == "type":
+      print(json.dumps({"rc":0, "type":"C1+"}))
     elif command == "nodeid":
       print(json.dumps({"rc":0, "id":socket.gethostname()[:12]}))
     elif command == "disk":
