@@ -5,9 +5,9 @@ source $script_dir/utils.sh
 
 if [ $# -ne 2 ]; then
 	exit 1
-elif [[ "$0" != "emmc" && "$0" !=  "sd" ]]; then
+elif [[ "$1" != "emmc" && "$1" !=  "sd" ]]; then
 	exit 2
-elif [[ "$1" != "nc" && "$1" != "ep" ]]; then
+elif [[ "$2" != "nc" && "$2" != "ep" ]]; then
 	exit 3
 fi
 
@@ -15,16 +15,16 @@ echo "Waiting for waggle-init to finish..."
 wait_for_init
 
 port=''
-if [ "$1" -eq "nc" ]; then
+if [ "$2" -eq "nc" ]; then
 	port='0'
-elif [ "$1" -eq "ep" ]; then
+elif [ "$2" -eq "ep" ]; then
 	port='1'
 else
 	exit 4
 fi
 
-echo "Setting ${$0^^} boot disk to $0..."
-wagman-client bs $port $0
+echo "Setting ${$1^^} boot disk to $1..."
+wagman-client bs $port $1
 
-echo "Requesting ${$0^^} reboot..."
+echo "Requesting ${$1^^} reboot..."
 wagman-client stop $port 60
