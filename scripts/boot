@@ -5,9 +5,9 @@ source $script_dir/utils.sh
 
 if [ $# -ne 2 ]; then
 	exit 1
-elif [[ "$0" != "emmc" && "$0"  "sd" ]]; then
+elif [[ "$0" != "emmc" && "$0" !=  "sd" ]]; then
 	exit 2
-elif [[ "$1" -ne "nc" && "$1" -ne "ep" ]]; then
+elif [[ "$1" != "nc" && "$1" != "ep" ]]; then
 	exit 3
 fi
 
