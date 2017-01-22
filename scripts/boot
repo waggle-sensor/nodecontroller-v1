@@ -1,13 +1,7 @@
 #!/bin/bash
 
-wait_for_init() {
-  echo "In wait_for_init"
-  systemctl status --no-pager waggle-init > /dev/null
-  while [ $? -eq 0 ]; do
-    sleep 2
-    systemctl status --no-pager waggle-init > /dev/null
-  done
-}
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source $script_dir/utils.sh
 
 if [ $# -ne 2 ]; then
 	exit 1
@@ -17,7 +11,7 @@ elif [[ "$1" -ne "nc" && "$1" -ne "ep" ]]; then
 	exit 3
 fi
 
-# Wait for waggle-init to finish
+echo "Waiting for waggle-init to finish..."
 wait_for_init
 
 port=''
@@ -29,5 +23,8 @@ else
 	exit 4
 fi
 
+echo "Setting ${$0^^} boot disk to $0..."
 wagman-client bs $port $0
+
+echo "Requesting ${$0^^} reboot..."
 wagman-client stop $port 60

@@ -1,16 +1,13 @@
 #!/bin/bash
 
-wait_for_init() {
-  echo "In wait_for_init"
-  systemctl status --no-pager waggle-init > /dev/null
-  while [ $? -eq 0 ]; do
-    sleep 2
-    systemctl status --no-pager waggle-init > /dev/null
-  done
-}
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source $script_dir/utils.sh
 
-# Wait for waggle-init to finish
+echo "Waiting for waggle-init to finish..."
 wait_for_init
 
+echo "Requesting reboot of Edge Processor"
 wagman-client stop 1 60 || true
+
+echo "Requesting reboot of Node Controller"
 wagman-client stop 0 60 || true

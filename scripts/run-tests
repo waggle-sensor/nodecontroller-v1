@@ -1,5 +1,10 @@
 #!/bin/bash
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source $script_dir/utils.sh
 
+echo "Waiting for waggle-init to finish..."
+wait_for_init
+
+echo "Running unit tests..."
 $script_dir/test_node.sh > /home/waggle/test.log 2>&1
