@@ -152,6 +152,6 @@ cd ${current_dir}/wagman
 cd ${current_dir}/scripts
 chmod 700 *
 chmod 744 test_node.sh *-service
-chmod 755 alphasense-info coresense-info coresense-ids modem-info modem_info
+chmod 755 alphasense-info coresense-info coresense-ids modem-info modem_info.py
 
 echo "done"
