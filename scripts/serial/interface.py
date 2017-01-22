@@ -6,12 +6,25 @@ import socket
 def process_loop():
   script_dir = '/usr/lib/waggle/nodecontroller/scripts'
   for line in fileinput.input():
-    instruction=json.loads(line)
-    print(json.dumps(instruction, indent=2, separators=(',', ': ')))
+    try:
+      instruction=json.loads(line)
+    except:
+      print(json.dumps({"rc":99, "pythonError":"invalid instruction: json parsing failed"}))
+      continue
+
+    if "args" not in instruction:
+      print(json.dumps({"rc":99, "pythonError":"invalid instruction: missing args list"}))
+
+    if len(instruction["args"]) == 0:
+      print(json.dumps({"rc":99, "pythonError":"invalid instruction: empty args list"}))
+      continue
+
     command = instruction["args"][0]
+
     args = []
     if len(instruction["args"]) > 1:
       args = instruction["args"][1:]
+
     if command == "quit":
       print(json.dumps({"rc":0}))
       return
@@ -34,7 +47,7 @@ def process_loop():
       return_value = os.system(''.join((script_dir, "/lockdown")))
       print(json.dumps({"rc":return_value.to_bytes(2, byteorder='big')[0]}))
     else:
-      print(json.dumps({"rc":99, "pythonError":"unrecognized command"}))
+      print(json.dumps({"rc":99, "pythonError":"invalid instruction: unrecognized command"}))
 
 if __name__ == '__main__':
   process_loop()
