@@ -5,3 +5,4 @@ waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot emmc ep
 waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot sd nc
 waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot sd ep
 waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/lockdown
+
