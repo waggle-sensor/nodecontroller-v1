@@ -23,8 +23,8 @@ else
 	exit 4
 fi
 
-echo "Setting ${$1^^} boot disk to $1..."
+echo "Setting ${1^^} boot disk to $1..."
 wagman-client bs $port $1
 
-echo "Requesting ${$1^^} reboot..."
+echo "Requesting ${1^^} reboot..."
 wagman-client stop $port 60
