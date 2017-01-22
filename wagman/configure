@@ -12,12 +12,6 @@ if [ "$EUID" -ne 0 ]
 fi
 
 
-
-
-# copy upstart scripts
-cp ${current_dir}/../upstart/waggle-wagman-* /etc/init/
-
-
 ln -sf ${current_dir}/wagman-client.py /usr/bin/wagman-client
 
 # bash_completion scripts
