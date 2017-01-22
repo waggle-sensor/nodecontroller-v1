@@ -15,9 +15,9 @@ echo "Waiting for waggle-init to finish..."
 wait_for_init
 
 port=''
-if [ "$2" -eq "nc" ]; then
+if [ "$2" == "nc" ]; then
 	port='0'
-elif [ "$2" -eq "ep" ]; then
+elif [ "$2" == "ep" ]; then
 	port='1'
 else
 	exit 4
