@@ -1,2 +1,3 @@
 waggle ALL=(ALL) NOPASSWD: /usr/bin/python3 /usr/local/bin/interface.py
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/start-test-service
 

@@ -1,0 +1,10 @@
+[Unit]
+Description=Tests the Waggle controller node.
+After=waggle-init.service
+
+[Service]
+WorkingDirectory=/usr/lib/waggle/nodecontroller/
+ExecStart=/usr/lib/waggle/nodecontroller/scripts/test-service
+
+[Install]
+WantedBy=multi-user.target

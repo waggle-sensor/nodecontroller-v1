@@ -31,12 +31,13 @@ def process_loop():
     elif command == "type":
       print(json.dumps({"rc":0, "type":"C1+"}))
     elif command == "nodeid":
-      print(json.dumps({"rc":0, "id":socket.gethostname()[:12]}))
+      print(json.dumps({"rc":0, "nodeid":socket.gethostname()[:12]}))
     elif command == "disk":
-      print(json.dumps({"rc":0, "id":socket.gethostname()[12:15]}))
+      print(json.dumps({"rc":0, "disk":socket.gethostname()[12:15]}))
     elif command == "test":
       return_value = os.system(''.join((script_dir, "/run-tests")))
-      print(json.dumps({"rc":return_value.to_bytes(2, byteorder='big')[0]}))
+      test_log = subprocess.check_output('cat', '/home/waggle/test.log')
+      print(json.dumps({"rc":return_value.to_bytes(2, byteorder='big')[0], "test":test_log}))
     elif command == "boot":
       disk = args[0]
       device = args[1]
