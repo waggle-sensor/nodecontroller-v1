@@ -1,3 +1,9 @@
 waggle ALL=(ALL) NOPASSWD: /usr/bin/python3 /usr/local/bin/interface.py
 waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/start-test-service
-
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/shutdown-node
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/run-tests
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot emmc nc
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot emmc ep
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot sd nc
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot sd ep
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/lockdown
