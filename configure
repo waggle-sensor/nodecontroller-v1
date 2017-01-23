@@ -152,6 +152,7 @@ cp ${current_dir}/etc/udev/rules.d/* /etc/udev/rules.d/
 cp ${current_dir}/scripts/wvwaggle.sh /usr/bin/
 chmod +x /usr/bin/wvwaggle.sh
 
+rm /usr/local/bin/interface.py
 ln -s ${current_dir}/scripts/serial/interface.py /usr/local/bin/interface.py
 
 cd ${current_dir}/wagman
