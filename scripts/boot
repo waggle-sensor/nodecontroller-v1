@@ -1,0 +1,30 @@
+#!/bin/bash
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source $script_dir/utils.sh
+
+if [ $# -ne 2 ]; then
+	exit 1
+elif [[ "$1" != "emmc" && "$1" !=  "sd" ]]; then
+	exit 2
+elif [[ "$2" != "nc" && "$2" != "ep" ]]; then
+	exit 3
+fi
+
+echo "Waiting for waggle-init to finish..."
+wait_for_init
+
+port=''
+if [ "$2" == "nc" ]; then
+	port='0'
+elif [ "$2" == "ep" ]; then
+	port='1'
+else
+	exit 4
+fi
+
+echo "Setting ${2^^} boot disk to $1..."
+wagman-client bs $port $1
+
+echo "Requesting ${2^^} reboot..."
+wagman-client stop $port 60

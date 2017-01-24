@@ -1,6 +1,7 @@
 #!/bin/bash
 
 CONFIGURE_SYSTEM=0
+INSTALL_DEPENDENCIES=1
 while [[ $# -gt 0 ]]; do
   key="$1"
   echo "Key: $key"
@@ -14,6 +15,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --system)
       CONFIGURE_SYSTEM=1
+      ;;
+    --nodeps)
+      INSTALL_DEPENDENCIES=0
       ;;
       *)
       ;;
@@ -47,7 +51,9 @@ if [ "$EUID" -ne 0 ]
 fi
 
 
-./scripts/install_dependencies.sh
+if [ $INSTALL_DEPENDENCIES -eq 1 ]; then
+  ./scripts/install_dependencies.sh
+fi
 
 # for log files
 mkdir -p /var/log/waggle/
@@ -128,7 +134,7 @@ mkdir -p /var/log/comms
 cp -r /usr/lib/waggle/nodecontroller/etc/rabbitmq /etc
 
 # copy systemd scripts
-cp ${current_dir}/systemd/* /etc/systemd/system
+cp ${current_dir}/etc/systemd/system/* /etc/systemd/system
 systemctl enable waggle-communications.service
 systemctl enable waggle-reverse-tunnel.service
 systemctl enable waggle-wagman-driver.service
@@ -141,17 +147,22 @@ systemctl enable waggle-wwan.service
 systemctl enable waggle-test.service
 
 
+cp ${current_dir}/etc/udev/rules.d/* /etc/udev/rules.d/
 
-cd ${current_dir}/device_rules/atmel_boards
-./install.sh
+cp ${current_dir}/scripts/wvwaggle.sh /usr/bin/
+chmod +x /usr/bin/wvwaggle.sh
 
-
-cd ${current_dir}/device_rules/wwan_modems
-./install.sh
+rm -f /usr/local/bin/interface.py
+ln -s ${current_dir}/scripts/serial/interface.py /usr/local/bin/interface.py
 
 cd ${current_dir}/wagman
 ./configure
 
+# set script permissions
+cd ${current_dir}/scripts
+chmod 700 *
+chmod 744 test_node.sh *-service
+chmod 755 alphasense-info coresense-info coresense-ids modem-info modem_info.py
 
 
 echo "done"
