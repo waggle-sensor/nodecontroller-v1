@@ -7,4 +7,4 @@ Type=oneshot
 ExecStart=/usr/lib/waggle/nodecontroller/scripts/configure-rabbitmq.sh
 
 [Install]
-WantedBy=waggle-platform.target
+WantedBy=waggle-platform.target rabbitmq-server.service
