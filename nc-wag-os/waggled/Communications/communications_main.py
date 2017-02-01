@@ -179,6 +179,8 @@ def get_certificates():
                 logger.error('Could not connect to certificate server: '+str(e))
                 time.sleep(5)
                 continue
+            if 'error: cert file not found' in html:
+              raise Exception(''.join(('Node ID ', NODE_ID, ' is already registered but the associated SSL credentials were not found.')))
 
             priv_key_start = "-----BEGIN RSA PRIVATE KEY-----"
             position_rsa_priv_key_start = html.find(priv_key_start)
