@@ -1,0 +1,6 @@
+[Unit]
+Description=Waggle Platform
+After=waggle-core.target rescue.service rescue.target
+Requires=waggle-core.target
+Conflicts=rescue.service rescue.target
+AllowIsolate=yes

@@ -1,0 +1,6 @@
+[Unit]
+Description=Waggle Core
+After=multi-user.target rescue.service rescue.target
+Requires=multi-user.target
+Conflicts=rescue.service rescue.target
+AllowIsolate=yes
