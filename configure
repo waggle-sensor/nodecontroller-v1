@@ -144,7 +144,7 @@ systemctl enable waggle-monitor-wagman.service
 systemctl enable waggle-monitor-system.service
 systemctl enable waggle-monitor-shutdown.service
 systemctl enable waggle-wwan.service
-systemctl enable waggle-test.service
+systemctl disable waggle-test.service
 
 
 cp ${current_dir}/etc/udev/rules.d/* /etc/udev/rules.d/
