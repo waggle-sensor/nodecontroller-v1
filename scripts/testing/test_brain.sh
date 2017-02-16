@@ -31,9 +31,7 @@ print_result() {
 }
 
 # USB Breakout Board
-#expected_ids=("f8db2439-2770-4afa-87e5-6a23dc7e65e6" "bebc2419-a049-4966-b9f1-cd16fad854f8" "ffdb5e6d-bf3d-4f77-aaaa-9cc91b1218d3" "07b43408-4157-491b-b527-27f0c09eabe6")
-#expected_ids=("ffdb5e6d-bf3d-4f77-aaaa-9cc91b1218d3" "07b43408-4157-491b-b527-27f0c09eabe6")
-expected_ids=("f8db2439-2770-4afa-87e5-6a23dc7e65e6" "bebc2419-a049-4966-b9f1-cd16fad854f8")
+expected_ids=("07b43408-4157-491b-b527-27f0c09eabe6" "bebc2419-a049-4966-b9f1-cd16fad854f8" "ffdb5e6d-bf3d-4f77-aaaa-9cc91b1218d3" "b6e874a0-21b3-4373-bc5f-7b44f70ccddd")
 ids=$(blkid | grep -e /dev/sda1 -e /dev/sdb1 -e /dev/sdc1 -e /dev/sdd1 | sed -e 's/..* UUID="//' -e 's/" TYPE..*//')
 for expected_id in $expected_ids; do
   found_id=0

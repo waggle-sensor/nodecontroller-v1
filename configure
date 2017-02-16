@@ -33,7 +33,7 @@ if [ $CONFIGURE_SYSTEM -eq 1 ]; then
   cd $current_dir
 fi
 
-pywaggle_tag="v0.8.0"
+pywaggle_tag="v0.11.6"
 pip install git+https://github.com/waggle-sensor/pywaggle@${pywaggle_tag}
 pip3 install git+https://github.com/waggle-sensor/pywaggle@${pywaggle_tag}
 
