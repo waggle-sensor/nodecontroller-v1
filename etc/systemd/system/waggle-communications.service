@@ -1,6 +1,6 @@
 [Unit]
 Description=Waggle communications manager. (Deprecated?)
-After=network.target
+After=waggle-platform.target network.target
 
 [Service]
 WorkingDirectory=/usr/lib/waggle/nodecontroller/nc-wag-os/waggled/Communications
@@ -10,4 +10,4 @@ Restart=always
 RestartSec=5
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=waggle-platform.target

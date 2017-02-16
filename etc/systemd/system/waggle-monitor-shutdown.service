@@ -1,6 +1,6 @@
 [Unit]
 Description=Monitors shutdown signals.
-After=multi-user.target
+After=waggle-platform.target
 
 [Service]
 ExecStart=/usr/lib/waggle/nodecontroller/scripts/monitor-shutdown-service
@@ -9,4 +9,4 @@ Restart=always
 RestartSec=5
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=waggle-platform.target

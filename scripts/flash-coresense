@@ -27,7 +27,7 @@ echo "Flashing Coresense board with new firmware... (Step 2/2)"
 echo
 /usr/bin/bossac -i -d --port=waggle_coresense -U true -e -w -v -b $1 -R
 echo 
-echo ">>>>>>>>>>>> Firmware flash process completed <<<<<<<<<<<<<"
+echo "############ Firmware flash process completed #############"
 echo
 
 else 

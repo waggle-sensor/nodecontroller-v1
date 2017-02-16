@@ -1,6 +1,6 @@
 [Unit]
 Description=ATT WWAN Client
-After=multi-user.target
+After=waggle-core.target
 
 [Service]
 ExecStart=/usr/bin/wvdial
@@ -10,4 +10,4 @@ Restart=always
 RestartSec=10
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=waggle-core.target

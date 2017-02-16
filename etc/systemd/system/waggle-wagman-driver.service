@@ -1,12 +1,12 @@
 [Unit]
 Description=Wagman Driver
-After=network.target
+After=waggle-platform.target
 
 [Service]
-ExecStart=/usr/lib/waggle/nodecontroller/wagman/wagman-driver.py
+ExecStart=/usr/bin/python3 -u /usr/lib/waggle/nodecontroller/wagman/wagman-driver.py
 
 Restart=always
 RestartSec=10
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=waggle-platform.target

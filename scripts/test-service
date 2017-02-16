@@ -14,6 +14,7 @@ generate_report() {
   cat /home/waggle/test_brain_NC_${CURRENT_DISK_DEVICE_TYPE}.log >> $report_file || true
   rm -f /home/waggle/test_brain_NC_${CURRENT_DISK_DEVICE_TYPE}.log
 
+  mkdir -p /media/test
   mount | grep '/media/test' && true
   if [ $? -eq 1 ]; then
     echo "Mounting alternate boot medium..."
