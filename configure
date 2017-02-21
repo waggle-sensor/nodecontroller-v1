@@ -1,7 +1,6 @@
 #!/bin/bash
 
 CONFIGURE_SYSTEM=0
-INSTALL_DEPENDENCIES=1
 while [[ $# -gt 0 ]]; do
   key="$1"
   echo "Key: $key"
@@ -15,9 +14,6 @@ while [[ $# -gt 0 ]]; do
       ;;
     --system)
       CONFIGURE_SYSTEM=1
-      ;;
-    --nodeps)
-      INSTALL_DEPENDENCIES=0
       ;;
       *)
       ;;
@@ -48,11 +44,6 @@ export current_dir="$(pwd)"
 if [ "$EUID" -ne 0 ]
   then echo "Please run as root"
   exit
-fi
-
-
-if [ $INSTALL_DEPENDENCIES -eq 1 ]; then
-  ./scripts/install_dependencies.sh
 fi
 
 # for log files
