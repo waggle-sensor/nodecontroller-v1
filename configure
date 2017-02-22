@@ -152,7 +152,7 @@ cd ${current_dir}/wagman
 # set script permissions
 cd ${current_dir}/scripts
 chmod 700 *
-chmod 744 test_node.sh *-service
+chmod 744 testing/* *-service
 chmod 755 alphasense-info coresense-info coresense-ids modem-info modem_info.py
 
 
