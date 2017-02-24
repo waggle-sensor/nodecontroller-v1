@@ -7,16 +7,24 @@ import time
 import zmq
 
 class NodeControllerShutdownThread(threading.Thread):
+  def __init__(self):
+    threading.Thread.__init__(self, group=None, target=None, name=None)
+    self.wait_for_ep = False
+
   def run(self):
     logging.info("Wagman is cycling the node controller power in one minute; shutdown in 30 seconds")
     os.system("shutdown -h -k +1")
     time.sleep(30)
+    while self.wait_for_ep:
+      time.sleep(1)
     logging.info("node controller shutdown now")
     os.system("shutdown -h now")
 
-class GuestNodeShutdownThread(threading.Thread):
-  def __init__(self):
+class EdgeProcessorShutdownThread(threading.Thread):
+  def __init__(self, nc_stopper):
     threading.Thread.__init__(self, group=None, target=None, name=None)
+    nc_stopper.wait_for_ep = True
+    self.nc_stopper = nc_stopper
     self.running = False
 
   def run(self):
@@ -29,7 +37,9 @@ class GuestNodeShutdownThread(threading.Thread):
         os.system('/usr/lib/waggle/nodecontroller/scripts/eplogin shutdown -h now')
         time.sleep(30)
         self.running = False
+        self.nc_stopper.wait_for_ep = False
       else:
+        self.nc_stopper.wait_for_ep = False
         time.sleep(1)
 
 def subscribe_wagman_status():
@@ -62,12 +72,12 @@ wagman_status = subscribe_wagman_status()
 logging.info("waggle-shutdown-monitor service is running...")
 
 nc_stopper = NodeControllerShutdownThread()
-gn_stopper = GuestNodeShutdownThread()
-gn_stopper.start()
+ep_stopper = EdgeProcessorShutdownThread(nc_stopper)
+ep_stopper.start()
 while True:
   shutdown = check_wagman_shutdown(wagman_status)
   if (shutdown == 'nc'):
     nc_stopper.start()
-  elif (shutdown == 'gn' and not gn_stopper.running):
-    gn_stopper.running = True
+  elif (shutdown == 'gn' and not ep_stopper.running):
+    ep_stopper.running = True
   time.sleep(1)
