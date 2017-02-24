@@ -43,7 +43,7 @@ def run_registration_command(registration_key, cert_server, command):
 
 def get_certificates():
     cert_server = ""
-    with open("/etc/waggle/server_cert_server") as cert_server_file:
+    with open("/etc/waggle/server_host") as cert_server_file:
         cert_server = cert_server_file.readline().rstrip()
     node_id = ""
     with open("/etc/waggle/node_id") as node_id_file:
