@@ -92,8 +92,8 @@ def check_beehive_ping(hostname):
 # Connect to the local sshd
 def check_local_sshd():
 	# To test, add "waggle" user to ThinkPad and setup passwordless key
-	command = ['ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node -x',
-				'-o "ProxyCommand ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node -o \\\"StrictHostKeyChecking no\\\" -q waggle@10.31.81.51 nc -q0 10.31.81.10 22"',
+	command = ['ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor -x',
+				'-o "ProxyCommand ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor -o \\\"StrictHostKeyChecking no\\\" -q waggle@10.31.81.51 nc -q0 10.31.81.10 22"',
 				'-o "PasswordAuthentication no"',
 				'-o "StrictHostKeyChecking no"',
 				'-o "ConnectTimeout 5" waggle@10.31.81.10',

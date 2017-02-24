@@ -22,13 +22,13 @@ class GuestNodeShutdownThread(threading.Thread):
   def run(self):
     while True:
       if self.running == True:
-        logging.info("Wagman is cycling the guest node power in one minute; shutdown in 30 seconds")
-        os.system('ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node 10.31.81.51 \
+        logging.info("Wagman is cycling the Edge Processor power in one minute; shutdown in 30 seconds")
+        os.system('ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor 10.31.81.51 \
                      -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
                      shutdown -h -k +1')
         time.sleep(30)
-        logging.info("guest node shutdown now")
-        os.system('ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node 10.31.81.51 \
+        logging.info("Edge Processor shutting down now")
+        os.system('ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor 10.31.81.51 \
                      -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 5" \
                      shutdown -h now')
         time.sleep(30)

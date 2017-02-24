@@ -63,6 +63,6 @@ parted -s ${OTHER_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print
 print_result "eMMC Size" $? 0 0
 
 # ssh to GN
-ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node root@10.31.81.51 \
+ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor root@10.31.81.51 \
     -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" /bin/date && true
 print_result "ssh to GN" $? 0 0
