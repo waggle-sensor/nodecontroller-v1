@@ -261,6 +261,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     try:
+        pid_file = "/var/run/waggle/communications.pid"
         with PidFile(pid_file, force=args.force, name=os.path.basename(__file__)):
 
             while (datetime.datetime.now().year < 2016):
