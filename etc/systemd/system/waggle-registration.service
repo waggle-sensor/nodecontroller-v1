@@ -1,0 +1,10 @@
+[Unit]
+Description=node registration
+After=waggle-platform.target network.target
+
+[Service]
+WorkingDirectory=/usr/lib/waggle/nodecontroller/scripts
+ExecStart=/usr/lib/waggle/nodecontroller/scripts/registration-service --force
+
+[Install]
+WantedBy=waggle-platform.target
