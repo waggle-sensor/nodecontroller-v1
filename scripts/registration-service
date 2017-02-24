@@ -11,7 +11,7 @@ import time
 from waggle.protocol.utils.pidfile import PidFile, AlreadyRunning
 
 logger = logging.getLogger("registration-service")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 def read_file( str ):
     print("read_file: "+str)
@@ -37,7 +37,7 @@ def run_registration_command(registration_key, cert_server, command):
      "-i", registration_key,
      "-o", "StrictHostKeyChecking no",
      command]
-  logger.debug("Executing:", str(ssh-command))
+  logger.debug("Executing:", str(ssh_command))
   p = subprocess.Popen(
     ssh_command,
     stdout=subprocess.PIPE,
@@ -94,7 +94,7 @@ def get_certificates():
 
             if html != 'This is the Waggle certificate server.':
                 if (loop == 0):
-                    logger.error("Did not find certificate server.")
+                    logger.error(''.join(("Unexpected response from certificate server: ", html)))
                 time.sleep(5)
                 continue
         else:
@@ -118,7 +118,8 @@ def get_certificates():
                 logger.info('certificate downloaded')
             else:
                 logger.error('certificate parsing problem')
-                #logger.debug('content: '+str(html))
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug('content: '+str(html))
                 time.sleep(5)
                 continue
 
@@ -136,6 +137,8 @@ def get_certificates():
                 html = run_registration_command("node?%s" % node_id)
             except Exception as e:
                 logger.error('Could not connect to certificate server: '+str(e))
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug('content: '+str(html))
                 time.sleep(5)
                 continue
             if 'error: cert file not found' in html:
