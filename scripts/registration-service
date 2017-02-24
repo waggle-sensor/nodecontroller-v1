@@ -57,8 +57,6 @@ def get_certificates():
     ca_root_file = "/usr/lib/waggle/SSL/waggleca/cacert.pem"
     client_key_file = "/usr/lib/waggle/SSL/node/key.pem"
     client_cert_file = "/usr/lib/waggle/SSL/node/cert.pem"
-    aot_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCsYPMSrC6k33vqzulXSx8141ThfNKXiyFxwNxnudLCa0NuE1SZTMad2ottHIgA9ZawcSWOVkAlwkvufh4gjA8LVZYAVGYHHfU/+MyxhK0InI8+FHOPKAnpno1wsTRxU92xYAYIwAz0tFmhhIgnraBfkJAVKrdezE/9P6EmtKCiJs9At8FjpQPUamuXOy9/yyFOxb8DuDfYepr1M0u1vn8nTGjXUrj7BZ45VJq33nNIVu8ScEdCN1b6PlCzLVylRWnt8+A99VHwtVwt2vHmCZhMJa3XE7GqoFocpp8TxbxsnzSuEGMs3QzwR9vHZT9ICq6O8C1YOG6JSxuXupUUrHgd"
-    aot_public_key_comment = "AoT_key"
 
     loop=-1
     while True:
