@@ -8,9 +8,9 @@ touch /root/do_recovery
 # this will trigger a self test on the first full boot
 touch /home/waggle/start_test
 
-echo -e "10.31.81.51\textensionnode1 extensionnode" >> /etc/hosts
+echo -e "10.31.81.51\tedgeprocessor1 edgeprocessor" >> /etc/hosts
 for i in 2 3 4 5 ; do
-	echo -e "10.31.81.5${i}\textensionnode${i}" >> /etc/hosts
+	echo -e "10.31.81.5${i}\tedgeprocessor${i}" >> /etc/hosts
 done
 
 echo -e "127.0.0.1\tnodecontroller" >> /etc/hosts
