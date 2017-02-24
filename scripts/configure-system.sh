@@ -19,6 +19,9 @@ echo -e "127.0.0.1\tnodecontroller" >> /etc/hosts
 sed -i 's/^#ListenAddress ::$/ListenAddress 127.0.0.1/' /etc/ssh/sshd_config
 sed -i 's/^#ListenAddress 0.0.0.0$/ListenAddress 10.31.81.10/' /etc/ssh/sshd_config
 
+# disable all password authentication
+sed -i 's/^#PasswordAuthentication yes$/PasswordAuthentication no/' /etc/ssh/sshd_config
+
 cp ./etc/network/interfaces /etc/network/interfaces
 
 rm -f /etc/sudoers.d/waggle*
