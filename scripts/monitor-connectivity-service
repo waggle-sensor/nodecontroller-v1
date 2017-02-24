@@ -92,13 +92,14 @@ def check_beehive_ping(hostname):
 # Connect to the local sshd
 def check_local_sshd():
 	# To test, add "waggle" user to ThinkPad and setup passwordless key
-	command = ['ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor -x',
-				'-o "ProxyCommand ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor -o \\\"StrictHostKeyChecking no\\\" -q waggle@10.31.81.51 nc -q0 10.31.81.10 22"',
-				'-o "PasswordAuthentication no"',
-				'-o "StrictHostKeyChecking no"',
-				'-o "ConnectTimeout 5" waggle@10.31.81.10',
-				'date > /dev/null 2>&1']
+	# command = ['ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor -x',
+	# 			'-o "ProxyCommand ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor -o \\\"StrictHostKeyChecking no\\\" -q waggle@10.31.81.51 nc -q0 10.31.81.10 22"',
+	# 			'-o "PasswordAuthentication no"',
+	# 			'-o "StrictHostKeyChecking no"',
+	# 			'-o "ConnectTimeout 5" waggle@10.31.81.10',
+	# 			'date > /dev/null 2>&1']
 	#print(' '.join(command))
+	command = ['/usr/lib/waggle/nodecontroller/scripts/eplogin' '/usr/lib/waggle/edge_processor/nclogin' 'date > /dev/null 2>&1']
 	rc = os.system(' '.join(command))
 	if rc != 0:
 		return False
