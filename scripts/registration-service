@@ -1,0 +1,282 @@
+#!/usr/bin/env python3
+import argparse
+import datetime
+import logging
+import os
+import os.path
+import re
+import subprocess
+import sys
+from waggle.protocol.utils.pidfile import PidFile, AlreadyRunning
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+def read_file( str ):
+    print("read_file: "+str)
+    if not os.path.isfile(str) :
+        return ""
+    with open(str,'r') as file_:
+        return file_.read().strip()
+    return ""
+
+def create_dir_for_file(file):
+    file_dir = os.path.dirname(file)
+    if not os.path.exists(file_dir):
+        try:
+            os.makedirs(file_dir)
+        except Exception as e:
+            logger.error("Could not create directory '%s' : %s" % (file_dir,str(e)) )
+            sys.exit(1)
+
+def run_registration_command(registration_key, cert_server, command):
+  p = subprocess.Popen(
+    ["ssh", cert_server,
+     "-p", "20022",
+     "-i", registration_key,
+     "-o", "StrictHostKeyChecking no",
+     command],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE)
+  return p.stdout.read().decode()
+
+
+def get_certificates():
+    cert_server = ""
+    with open("/etc/waggle/server_cert_server") as cert_server_file:
+        cert_server = cert_server_file.readline().rstrip()
+    node_id = ""
+    with open("/etc/waggle/node_id") as node_id_file:
+        node_id = node_id_file.readline().rstrip()
+    registration_key = "/root/id_rsa_waggle_aot_registration"
+    reverse_ssh_port_file = '/etc/waggle/reverse_ssh_port'
+    ca_root_file = "/usr/lib/waggle/SSL/waggleca/cacert.pem"
+    client_key_file = "/usr/lib/waggle/SSL/node/key.pem"
+    client_cert_file = "/usr/lib/waggle/SSL/node/cert.pem"
+    aot_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCsYPMSrC6k33vqzulXSx8141ThfNKXiyFxwNxnudLCa0NuE1SZTMad2ottHIgA9ZawcSWOVkAlwkvufh4gjA8LVZYAVGYHHfU/+MyxhK0InI8+FHOPKAnpno1wsTRxU92xYAYIwAz0tFmhhIgnraBfkJAVKrdezE/9P6EmtKCiJs9At8FjpQPUamuXOy9/yyFOxb8DuDfYepr1M0u1vn8nTGjXUrj7BZ45VJq33nNIVu8ScEdCN1b6PlCzLVylRWnt8+A99VHwtVwt2vHmCZhMJa3XE7GqoFocpp8TxbxsnzSuEGMs3QzwR9vHZT9ICq6O8C1YOG6JSxuXupUUrHgd"
+    aot_public_key_comment = "AoT_key"
+
+    loop=-1
+    while True:
+        loop=(loop+1)%20
+        ca_root_file_exists = os.path.isfile(ca_root_file) and os.stat(ca_root_file).st_size > 0
+        client_key_file_exists = os.path.isfile(client_key_file) and os.stat(client_key_file).st_size > 0
+        client_cert_file_exists = os.path.isfile(client_cert_file) and os.stat(client_cert_file).st_size > 0
+        reverse_ssh_port_file_exists = os.path.isfile(reverse_ssh_port_file) and os.stat(reverse_ssh_port_file).st_size > 0
+
+        #check if cert server is available
+        if not (ca_root_file_exists and client_key_file_exists and client_cert_file_exists and reverse_ssh_port_file_exists):
+
+            if (loop == 0):
+                if not ca_root_file_exists:
+                    logger.info("File '%s' not found." % (ca_root_file))
+                if not client_key_file_exists:
+                    logger.info("File '%s' not found." % (client_key_file))
+                if not client_cert_file_exists:
+                    logger.info("File '%s' not found." % (client_cert_file))
+                if not reverse_ssh_port_file_exists:
+                    logger.info("File '%s' not found." % (reverse_ssh_port_file))
+
+            try:
+                html = run_registration_command(registration_key, cert_server, "")
+            except Exception as e:
+                if (loop == 0):
+                    logger.error('Have not found certificate files and can not connect to certificate server (%s): %s' % (cert_server, str(e)))
+                    logger.error('Either copy certificate files manually or activate certificate sever.')
+                    logger.error('Will silently try to connect to certificate server in 30 second intervals from now on.')
+
+                time.sleep(30)
+                continue
+
+            if html != 'This is the Waggle certificate server.':
+                if (loop == 0):
+                    logger.error("Did not find certificate server.")
+                time.sleep(5)
+                continue
+        else:
+            logger.info("All certificate files found.")
+            if os.path.isfile(registration_key):
+              os.remove(registration_key)
+            break
+
+        # make sure certficate files exist.
+        if not ca_root_file_exists:
+            create_dir_for_file(ca_root_file)
+            logger.info("trying to get server certificate from certificate server %s..." % (cert_server))
+            try:
+                html = run_registration_command("certca")
+            except Exception as e:
+                logger.error('Could not connect to certificate server: '+str(e))
+                time.sleep(5)
+                continue
+
+            if html.startswith( '-----BEGIN CERTIFICATE-----' ) and html.endswith('-----END CERTIFICATE-----'):
+                logger.info('certificate downloaded')
+            else:
+                logger.error('certificate parsing problem')
+                #logger.debug('content: '+str(html))
+                time.sleep(5)
+                continue
+
+            with open(ca_root_file, 'w') as f:
+                f.write(html)
+            f.close()
+
+            logger.debug("File %s written." % (ca_root_file))
+
+        if not (client_key_file_exists and client_cert_file_exists):
+            create_dir_for_file(client_key_file)
+            create_dir_for_file(client_cert_file)
+            logger.info("trying to get node key and certificate from certificate server %s..." % (cert_server))
+            try:
+                html = run_registration_command("node?%s" % node_id)
+            except Exception as e:
+                logger.error('Could not connect to certificate server: '+str(e))
+                time.sleep(5)
+                continue
+            if 'error: cert file not found' in html:
+              raise Exception(''.join(('Node ID ', node_id, ' is already registered but the associated SSL credentials were not found.')))
+
+            priv_key_start = "-----BEGIN RSA PRIVATE KEY-----"
+            position_rsa_priv_key_start = html.find(priv_key_start)
+            if position_rsa_priv_key_start == -1:
+                logger.error("Could not parse PEM data from server. (position_rsa_priv_key_start)")
+                time.sleep(5)
+                continue
+            logger.info("position_rsa_priv_key_start: "+str(position_rsa_priv_key_start))
+
+            priv_key_end = "-----END RSA PRIVATE KEY-----"
+            position_rsa_priv_key_end = html.find(priv_key_end)
+            if position_rsa_priv_key_end == -1:
+                logger.error("Could not parse PEM data from server. (position_rsa_priv_key_end)")
+                time.sleep(5)
+                continue
+            logger.info("position_rsa_priv_key_end: "+str(position_rsa_priv_key_end))
+
+            position_cert_start = html.find("-----BEGIN CERTIFICATE-----")
+            if position_cert_start == -1:
+                logger.error("Could not parse PEM data from server. (position_cert_start)")
+                time.sleep(5)
+                continue
+            logger.info("position_cert_start: "+str(position_cert_start))
+
+            end_cert = "-----END CERTIFICATE-----"
+            position_cert_end = html.find(end_cert)
+            if position_cert_end == -1:
+                logger.error("Could not parse PEM data from server. (position_cert_end)")
+                time.sleep(5)
+                continue
+            logger.info("position_cert_end: "+str(position_cert_end))
+
+            html_tail = html[position_cert_end+len(end_cert):]
+
+            client_key_string = html[position_rsa_priv_key_start:position_rsa_priv_key_end+len(priv_key_end)]+"\n"
+            client_cert_string = html[position_cert_start:position_cert_end+len(end_cert)]+"\n"
+
+
+            # find port for reverse ssh tunnel
+            port_number = re.findall("PORT=(\d+)", html_tail)[0]
+
+            rsa_public_key, rsa_public_key_comment = re.findall("(ssh-rsa \S*)( .*)?", html_tail)[0]
+
+            logger.debug("client_key_file: "+client_key_string)
+            logger.debug("client_cert_file: "+client_cert_string)
+
+            logger.debug("PORT: "+str(port_number))
+
+            waggle_ssh_dir = "/root/.ssh/"
+            waggle_authorized_keys = waggle_ssh_dir + 'authorized_keys'
+
+
+            # read existing authorized_keys file
+            old_authorized_keys = read_file(waggle_authorized_keys)
+            old_authorized_keys_array = old_authorized_keys.split("\n")
+
+            exisiting_rsa_keys = {}
+            for line in old_authorized_keys_array:
+                keys_found = re.findall("^(ssh-rsa \S*)", line)
+
+                if keys_found:
+                    key_found = keys_found[0]
+                    if key_found:
+                        logger.debug("key found: %s" % (key_found))
+                        exisiting_rsa_keys[key_found] = 1
+
+            new_authorized_keys = old_authorized_keys
+
+            change_authorized_keys = 0
+
+
+            if aot_public_key in exisiting_rsa_keys:
+                logger.debug("aot_public_key already in authorized_keys")
+            else:
+                new_authorized_keys += "\n" + aot_public_key + ' ' + aot_public_key_comment
+                change_authorized_keys = 1
+
+
+            # write everything to files
+            with open(client_key_file, 'w') as f:
+                f.write(client_key_string)
+            f.close()
+            logger.info("File '%s' has been written." % (client_key_file))
+            subprocess.call(['chown', 'rabbitmq:rabbitmq', client_key_file])
+            os.chmod(client_key_file, 0o600)
+
+            with open(client_cert_file, 'w') as f:
+                f.write(client_cert_string)
+            f.close()
+            subprocess.call(['chown', 'rabbitmq:rabbitmq', client_cert_file])
+            os.chmod(client_cert_file, 0o600)
+
+            logger.info("File '%s' has been written." % (client_cert_file))
+
+            with open(reverse_ssh_port_file, 'w') as f:
+                f.write(str(port_number))
+            f.close()
+
+            logger.info("File '%s' has been written." % (reverse_ssh_port_file))
+
+
+            if change_authorized_keys:
+                # write new authorized_keys
+                try:
+                    os.makedirs(waggle_ssh_dir)
+                except:
+                    pass
+
+                with open(waggle_authorized_keys, 'w') as f:
+                    f.write(new_authorized_keys)
+                f.close()
+
+                os.chmod(waggle_authorized_keys, 0o600)
+                os.chmod(waggle_ssh_dir, 0o700)
+                subprocess.call(['chown', 'waggle:waggle', waggle_authorized_keys])
+                logger.info("File '%s' has been written." % (waggle_authorized_keys))
+            else:
+                logger.debug("no changes needed for authorized_keys file")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--force', dest='force', help='kill other processes and start', action='store_true')
+    args = parser.parse_args()
+
+    try:
+        with PidFile(pid_file, force=args.force, name=os.path.basename(__file__)):
+
+            while (datetime.datetime.now().year < 2016):
+                ## SSL connection to RabbitMQ would not work anyway with wrong time
+                logger.warning("We are in the wrong year. Waiting for the correct time.")
+                time.sleep(10)
+
+            get_certificates()
+
+    except AlreadyRunning as e:
+        logger.error(str(e))
+        logger.error("Please use systemctl to start and stop this script.")
+    except KeyboardInterrupt as k:
+        #terminate the external communication processes
+        for name, subhash in name2func.items():
+            logger.info( '(KeyboardInterrupt) shutting down ' + name)
+            name2process[name].terminate()
+    except Exception as e:
+        logger.error("Error (%s): %s" % ( str(type(e)), str(e)))
