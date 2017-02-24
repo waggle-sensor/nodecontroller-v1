@@ -99,7 +99,7 @@ def check_local_sshd():
 	# 			'-o "ConnectTimeout 5" waggle@10.31.81.10',
 	# 			'date > /dev/null 2>&1']
 	#print(' '.join(command))
-	command = ['/usr/lib/waggle/nodecontroller/scripts/eplogin' '/usr/lib/waggle/edge_processor/nclogin' 'date > /dev/null 2>&1']
+	command = ['/usr/lib/waggle/nodecontroller/scripts/eplogin', '/usr/lib/waggle/edge_processor/nclogin', 'date > /dev/null 2>&1']
 	rc = os.system(' '.join(command))
 	if rc != 0:
 		return False
