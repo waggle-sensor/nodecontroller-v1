@@ -42,9 +42,11 @@ echo >> /root/.ssh/authorized_keys
 cat <<EOT > /root/.ssh/config
 Host edgeprocessor
   StrictHostKeyChecking no
+  PasswordAuthentication no
+  ConnectTimeout 5
   ForwardAgent yes
 EOT
-
+ 
 # Setup RabbitMQ config files.
 cp -r /usr/lib/waggle/nodecontroller/etc/rabbitmq /etc
 
