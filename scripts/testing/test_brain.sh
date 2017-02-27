@@ -31,22 +31,13 @@ print_result() {
 }
 
 # USB Breakout Board
-expected_ids=("07b43408-4157-491b-b527-27f0c09eabe6" "bebc2419-a049-4966-b9f1-cd16fad854f8" "ffdb5e6d-bf3d-4f77-aaaa-9cc91b1218d3" "b6e874a0-21b3-4373-bc5f-7b44f70ccddd")
-ids=$(blkid | grep -e /dev/sda1 -e /dev/sdb1 -e /dev/sdc1 -e /dev/sdd1 | sed -e 's/..* UUID="//' -e 's/" TYPE..*//')
-for expected_id in $expected_ids; do
-  found_id=0
-  for id in ids; do
-    if [ "$id" == "$expected_id" ]; then
-      found_id=1
-      break
-    fi
-  done
-  if [ $found_id -eq 1 ]; then
-    print_result "Detected USB drive $expected_id" 0 0 0
-  else
-    print_result "Detected USB drive $expected_id" 1 0 0
-  fi
-done
+test_device_count=$(ls -1 /dev/waggle_brain_test* | wc -l)
+expected_device_count=2
+if [ ${test_device_count} -eq ${expected_device_count} ]; then
+  print_result "Detected USB test devices" 0 0 0
+else
+  print_result "Detected USB test devices" 0 0 0
+fi
 
 # Ethernet IP Address (NC)
 ifconfig | fgrep "          inet addr:10.31.81.10  Bcast:10.31.81.255  Mask:255.255.255.0" && true

@@ -1,0 +1,7 @@
+SUBSYSTEM!="usb", ACTION!="add", GOTO="rules_end"
+
+# Product: Future Technology Devices International, Ltd FT232 USB-Serial (UART) IC
+
+SUBSYSTEM=="tty", KERNEL=="ttyUSB[0-9]*", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", SYMLINK+="waggle_brain_test%n"
+
+LABEL="rules_end"
