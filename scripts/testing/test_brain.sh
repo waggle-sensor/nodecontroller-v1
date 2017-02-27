@@ -36,7 +36,7 @@ expected_device_count=2
 if [ ${test_device_count} -eq ${expected_device_count} ]; then
   print_result "Detected USB test devices" 0 0 0
 else
-  print_result "Detected USB test devices" 0 0 0
+  print_result "Detected USB test devices" 1 0 0
 fi
 
 # Ethernet IP Address (NC)
