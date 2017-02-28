@@ -122,6 +122,7 @@ cp -r /usr/lib/waggle/nodecontroller/etc/rabbitmq /etc
 
 # copy systemd scripts
 cp ${current_dir}/etc/systemd/system/* /etc/systemd/system
+systemctl enable waggle-epoch.service
 systemctl enable waggle-registration.service
 systemctl enable waggle-reverse-tunnel.service
 systemctl enable waggle-wagman-driver.service
