@@ -60,8 +60,8 @@ for dir in ${directories[@]}; do
 done
 
 perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor)
-[ "$perms" == "root root 600" ]
-print_result "Guest Key Permissions" $? 0 1
+[ "$perms" == "root root 400" ]
+print_result "Edge Processor Key Permissions" $? 0 1
 
 line_count=$(cat /etc/ssh/sshd_config | fgrep -e 'ListenAddress 127.0.0.1' -e 'ListenAddress 10.31.81.10' | wc -l)
 [ $line_count -eq 2 ]
