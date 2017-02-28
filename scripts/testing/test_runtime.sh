@@ -30,6 +30,10 @@ print_result() {
   fi
 }
 
+# Ethernet IP Address (NC)
+ifconfig | fgrep "          inet addr:10.31.81.10  Bcast:10.31.81.255  Mask:255.255.255.0" && true
+print_result "Built-in Ethernet IP Address" $? 0 0
+
 cat /etc/waggle/node_id | egrep '[0-9a-f]{16}' && true
 print_result "Node ID Set" $? 0 1
 
@@ -40,7 +44,7 @@ print_result "Hostname Set" $? 0 1
 units=("waggle-communications" "waggle-epoch" "waggle-heartbeat" \
        "waggle-monitor-connectivity" "waggle-monitor-shutdown" \
        "waggle-monitor-system" "waggle-monitor-wagman" \
-       "waggle-wagman-publisher" "waggle-wagman-server", "rabbitmq-server")
+       "waggle-wagman-publisher" "waggle-wagman-server")
 for unit in ${units[@]}; do
   systemctl status $unit | fgrep 'Active: active (running)' && true
   exit_code=$?
