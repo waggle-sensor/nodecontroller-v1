@@ -71,7 +71,7 @@ try_set_time()
   fi
 
   # Sync the system time with the hardware clock
-  echo "Syncing the hardware clock with the system date/time..."
+  echo "Syncing the Node Controller hardware clock with the system date/time..."
   hwclock -w
 
   return 0
