@@ -58,5 +58,5 @@ print_result "eMMC Size" $? 0 0
 print_result "ssh NC to GN" $? 0 0
 
 # ssh GN to NC
-/usr/lib/waggle/nodecontroller/scripts/eplogin /usr/lib/waggle/edge_processor/scripts/nclogin && true
+/usr/lib/waggle/nodecontroller/scripts/eplogin /usr/lib/waggle/edge_processor/scripts/nclogin date && true
 print_result "ssh GN to NC" $? 0 0
