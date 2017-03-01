@@ -69,3 +69,22 @@ for unit in ${units[@]}; do
   fi
   print_result "$unit Service" $exit_code 0 1
 done
+
+
+directories=("/usr/lib/waggle/SSL/node" "/usr/lib/waggle/SSL/waggleca")
+for dir in ${directories[@]}; do
+  [ -e $dir ]
+  print_result "$dir Directory" $? 0 1
+done
+
+perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/node/key.pem)
+[ "$perms" == "rabbitmq rabbitmq 600" ]
+print_result "Node Key Permissions" $? 0 1
+
+perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/node/cert.pem)
+[ "$perms" == "rabbitmq rabbitmq 600" ]
+print_result "Node Cert Permissions" $? 0 1
+
+perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/waggleca/cacert.pem)
+[ "$perms" == "root root 644" ]
+print_result "Waggle CA Cert Permissions" $? 0 1

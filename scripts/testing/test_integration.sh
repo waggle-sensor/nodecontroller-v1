@@ -30,24 +30,6 @@ print_result() {
   fi
 }
 
-directories=("/usr/lib/waggle/SSL/node" "/usr/lib/waggle/SSL/waggleca")
-for dir in ${directories[@]}; do
-  [ -e $dir ]
-  print_result "$dir Directory" $? 0 1
-done
-
-perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/node/key.pem)
-[ "$perms" == "rabbitmq rabbitmq 600" ]
-print_result "Node Key Permissions" $? 0 1
-
-perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/node/cert.pem)
-[ "$perms" == "rabbitmq rabbitmq 600" ]
-print_result "Node Cert Permissions" $? 0 1
-
-perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/waggleca/cacert.pem)
-[ "$perms" == "root root 644" ]
-print_result "Waggle CA Cert Permissions" $? 0 1
-
 [ -e /dev/waggle_coresense ]
 print_result "Coresense Device" $? 0 0
 
