@@ -45,6 +45,7 @@ try_set_time()
 
 
     # Update the Edge Processor date
+    echo "Setting the Edge Processor date/time..."
     ${script_dir}/eplogin /usr/lib/waggle/edge_processor/scripts/sync_date.sh ${date}
     exit_code=$?
     if [ ${exit_code} -ne 0 ] ; then
