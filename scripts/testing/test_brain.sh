@@ -53,10 +53,18 @@ print_result "SD Size" $? 0 0
 parted -s ${OTHER_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB' && true
 print_result "eMMC Size" $? 0 0
 
-# ssh NC to GN
-/usr/lib/waggle/nodecontroller/scripts/eplogin date && true
-print_result "ssh NC to GN" $? 0 0
+# ssh NC to EP
+arch=$(/usr/lib/waggle/nodecontroller/scripts/eplogin uname -m)
+if [ "$arch" == "armv7l" ]; then
+  print_result "ssh NC to EP" 0 0 0
+else
+  print_result "ssh NC to EP" 1 0 0
+fi
 
-# ssh GN to NC
-/usr/lib/waggle/nodecontroller/scripts/eplogin /usr/lib/waggle/edge_processor/scripts/nclogin date && true
-print_result "ssh GN to NC" $? 0 0
+# ssh EP to NC
+arch=$(/usr/lib/waggle/nodecontroller/scripts/eplogin /usr/lib/waggle/edge_processor/scripts/nclogin uname -m)
+if [ "$arch" == "armv7l" ]; then
+  print_result "ssh EP to NC" 0 0 0
+else
+  print_result "ssh EP to NC" 1 0 0
+fi
