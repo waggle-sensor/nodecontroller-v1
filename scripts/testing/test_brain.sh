@@ -53,7 +53,10 @@ print_result "SD Size" $? 0 0
 parted -s ${OTHER_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB' && true
 print_result "eMMC Size" $? 0 0
 
-# ssh to GN
-ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor root@10.31.81.51 \
-    -o "StrictHostKeyChecking no" -o "PasswordAuthentication no" -o "ConnectTimeout 2" /bin/date && true
-print_result "ssh to GN" $? 0 0
+# ssh NC to GN
+/usr/lib/waggle/nodecontroller/scripts/eplogin date && true
+print_result "ssh NC to GN" $? 0 0
+
+# ssh GN to NC
+/usr/lib/waggle/nodecontroller/scripts/eplogin /usr/lib/waggle/edge_processor/scripts/nclogin && true
+print_result "ssh GN to NC" $? 0 0
