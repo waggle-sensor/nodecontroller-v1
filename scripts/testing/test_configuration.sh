@@ -53,7 +53,7 @@ grep '^sudo:x:27:$' /etc/group
 print_result "sudo Disabled" $? 0 1
 
 directories=("/etc/waggle" "/usr/lib/waggle" "/usr/lib/waggle/core" "/usr/lib/waggle/plugin_manager" "/usr/lib/waggle/nodecontroller" \
-             "/usr/lib/waggle/SSL" "/usr/lib/waggle/SSL/edge_processor" "/usr/lib/waggle/SSL/node" "/usr/lib/waggle/SSL/waggleca")
+             "/usr/lib/waggle/SSL" "/usr/lib/waggle/SSL/edge_processor")
 for dir in ${directories[@]}; do
   [ -e $dir ]
   print_result "$dir Directory" $? 0 1
