@@ -71,12 +71,17 @@ wagman_status = subscribe_wagman_status()
 
 logging.info("waggle-shutdown-monitor service is running...")
 
-connection = pika.BlockingConnection(pika.URLParameters(
-  "amqps://node:waggle@beehive1.mcs.anl.gov:23181?cacertfile=/usr/lib/waggle/SSL/waggleca/cacert.pem&certfile=/usr/lib/waggle/SSL/node/cert.pem&keyfile=/usr/lib/waggle/SSL/node/key.pem&verify=verify_peer"))
+credentials = pika.credentials.PlainCredentials('node', 'waggle')
+ssl_options={'ca_certs':'/mnt/waggle/SSL/waggleca/cacert.pem',
+						 'certfile':'/mnt/waggle/SSL/nodes/node_0000001E06107D97/cert.pem',
+						 'keyfile':'/mnt/waggle/SSL/nodes/node_0000001E06107D97/key.pem'}
+connection = pika.BlockingConnection(pika.ConnectionParameters(
+  host="beehive1.mcs.anl.gov", port=23181, credentials=credentials, ssl=True, ssl_options=ssl_options))
 channel = connection.channel()
 with open('/etc/waggle/node_id') as id_file:
   node_id = id_file.read()
 channel.queue_declare(queue=''.join(('rpc_shutdown_', node_id)))
+
 
 nc_stopper = NodeControllerShutdownThread()
 ep_stopper = EdgeProcessorShutdownThread(nc_stopper)
