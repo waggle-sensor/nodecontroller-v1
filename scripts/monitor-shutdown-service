@@ -43,9 +43,23 @@ class EdgeProcessorShutdownThread(threading.Thread):
         time.sleep(1)
 
 class RPCConsumerThread(threading.Thread):
-  def __init__(self, channel):
+  def __init__(self):
     threading.Thread.__init__(self, group=None, target=None, name=None)
     self.channel = channel
+    credentials = pika.credentials.PlainCredentials('node', 'waggle')
+    ssl_options={'ca_certs':'/usr/lib/waggle/SSL/waggleca/cacert.pem',
+                 'certfile':'/usr/lib/waggle/SSL/node/cert.pem',
+                 'keyfile':'/usr/lib/waggle/SSL/node/key.pem'}
+
+    connection = pika.BlockingConnection(pika.ConnectionParameters(
+      host="beehive1.mcs.anl.gov", port=23181, credentials=credentials, ssl=True,
+      ssl_options=ssl_options))
+    self.channel = connection.channel()
+    with open('/etc/waggle/node_id') as id_file:
+      node_id = id_file.read().rstrip()
+    queue = ''.join(('rpc_shutdown_', node_id))
+    self.channel.queue_declare(queue=queue)
+    self.channel.basic_consume(rpc_callback, queue=queue, no_ack=True)
 
   def run(self):
     self.channel.start_consuming()
@@ -83,20 +97,7 @@ wagman_status = subscribe_wagman_status()
 
 logging.info("waggle-shutdown-monitor service is running...")
 
-credentials = pika.credentials.PlainCredentials('node', 'waggle')
-ssl_options={'ca_certs':'/usr/lib/waggle/SSL/waggleca/cacert.pem',
-						 'certfile':'/usr/lib/waggle/SSL/node/cert.pem',
-						 'keyfile':'/usr/lib/waggle/SSL/node/key.pem'}
-
-connection = pika.BlockingConnection(pika.ConnectionParameters(
-  host="beehive1.mcs.anl.gov", port=23181, credentials=credentials, ssl=True, ssl_options=ssl_options))
-channel = connection.channel()
-with open('/etc/waggle/node_id') as id_file:
-  node_id = id_file.read()
-queue = ''.join(('rpc_shutdown_', node_id))
-channel.queue_declare(queue=queue)
-channel.basic_consume(rpc_callback, queue=queue, no_ack=True)
-consumer = RPCConsumerThread(channel)
+consumer = RPCConsumerThread()
 consumer.start()
 
 
