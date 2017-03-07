@@ -42,6 +42,13 @@ class EdgeProcessorShutdownThread(threading.Thread):
       else:
         time.sleep(1)
 
+class RPCConsumerThread(threading.Thread):
+  def __init__(self, channel):
+    self.channel = channel
+
+  def run(self):
+    self.channel.start_consuming()
+
 def subscribe_wagman_status():
   context = zmq.Context()
   socket = context.socket(zmq.SUB)
@@ -66,6 +73,10 @@ def check_wagman_shutdown(socket):
     pass
   return 'no'
 
+def rpc_callback(channel, method, properties, body):
+  print(" [x] Received %r" % body)
+
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 wagman_status = subscribe_wagman_status()
 
@@ -81,7 +92,11 @@ connection = pika.BlockingConnection(pika.ConnectionParameters(
 channel = connection.channel()
 with open('/etc/waggle/node_id') as id_file:
   node_id = id_file.read()
-channel.queue_declare(queue=''.join(('rpc_shutdown_', node_id)))
+queue = ''.join(('rpc_shutdown_', node_id))
+channel.queue_declare(queue=queue)
+channel.basic_consume(rpc_callback, queue=queue, no_ack=True)
+consumer = RPCConsumerThread(channel)
+consumer.start()
 
 
 nc_stopper = NodeControllerShutdownThread()
