@@ -72,9 +72,10 @@ wagman_status = subscribe_wagman_status()
 logging.info("waggle-shutdown-monitor service is running...")
 
 credentials = pika.credentials.PlainCredentials('node', 'waggle')
-ssl_options={'ca_certs':'/mnt/waggle/SSL/waggleca/cacert.pem',
-						 'certfile':'/mnt/waggle/SSL/nodes/node_0000001E06107D97/cert.pem',
-						 'keyfile':'/mnt/waggle/SSL/nodes/node_0000001E06107D97/key.pem'}
+ssl_options={'ca_certs':'/usr/lib/waggle/SSL/waggleca/cacert.pem',
+						 'certfile':'/usr/lib/waggle/SSL/node/cert.pem',
+						 'keyfile':'/usr/lib/waggle/SSL/node/key.pem'}
+
 connection = pika.BlockingConnection(pika.ConnectionParameters(
   host="beehive1.mcs.anl.gov", port=23181, credentials=credentials, ssl=True, ssl_options=ssl_options))
 channel = connection.channel()
