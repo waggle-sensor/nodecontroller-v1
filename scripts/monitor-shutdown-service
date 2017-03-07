@@ -44,6 +44,7 @@ class EdgeProcessorShutdownThread(threading.Thread):
 
 class RPCConsumerThread(threading.Thread):
   def __init__(self, channel):
+    threading.Thread.__init__(self, group=None, target=None, name=None)
     self.channel = channel
 
   def run(self):
