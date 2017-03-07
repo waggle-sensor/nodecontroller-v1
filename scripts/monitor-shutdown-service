@@ -45,7 +45,6 @@ class EdgeProcessorShutdownThread(threading.Thread):
 class RPCConsumerThread(threading.Thread):
   def __init__(self):
     threading.Thread.__init__(self, group=None, target=None, name=None)
-    self.channel = channel
     credentials = pika.credentials.PlainCredentials('node', 'waggle')
     ssl_options={'ca_certs':'/usr/lib/waggle/SSL/waggleca/cacert.pem',
                  'certfile':'/usr/lib/waggle/SSL/node/cert.pem',
