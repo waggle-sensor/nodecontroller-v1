@@ -2,6 +2,7 @@
 
 import logging
 import os
+import pika
 import threading
 import time
 import zmq
@@ -69,6 +70,13 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 wagman_status = subscribe_wagman_status()
 
 logging.info("waggle-shutdown-monitor service is running...")
+
+connection = pika.BlockingConnection(pika.URLParameters(
+  "amqps://node:waggle@beehive1.mcs.anl.gov:23181?cacertfile=/usr/lib/waggle/SSL/waggleca/cacert.pem&certfile=/usr/lib/waggle/SSL/node/cert.pem&keyfile=/usr/lib/waggle/SSL/node/key.pem&verify=verify_peer"))
+channel = connection.channel()
+with open('/etc/waggle/node_id') as id_file:
+  node_id = id_file.read()
+channel.queue_declare(queue=''.join(('rpc_shutdown_', node_id)))
 
 nc_stopper = NodeControllerShutdownThread()
 ep_stopper = EdgeProcessorShutdownThread(nc_stopper)
