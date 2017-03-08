@@ -17,30 +17,24 @@ class NodeControllerShutdownThread(threading.Thread):
     os.system("shutdown -h -k +1")
     time.sleep(30)
     while self.wait_for_ep:
+      logging.info("waiting 1 second for Edge Processor to shutdown...")
       time.sleep(1)
-    logging.info("node controller shutdown now")
+    logging.info("node controller shutting down now")
     os.system("shutdown -h now")
 
 class EdgeProcessorShutdownThread(threading.Thread):
   def __init__(self, nc_stopper):
     threading.Thread.__init__(self, group=None, target=None, name=None)
-    nc_stopper.wait_for_ep = True
     self.nc_stopper = nc_stopper
-    self.running = False
 
   def run(self):
-    while True:
-      if self.running == True:
-        logging.info("Wagman is cycling the Edge Processor power in one minute; shutdown in 30 seconds")
-        os.system('/usr/lib/waggle/nodecontroller/scripts/eplogin shutdown -h -k +1')
-        time.sleep(30)
-        logging.info("Edge Processor shutting down now")
-        os.system('/usr/lib/waggle/nodecontroller/scripts/eplogin shutdown -h now')
-        time.sleep(30)
-        self.running = False
-        self.nc_stopper.wait_for_ep = False
-      else:
-        time.sleep(1)
+    self.nc_stopper.wait_for_ep = True
+    logging.info("Wagman is cycling the Edge Processor power in one minute; shutdown in 30 seconds")
+    os.system('/usr/lib/waggle/nodecontroller/scripts/eplogin shutdown -h -k +1')
+    time.sleep(30)
+    logging.info("Edge Processor shutting down now")
+    os.system('/usr/lib/waggle/nodecontroller/scripts/eplogin shutdown -h now')
+    self.nc_stopper.wait_for_ep = False
 
 class RPCConsumerThread(threading.Thread):
   def __init__(self):
@@ -102,11 +96,10 @@ consumer.start()
 
 nc_stopper = NodeControllerShutdownThread()
 ep_stopper = EdgeProcessorShutdownThread(nc_stopper)
-ep_stopper.start()
 while True:
   shutdown = check_wagman_shutdown(wagman_status)
-  if (shutdown == 'nc'):
+  if (shutdown == 'nc' and not nc_stopper.isAlive()):
     nc_stopper.start()
-  elif (shutdown == 'ep' and not ep_stopper.running):
-    ep_stopper.running = True
+  elif (shutdown == 'ep' and not ep_stopper.isAlive()):
+    ep_stopper.start()
   time.sleep(1)
