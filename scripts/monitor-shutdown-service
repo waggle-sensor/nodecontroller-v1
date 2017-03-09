@@ -39,6 +39,7 @@ class EdgeProcessorShutdownThread(threading.Thread):
 class RPCConsumerThread(threading.Thread):
   def __init__(self):
     threading.Thread.__init__(self, group=None, target=None, name=None)
+    self.startup_timestamp = int(time.time()) + 60
     credentials = pika.credentials.PlainCredentials('node', 'waggle')
     ssl_options={'ca_certs':'/usr/lib/waggle/SSL/waggleca/cacert.pem',
                  'certfile':'/usr/lib/waggle/SSL/node/cert.pem',
@@ -50,9 +51,18 @@ class RPCConsumerThread(threading.Thread):
     self.channel = connection.channel()
     with open('/etc/waggle/node_id') as id_file:
       node_id = id_file.read().rstrip()
-    queue = ''.join(('rpc_shutdown_', node_id))
-    self.channel.queue_declare(queue=queue)
-    self.channel.basic_consume(rpc_callback, queue=queue, no_ack=True)
+    self.queue_name = ''.join(('rpc_shutdown_', node_id))
+    arguments = {"x-max-length":1}
+    self.channel.queue_declare(queue=self.queue_name, arguments=arguments)
+    self.channel.basic_consume(self.callback, queue=self.queue_name, no_ack=True)
+
+  def callback(self, channel, method, properties, body):
+    logging.debug(" [x] Received %r at %d" % (body, properties.timestamp))
+    if properties.timestamp > self.startup_timestamp:
+      logging.info("processing RPC node shutdown request")
+      
+    else:
+      logging.info("ignoring RPC node shutdown request: message too old")
 
   def run(self):
     self.channel.start_consuming()
@@ -81,12 +91,9 @@ def check_wagman_shutdown(socket):
     pass
   return 'no'
 
-def rpc_callback(channel, method, properties, body):
-  print(" [x] Received %r" % body)
-
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-wagman_status = subscribe_wagman_status()
+# wagman_status = subscribe_wagman_status()
 
 logging.info("waggle-shutdown-monitor service is running...")
 
@@ -97,7 +104,8 @@ consumer.start()
 nc_stopper = NodeControllerShutdownThread()
 ep_stopper = EdgeProcessorShutdownThread(nc_stopper)
 while True:
-  shutdown = check_wagman_shutdown(wagman_status)
+  # shutdown = check_wagman_shutdown(wagman_status)
+  shutdown = ''
   if (shutdown == 'nc' and not nc_stopper.isAlive()):
     nc_stopper.start()
   elif (shutdown == 'ep' and not ep_stopper.isAlive()):
