@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import json
 import logging
 import os
 import pika
@@ -37,9 +38,10 @@ class EdgeProcessorShutdownThread(threading.Thread):
     self.nc_stopper.wait_for_ep = False
 
 class RPCConsumerThread(threading.Thread):
-  def __init__(self):
+  def __init__(self, wagman):
     threading.Thread.__init__(self, group=None, target=None, name=None)
-    self.startup_timestamp = int(time.time()) + 60
+    self.wagman = wagman
+    self.startup_timestamp = int(time.time())
     credentials = pika.credentials.PlainCredentials('node', 'waggle')
     ssl_options={'ca_certs':'/usr/lib/waggle/SSL/waggleca/cacert.pem',
                  'certfile':'/usr/lib/waggle/SSL/node/cert.pem',
@@ -53,58 +55,85 @@ class RPCConsumerThread(threading.Thread):
       node_id = id_file.read().rstrip()
     self.queue_name = ''.join(('rpc_shutdown_', node_id))
     arguments = {"x-max-length":1}
+    self.channel.queue_delete(queue='0000Holborn')
     self.channel.queue_declare(queue=self.queue_name, arguments=arguments)
     self.channel.basic_consume(self.callback, queue=self.queue_name, no_ack=True)
 
   def callback(self, channel, method, properties, body):
-    logging.debug(" [x] Received %r at %d" % (body, properties.timestamp))
-    if properties.timestamp > self.startup_timestamp:
-      logging.info("processing RPC node shutdown request")
-      
-    else:
-      logging.info("ignoring RPC node shutdown request: message too old")
+    try:
+      logging.debug(" [x] Received %r at %d" % (body, properties.timestamp))
+      if properties.timestamp > self.startup_timestamp:
+        message = json.loads(body.decode())
+        if message['message_type'] == 'request' and message['command'] == 'stop':
+          device = message['arguments'][0]
+          logging.info("processing RPC request to shutdown the %s" % device)
+          wagman.stop(device)
+        else:
+          logging.info("ignoring RPC message: %s" % body.decode())
+      else:
+        logging.info("ignoring RPC node shutdown request: message too old")
+    except Exception as e:
+      logging.warning("encountered an exception in RPC callback:\n", str(e))
 
   def run(self):
     self.channel.start_consuming()
 
-def subscribe_wagman_status():
-  context = zmq.Context()
-  socket = context.socket(zmq.SUB)
-  socket.setsockopt(zmq.RCVTIMEO, 5000)
-  socket.setsockopt(zmq.SUBSCRIBE, b'')
-  socket.connect ('ipc:///tmp/zeromq_wagman-pub')
-  return socket
+class Wagman():
+  def __init__(self):
+    context = zmq.Context()
+    self.socket = context.socket(zmq.SUB)
+    self.socket.setsockopt(zmq.SNDTIMEO, 5000)
+    self.socket.setsockopt(zmq.RCVTIMEO, 5000)
 
-def unsubscribe_wagman_status(socket):
-  socket.close()
+  def subscribe(self):
+    self.socket.setsockopt(zmq.SUBSCRIBE, b'')
+    self.socket.connect('ipc:///tmp/zeromq_wagman-pub')
+    return self.socket
 
-# Check for shutdown messages
-def check_wagman_shutdown(socket):
-  message = ""
-  try:
-    message = socket.recv_string()
-    if 'nc stopp' in message:
-      return "nc"
-    elif 'gn stopp' in message:
-      return "ep"
-  except zmq.ZMQError:
-    pass
-  return 'no'
+  def unsubscribe(self):
+    self.socket.close()
+
+  def stop(self, device):
+    if device == 'nc':
+      self.socket.send_string('stop 0')
+      message = self.socket.recv_string()
+    elif device == 'ep':
+      self.socket.send_string('stop 1')
+      message = self.socket.recv_string()
+    elif device == 'node':
+      self.stop('ep')
+      self.stop('nc')
+
+
+  # Check for shutdown messages
+  def check_for_shutdown(self):
+    message = ""
+    try:
+      message = self.socket.recv_string()
+      if 'nc stopp' in message:
+        return "nc"
+      elif 'gn stopp' in message:
+        return "ep"
+    except zmq.ZMQError:
+      pass
+    return 'no'
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-# wagman_status = subscribe_wagman_status()
+wagman = Wagman()
+wagman.subscribe()
+wagman = None
 
 logging.info("waggle-shutdown-monitor service is running...")
 
-consumer = RPCConsumerThread()
+consumer = RPCConsumerThread(wagman)
 consumer.start()
 
 
 nc_stopper = NodeControllerShutdownThread()
 ep_stopper = EdgeProcessorShutdownThread(nc_stopper)
 while True:
-  # shutdown = check_wagman_shutdown(wagman_status)
+  shutdown = wagman.check_for_shutdown()
   shutdown = ''
   if (shutdown == 'nc' and not nc_stopper.isAlive()):
     nc_stopper.start()
