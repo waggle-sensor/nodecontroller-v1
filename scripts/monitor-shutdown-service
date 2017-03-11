@@ -114,6 +114,7 @@ class Wagman():
     socket.setsockopt(zmq.SNDTIMEO, 5000)
     socket.setsockopt(zmq.RCVTIMEO, 5000)
     socket.connect('ipc:///tmp/zeromq_wagman-server')
+    message = ''
     if device == 'nc':
       logging.info('Sending NC stop request to wagman-server...')
       socket.send_string('stop 0')
