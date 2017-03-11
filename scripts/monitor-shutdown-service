@@ -83,20 +83,18 @@ class RPCConsumerThread(threading.Thread):
 
   def run(self):
     self.channel.start_consuming()
-    while True:
-      time.sleep(1)
+    sys.exit(99)
 
 class Wagman():
   def __init__(self):
-    context = zmq.Context()
-    self.socket = context.socket(zmq.SUB)
-    self.socket.setsockopt(zmq.SNDTIMEO, 5000)
-    self.socket.setsockopt(zmq.RCVTIMEO, 5000)
+    self.context = zmq.Context()
+    self.sub_socket = self.context.socket(zmq.SUB)
+    self.sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
 
   def subscribe(self):
-    self.socket.setsockopt(zmq.SUBSCRIBE, b'')
-    self.socket.connect('ipc:///tmp/zeromq_wagman-pub')
-    return self.socket
+    self.sub_socket.setsockopt(zmq.SUBSCRIBE, b'')
+    self.sub_socket.connect('ipc:///tmp/zeromq_wagman-pub')
+    return self.sub_socket
 
   def unsubscribe(self):
     self.socket.close()
@@ -108,22 +106,27 @@ class Wagman():
     self.stop(device)
 
   def stop(self, device):
-    if device == 'nc':
-      self.socket.send_string('stop 0')
-      message = self.socket.recv_string()
-    elif device == 'ep':
-      self.socket.send_string('stop 1')
-      message = self.socket.recv_string()
-    elif device == 'node':
+    if device == 'node':
       self.stop('ep')
       self.stop('nc')
+
+    socket = self.context.socket(zmq.REQ)
+    socket.setsockopt(zmq.SNDTIMEO, 5000)
+    socket.setsockopt(zmq.RCVTIMEO, 5000)
+    socket.connect('ipc:///tmp/zeromq_wagman-server')
+    if device == 'nc':
+      socket.send_string('stop 0')
+      message = self.socket.recv_string()
+    elif device == 'ep':
+      socket.send_string('stop 1')
+      message = self.socket.recv_string()
 
 
   # Check for shutdown messages
   def check_for_shutdown(self):
     message = ""
     try:
-      message = self.socket.recv_string()
+      message = self.sub_socket.recv_string()
       if 'nc stopp' in message:
         return "nc"
       elif 'gn stopp' in message:
