@@ -58,7 +58,7 @@ class RPCConsumerThread(threading.Thread):
     self.queue_name = ''.join(('rpc_shutdown_', node_id))
     arguments = {"x-max-length":1}
     self.channel.queue_declare(queue=self.queue_name, arguments=arguments)
-    self.channel.basic_consume(self.callback, queue=self.queue_name, no_ack=True)
+    self.channel.basic_consume(self.callback, queue=self.queue_name)
 
   def callback(self, channel, method, properties, body):
     try:
@@ -74,6 +74,8 @@ class RPCConsumerThread(threading.Thread):
             device = message['arguments'][0]
             logging.info("processing RPC request to reset the %s" % device)
             wagman.reset(device)
+          self.channel.basic_ack(delivery_tag=method.delivery_tag)
+          logging.info("acknowledged shutdown request {}".format(method.delivery_tag))
         else:
           logging.info("ignoring RPC message: %s" % body.decode())
       else:
