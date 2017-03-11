@@ -124,7 +124,7 @@ class Wagman():
       socket.send_string('stop 1')
       message = socket.recv_string()
     socket.close()
-    logging.info('wagman-server returned {}'.format(messaage))
+    logging.info('wagman-server returned {}'.format(message))
     if message != 'OK':
       raise RuntimeError('Error sending request to wagman-server:\n{}'.format(message))
 
