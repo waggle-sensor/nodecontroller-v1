@@ -111,17 +111,23 @@ class Wagman():
       self.stop('nc')
       return
 
+    # TODO: more logging. can't tell it's doing anything
     socket = self.context.socket(zmq.REQ)
     socket.setsockopt(zmq.SNDTIMEO, 5000)
     socket.setsockopt(zmq.RCVTIMEO, 5000)
     socket.connect('ipc:///tmp/zeromq_wagman-server')
     if device == 'nc':
+      logging.info('Sending NC stop request to wagman-server...')
       socket.send_string('stop 0')
       message = socket.recv_string()
     elif device == 'ep':
+      logging.info('Sending EP stop request to wagman-server...')
       socket.send_string('stop 1')
       message = socket.recv_string()
     socket.close()
+    logging.info('wagman-server returned {}'.format(messaage))
+    if message != 'OK':
+      raise RuntimeError('Error sending request to wagman-server:\n{}'.format(message))
 
 
   # Check for shutdown messages
