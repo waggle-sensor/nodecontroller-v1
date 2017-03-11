@@ -97,7 +97,7 @@ class Wagman():
     return self.sub_socket
 
   def unsubscribe(self):
-    self.socket.close()
+    self.pub_socket.close()
 
   def reset(self, device):
     # Currently there is no difference between stop and reset,
@@ -109,6 +109,7 @@ class Wagman():
     if device == 'node':
       self.stop('ep')
       self.stop('nc')
+      return
 
     socket = self.context.socket(zmq.REQ)
     socket.setsockopt(zmq.SNDTIMEO, 5000)
@@ -116,10 +117,11 @@ class Wagman():
     socket.connect('ipc:///tmp/zeromq_wagman-server')
     if device == 'nc':
       socket.send_string('stop 0')
-      message = self.socket.recv_string()
+      message = socket.recv_string()
     elif device == 'ep':
       socket.send_string('stop 1')
-      message = self.socket.recv_string()
+      message = socket.recv_string()
+    socket.close()
 
 
   # Check for shutdown messages
