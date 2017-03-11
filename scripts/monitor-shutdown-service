@@ -134,8 +134,10 @@ class Wagman():
     try:
       message = self.sub_socket.recv_string()
       if 'nc stopp' in message:
+        logging.info("got NC stop notification from Wagman")
         return "nc"
       elif 'gn stopp' in message:
+        logging.info("got EP stop notification from Wagman")
         return "ep"
     except zmq.ZMQError:
       pass
@@ -156,9 +158,10 @@ nc_stopper = NodeControllerShutdownThread()
 ep_stopper = EdgeProcessorShutdownThread(nc_stopper)
 while True:
   shutdown = wagman.check_for_shutdown()
-  shutdown = ''
   if (shutdown == 'nc' and not nc_stopper.isAlive()):
+    logging.info("running NC stopper thread...")
     nc_stopper.start()
   elif (shutdown == 'ep' and not ep_stopper.isAlive()):
+    logging.info("running EP stopper thread...")
     ep_stopper.start()
   time.sleep(1)
