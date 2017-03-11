@@ -88,6 +88,10 @@ class RPCConsumerThread(threading.Thread):
     sys.exit(99)
 
 class Wagman():
+  def __init__(self, nc_stopper, ep_stopper):
+    self.nc_stopper = nc_stopper
+    self.ep_stopper = ep_stopper
+
   def subscribe(self):
     context = zmq.Context()
     self.sub_socket = context.socket(zmq.SUB)
@@ -118,10 +122,16 @@ class Wagman():
     socket.connect('ipc:///tmp/zeromq_wagman-server')
     message = ''
     if device == 'nc':
+      if self.nc_stopper.isAlive():
+        logging.info("ignoring repeat NC shutdown request")
+        return
       logging.info('Sending NC stop request to wagman-server...')
       socket.send_string('stop 0')
       message = socket.recv_string()
     elif device == 'ep':
+      if self.ep_stopper.isAlive():
+        logging.info("ignoring repeat EP shutdown request")
+        return
       logging.info('Sending EP stop request to wagman-server...')
       socket.send_string('stop 1')
       message = socket.recv_string()
@@ -148,23 +158,22 @@ class Wagman():
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-wagman = Wagman()
-wagman.subscribe()
 
 logging.info("waggle-shutdown-monitor service is running...")
+
+nc_stopper = NodeControllerShutdownThread()
+ep_stopper = EdgeProcessorShutdownThread(nc_stopper)
+
+wagman = Wagman(nc_stopper, ep_stopper)
+wagman.subscribe()
 
 consumer = RPCConsumerThread(wagman)
 consumer.start()
 
-
-nc_stopper = NodeControllerShutdownThread()
-ep_stopper = EdgeProcessorShutdownThread(nc_stopper)
 while True:
   shutdown = wagman.check_for_shutdown()
   if (shutdown == 'nc' and not nc_stopper.isAlive()):
-    logging.info("running NC stopper thread...")
     nc_stopper.start()
   elif (shutdown == 'ep' and not ep_stopper.isAlive()):
-    logging.info("running EP stopper thread...")
     ep_stopper.start()
   time.sleep(1)
