@@ -57,7 +57,6 @@ class RPCConsumerThread(threading.Thread):
       node_id = id_file.read().rstrip()
     self.queue_name = ''.join(('rpc_shutdown_', node_id))
     arguments = {"x-max-length":1}
-    self.channel.queue_delete(queue='0000Holborn')
     self.channel.queue_declare(queue=self.queue_name, arguments=arguments)
     self.channel.basic_consume(self.callback, queue=self.queue_name, no_ack=True)
 
@@ -84,6 +83,8 @@ class RPCConsumerThread(threading.Thread):
 
   def run(self):
     self.channel.start_consuming()
+    while True:
+      time.sleep(1)
 
 class Wagman():
   def __init__(self):
