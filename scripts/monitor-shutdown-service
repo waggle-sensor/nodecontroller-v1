@@ -47,8 +47,10 @@ class RPCConsumerThread(threading.Thread):
                  'certfile':'/usr/lib/waggle/SSL/node/cert.pem',
                  'keyfile':'/usr/lib/waggle/SSL/node/key.pem'}
 
+    with open('/etc/waggle/server_host') as host_file:
+      host = host_file.read().rstrip()
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-      host="beehive1.mcs.anl.gov", port=23181, credentials=credentials, ssl=True,
+      host=host, port=23181, credentials=credentials, ssl=True,
       ssl_options=ssl_options))
     self.channel = connection.channel()
     with open('/etc/waggle/node_id') as id_file:
@@ -64,10 +66,15 @@ class RPCConsumerThread(threading.Thread):
       logging.debug(" [x] Received %r at %d" % (body, properties.timestamp))
       if properties.timestamp > self.startup_timestamp:
         message = json.loads(body.decode())
-        if message['message_type'] == 'request' and message['command'] == 'stop':
-          device = message['arguments'][0]
-          logging.info("processing RPC request to shutdown the %s" % device)
-          wagman.stop(device)
+        if message['message_type'] == 'request':
+          if message['command'] == 'stop':
+            device = message['arguments'][0]
+            logging.info("processing RPC request to shutdown the %s" % device)
+            wagman.stop(device)
+          elif message['command'] == 'reset':
+            device = message['arguments'][0]
+            logging.info("processing RPC request to reset the %s" % device)
+            wagman.reset(device)
         else:
           logging.info("ignoring RPC message: %s" % body.decode())
       else:
@@ -92,6 +99,12 @@ class Wagman():
 
   def unsubscribe(self):
     self.socket.close()
+
+  def reset(self, device):
+    # Currently there is no difference between stop and reset,
+    # but eventually stop will be for an extended period of time while
+    # reset will be immediate.
+    self.stop(device)
 
   def stop(self, device):
     if device == 'nc':
