@@ -86,18 +86,16 @@ class RPCConsumerThread(threading.Thread):
     sys.exit(99)
 
 class Wagman():
-  def __init__(self):
-    self.context = zmq.Context()
-    self.sub_socket = self.context.socket(zmq.SUB)
-    self.sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
-
   def subscribe(self):
+    context = zmq.Context()
+    self.sub_socket = context.socket(zmq.SUB)
+    self.sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
     self.sub_socket.setsockopt(zmq.SUBSCRIBE, b'')
     self.sub_socket.connect('ipc:///tmp/zeromq_wagman-pub')
     return self.sub_socket
 
   def unsubscribe(self):
-    self.pub_socket.close()
+    self.sub_socket.close()
 
   def reset(self, device):
     # Currently there is no difference between stop and reset,
@@ -111,8 +109,8 @@ class Wagman():
       self.stop('nc')
       return
 
-    # TODO: more logging. can't tell it's doing anything
-    socket = self.context.socket(zmq.REQ)
+    context = zmq.Context()
+    socket = context.socket(zmq.REQ)
     socket.setsockopt(zmq.SNDTIMEO, 5000)
     socket.setsockopt(zmq.RCVTIMEO, 5000)
     socket.connect('ipc:///tmp/zeromq_wagman-server')
