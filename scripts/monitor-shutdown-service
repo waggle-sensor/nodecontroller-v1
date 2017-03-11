@@ -29,7 +29,7 @@ class EdgeProcessorShutdownThread():
     self.thread = threading.Thread(target=self.run)
     self.nc_stopper = nc_stopper
 
-  def isAlive():
+  def isAlive(self):
     return self.thread.isAlive()
 
   def run(self):
