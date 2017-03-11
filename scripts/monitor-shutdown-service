@@ -29,6 +29,9 @@ class EdgeProcessorShutdownThread():
     self.thread = threading.Thread(target=self.run)
     self.nc_stopper = nc_stopper
 
+  def isAlive():
+    return self.thread.isAlive()
+
   def run(self):
     self.nc_stopper.wait_for_ep = True
     logging.info("Wagman is cycling the Edge Processor power in one minute; shutdown in 30 seconds")
