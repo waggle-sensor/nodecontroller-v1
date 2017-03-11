@@ -43,6 +43,7 @@ class EdgeProcessorShutdownThread():
     logging.info("Edge Processor shutting down now")
     os.system('/usr/lib/waggle/nodecontroller/scripts/eplogin shutdown -h now')
     self.nc_stopper.wait_for_ep = False
+    time.sleep(30)
     self.thread = threading.Thread(target=self.run)
 
 class RPCConsumerThread(threading.Thread):
