@@ -135,7 +135,6 @@ class Wagman():
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 wagman = Wagman()
 wagman.subscribe()
-wagman = None
 
 logging.info("waggle-shutdown-monitor service is running...")
 
