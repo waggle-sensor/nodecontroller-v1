@@ -23,9 +23,10 @@ class NodeControllerShutdownThread(threading.Thread):
     logging.info("node controller shutting down now")
     os.system("shutdown -h now")
 
-class EdgeProcessorShutdownThread(threading.Thread):
+class EdgeProcessorShutdownThread():
   def __init__(self, nc_stopper):
     threading.Thread.__init__(self, group=None, target=None, name=None)
+    self.thread = threading.Thread(target=self.run)
     self.nc_stopper = nc_stopper
 
   def run(self):
@@ -36,6 +37,7 @@ class EdgeProcessorShutdownThread(threading.Thread):
     logging.info("Edge Processor shutting down now")
     os.system('/usr/lib/waggle/nodecontroller/scripts/eplogin shutdown -h now')
     self.nc_stopper.wait_for_ep = False
+    self.thread = threading.Thread(target=self.run)
 
 class RPCConsumerThread(threading.Thread):
   def __init__(self, wagman):
