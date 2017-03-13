@@ -97,7 +97,7 @@ class RPCConsumerThread(threading.Thread):
         self.channel.start_consuming()
       except pika.exceptions.ConnectionClosed:
         time.sleep(10)
-        logging.debug("Beehive connection closed. Attempting to resume consuming RPC messages"...)
+        logging.debug("Beehive connection closed. Attempting to resume consuming RPC messages...")
       except Exception as e:
         logging.exception('RPC message consumption interrupted', e)
         sys.exit(99)
