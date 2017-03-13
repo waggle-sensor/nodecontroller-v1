@@ -77,12 +77,11 @@ class RPCConsumerThread(threading.Thread):
         if message['message_type'] == 'request':
           if message['command'] == 'stop':
             device = message['arguments'][0]
-            logging.info("processing RPC request to shutdown the %s" % device)
-            wagman.stop(device)
-          elif message['command'] == 'reset':
-            device = message['arguments'][0]
-            logging.info("processing RPC request to reset the %s" % device)
-            wagman.reset(device)
+            duration = 60
+            if len(message) > 1:
+              duration = int(message['arguments'][1])
+            logging.info("processing RPC request to shutdown the {0} for {1}s".format(device, duration))
+            wagman.stop(device, duration)
           self.channel.basic_ack(delivery_tag=method.delivery_tag)
           logging.info("acknowledged shutdown request {}".format(method.delivery_tag))
         else:
@@ -93,8 +92,15 @@ class RPCConsumerThread(threading.Thread):
       logging.warning("encountered an exception in RPC callback:\n", str(e))
 
   def run(self):
-    self.channel.start_consuming()
-    sys.exit(99)
+    while True
+      try:
+        self.channel.start_consuming()
+      except pika.exceptions.ConnectionClosed:
+        time.sleep(10)
+        logging.debug("Beehive connection closed. Attempting to resume consuming RPC messages"...)
+      except Exception as e:
+        logging.exception('RPC message consumption interrupted', e)
+        sys.exit(99)
 
 class Wagman():
   def __init__(self, nc_stopper, ep_stopper):
@@ -118,10 +124,10 @@ class Wagman():
     # reset will be immediate.
     self.stop(device)
 
-  def stop(self, device):
+  def stop(self, device, duration):
     if device == 'node':
-      self.stop('ep')
-      self.stop('nc')
+      self.stop('ep', duration)
+      self.stop('nc', duration)
       return
 
     context = zmq.Context()
@@ -135,14 +141,14 @@ class Wagman():
         logging.info("ignoring repeat NC shutdown request")
         return
       logging.info('Sending NC stop request to wagman-server...')
-      socket.send_string('stop 0')
+      socket.send_string('stop 0 {}'.format(duration))
       message = socket.recv_string()
     elif device == 'ep':
       if self.ep_stopper.isAlive():
         logging.info("ignoring repeat EP shutdown request")
         return
       logging.info('Sending EP stop request to wagman-server...')
-      socket.send_string('stop 1')
+      socket.send_string('stop 1 {}'.format(duration))
       message = socket.recv_string()
     socket.close()
     logging.info('wagman-server returned {}'.format(message))
