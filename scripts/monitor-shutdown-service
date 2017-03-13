@@ -92,7 +92,7 @@ class RPCConsumerThread(threading.Thread):
       logging.warning("encountered an exception in RPC callback:\n", str(e))
 
   def run(self):
-    while True
+    while True:
       try:
         self.channel.start_consuming()
       except pika.exceptions.ConnectionClosed:
