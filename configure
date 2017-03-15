@@ -118,7 +118,7 @@ mkdir -p /var/log/comms
 
 
 # install RabbitMQ configuration
-cp -r /usr/lib/waggle/nodecontroller/etc/rabbitmq /etc
+cp -r ${current_dir}/etc/rabbitmq /etc
 
 # copy systemd scripts
 cp ${current_dir}/etc/systemd/system/* /etc/systemd/system
