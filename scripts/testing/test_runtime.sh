@@ -43,7 +43,7 @@ print_result "Hostname Set" $? 0 1
 
 units=("waggle-epoch" "waggle-heartbeat" "waggle-monitor-connectivity" \
        "waggle-monitor-shutdown" "waggle-monitor-system" \
-       "waggle-monitor-wagman" "waggle-wagman-driver" \
+       "waggle-monitor-wagman" "waggle-wagman-driver" "rabbitmq-server"\
        "waggle-core.target" "waggle-platform.target")
 for unit in ${units[@]}; do
   systemctl status $unit | fgrep 'Active: active (running)' && true
