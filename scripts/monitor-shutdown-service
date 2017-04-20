@@ -60,7 +60,7 @@ class RPCConsumerThread(threading.Thread):
       host = host_file.read().rstrip()
     connection = pika.BlockingConnection(pika.ConnectionParameters(
       host=host, port=23181, credentials=credentials, ssl=True,
-      ssl_options=ssl_options))
+      ssl_options=ssl_options, socket_timeout=10))
     self.channel = connection.channel()
     with open('/etc/waggle/node_id') as id_file:
       node_id = id_file.read().rstrip()
