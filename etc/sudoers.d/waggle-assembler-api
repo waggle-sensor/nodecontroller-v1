@@ -1,9 +1,22 @@
-waggle ALL=(ALL) NOPASSWD: /usr/bin/python3 /usr/local/bin/interface.py
-waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/start-test-service
-waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/shutdown-node
-waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/run-tests
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/lockdown
 waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot emmc nc
 waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot emmc ep
 waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot sd nc
 waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/boot sd ep
-waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/lockdown
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/shutdown-node
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/testing/test_brain.sh
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/testing/test_configuration.sh
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/testing/test_integration.sh
+waggle ALL=(ALL) NOPASSWD: /usr/lib/waggle/nodecontroller/scripts/testing/test_runtime.sh
+waggle ALL=(ALL) NOPASSWD: /usr/bin/wagman-client ver
+waggle ALL=(ALL) NOPASSWD: /usr/bin/wagman-client boots
+waggle ALL=(ALL) NOPASSWD: /usr/bin/wagman-client uptime
+waggle ALL=(ALL) NOPASSWD: /usr/bin/wagman-client fc
+waggle ALL=(ALL) NOPASSWD: /usr/bin/wagman-client hb
+waggle ALL=(ALL) NOPASSWD: /usr/bin/wagman-client cu
+waggle ALL=(ALL) NOPASSWD: /usr/bin/wagman-client eereset
+waggle ALL=(ALL) NOPASSWD: /usr/bin/wagman-client enable [0-4]
+waggle ALL=(ALL) NOPASSWD: /usr/bin/wagman-client bs [0-4] sd
+waggle ALL=(ALL) NOPASSWD: /usr/bin/wagman-client bs [0-4] emmc
+waggle ALL=(ALL) NOPASSWD: /usr/bin/wagman-client stop [0-4] 60
+
