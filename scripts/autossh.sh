@@ -5,10 +5,10 @@
 
 set -x
 
-if [ $# == 0 ]; then
+if [ $# == 2 ]; then
     HOST=$1
     PORT=$2
-elif [ $# == 2];
+elif [ $# == 0 ]; then
     HOST="root@beehive1.mcs.anl.gov"
     PORT=`cat /etc/waggle/reverse_ssh_port`
 else
