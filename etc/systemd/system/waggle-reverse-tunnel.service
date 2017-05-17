@@ -3,7 +3,7 @@ Description=Maintains an SSH reverse tunnel on Beehive.
 After=waggle-core.target
 
 [Service]
-ExecStart=/usr/lib/waggle/nodecontroller/scripts/autossh.sh   root@beehive1.mcs.anl.gov  `cat /etc/waggle/reverse_ssh_port`
+ExecStart=/usr/lib/waggle/nodecontroller/scripts/autossh.sh
 
 Restart=always
 RestartSec=60

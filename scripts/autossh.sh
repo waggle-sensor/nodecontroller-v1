@@ -1,14 +1,21 @@
 #!/bin/bash
 
+# The HOST & PORT are taken from the command line, if present.
+# If no args are present, use the default tunnel's HOST & PORT.
+
 set -x
 
-if [ $# != 2 ]; then
-    echo "USAGE: " $0 " <HOST>  <PORT>"
+if [ $# == 0 ]; then
+    HOST=$1
+    PORT=$2
+elif [ $# == 2];
+    HOST="root@beehive1.mcs.anl.gov"
+    PORT=`cat /etc/waggle/reverse_ssh_port`
+else
+    echo "USAGE: " $0 " [<HOST>  <PORT>]"
     exit 1
 fi
 
-HOST=$1
-PORT=$2
 echo 'HOST = ' ${HOST}
 echo 'PORT = ' ${PORT}
 
