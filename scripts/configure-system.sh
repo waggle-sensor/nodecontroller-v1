@@ -28,7 +28,6 @@ touch /home/waggle/start_test
 # (re)build the /etc/hosts file
 if [ ${BEEHIVE_HOST}x != "x" ] ; then
   cp $script_dir/../etc/hosts /etc/hosts
-  sed -i "s/NODE_HOST/$(hostname)/" /etc/hosts
   sed -i "s/SERVER_HOST/${BEEHIVE_HOST}/" /etc/hosts
 fi
 
