@@ -11,11 +11,11 @@ while [[ $# -gt 0 ]]; do
   echo "Key: $key"
   case $key in
     -s)
-      BEEHIVE_HOST="$2"
+      SERVER_HOST="$2"
       shift
       ;;
-    --server=*)
-      BEEHIVE_HOST="${key#*=}"
+    --server-host=*)
+      SERVER_HOST="${key#*=}"
       ;;
     --system)
       CONFIGURE_SYSTEM=1
@@ -29,12 +29,12 @@ done
 export current_dir="$(pwd)"
 
 if [ $CONFIGURE_SYSTEM -eq 1 ]; then
-  if [ ${BEEHIVE_HOST}x == "x" ] ; then
-    echo "Error: must specify --server=<BEEHIVE_HOST> when using the --system option"
+  if [ ${SERVER_HOST}x == "x" ] ; then
+    echo "Error: must specify --server-host=<SERVER_HOST> when using the --system option"
     exit 2
   else
     echo "configuring system..."
-    ./scripts/configure-system.sh --server=${BEEHIVE_HOST}
+    ./scripts/configure-system.sh --server-host=${SERVER_HOST}
     cd $current_dir
 fi
 

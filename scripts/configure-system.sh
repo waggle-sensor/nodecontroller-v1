@@ -5,11 +5,11 @@ while [[ $# -gt 0 ]]; do
   echo "Key: $key"
   case $key in
     -s)
-      BEEHIVE_HOST="$2"
+      SERVER_HOST="$2"
       shift
       ;;
-    --server=*)
-      BEEHIVE_HOST="${key#*=}"
+    --server-host=*)
+      SERVER_HOST="${key#*=}"
       ;;
       *)
       ;;
@@ -26,9 +26,9 @@ touch /root/do_recovery
 touch /home/waggle/start_test
 
 # (re)build the /etc/hosts file
-if [ ${BEEHIVE_HOST}x != "x" ] ; then
+if [ ${SERVER_HOST}x != "x" ] ; then
   cp $script_dir/../etc/hosts /etc/hosts
-  sed -i "s/SERVER_HOST/${BEEHIVE_HOST}/" /etc/hosts
+  sed -i "s/SERVER_HOST/${SERVER_HOST}/" /etc/hosts
 fi
 
 # Restrict SSH connections to local port bindings and ethernet card subnet
