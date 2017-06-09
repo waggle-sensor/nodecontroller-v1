@@ -3,7 +3,7 @@ import datetime
 
 
 connection = beehive.Connection(
-    host='beehive1.mcs.anl.gov',
+    host='beehive',
     port=23181,
     node='0000000000AAAAAA',
     keyfile='SSL/node/key.pem',

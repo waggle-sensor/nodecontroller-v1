@@ -10,13 +10,7 @@ try_set_time()
   # get epoch from server
   local exit_code
   echo "Getting the epoch from Beehive..."
-  local server_hostname_file="/etc/waggle/server_host"
-  while [ ! -e $server_hostname_file ]; do
-    echo "The Beehive hostname has not been set. Retrying in 1 hour..."
-    sleep 1h
-  done
-  local server_host=`cat $server_hostname_file`
-  local curl_out=$(curl -s --max-time 10 --connect-timeout 10 http://${server_host}/api/1/epoch)
+  local curl_out=$(curl -s --max-time 10 --connect-timeout 10 http://beehive/api/1/epoch)
   exit_code=$?
   if [ ${exit_code} -eq 0 ] ; then
     date_json=$(echo $curl_out | tr '\n' ' ')

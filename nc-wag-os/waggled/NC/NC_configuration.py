@@ -44,7 +44,7 @@ if NCIP == "":
 
 #get server IP from file
 #CLOUD_IP = read_file('/etc/waggle/server_ip') #TODO: deprecate this
-BEEHIVE_HOST=read_file('/etc/waggle/server_host')
+BEEHIVE_HOST='beehive'
 
 # the certificate server is optional and may only be accessible in an internal network
 CERT_SERVER_PORT=24181

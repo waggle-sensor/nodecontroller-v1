@@ -21,16 +21,6 @@ def run_command(command):
 	p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	return iter(p.stdout.readline, b'')
 
-# Get the Beehive server hostname
-def get_beehive_hostname():
-	server_host = ''
-	try:
-		with open('/etc/waggle/server_host', 'r') as f:
-			server_host = f.readline().rstrip()
-	except Exception:
-		pass
-	return server_host
-
 def reset_deadman_trigger():
 	file = "/usr/lib/waggle/core/alive"
 	rc = os.system("touch " + file + " > /dev/null 2>&1")
@@ -130,7 +120,7 @@ test_names = ['USB Modem', 'Network Interface', 'Local sshd',
               'Beehive DNS', 'Beehive Ping', 'Beehive sshd']
 
 # base_sleep_time = 2  # s
-beehive_hostname = get_beehive_hostname()
+beehive_hostname = 'beehive'
 
 base_sleep_time = 60  # (seconds)
 

@@ -56,10 +56,8 @@ class RPCConsumerThread(threading.Thread):
                  'certfile':'/usr/lib/waggle/SSL/node/cert.pem',
                  'keyfile':'/usr/lib/waggle/SSL/node/key.pem'}
 
-    with open('/etc/waggle/server_host') as host_file:
-      host = host_file.read().rstrip()
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-      host=host, port=23181, credentials=credentials, ssl=True,
+      host='beehive', port=23181, credentials=credentials, ssl=True,
       ssl_options=ssl_options, socket_timeout=10))
     self.channel = connection.channel()
     with open('/etc/waggle/node_id') as id_file:

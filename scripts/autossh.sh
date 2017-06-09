@@ -9,7 +9,7 @@ if [ $# == 2 ]; then
     HOST=$1
     PORT=$2
 elif [ $# == 0 ]; then
-    HOST="root@beehive1.mcs.anl.gov"
+    HOST="root@beehive"
     PORT=`cat /etc/waggle/reverse_ssh_port`
 else
     echo "USAGE: " $0 " [<HOST>  <PORT>]"
