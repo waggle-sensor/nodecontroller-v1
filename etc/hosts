@@ -8,5 +8,5 @@ ff02::2   ip6-allrouters
 10.31.81.53 edgeprocessor3
 10.31.81.54 edgeprocessor4
 10.31.81.55 edgeprocessor5
-127.0.0.1   NODE_HOSTNAME nodecontroller
-SERVER_HOSTNAME beehive
+127.0.0.1   NODE_HOST nodecontroller
+SERVER_HOST beehive

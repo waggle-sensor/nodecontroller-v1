@@ -36,6 +36,7 @@ if [ $CONFIGURE_SYSTEM -eq 1 ]; then
     echo "configuring system..."
     ./scripts/configure-system.sh --server-host=${SERVER_HOST}
     cd $current_dir
+  fi
 fi
 
 set -e
