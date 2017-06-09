@@ -1,5 +1,22 @@
 #!/bin/bash
 
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  echo "Key: $key"
+  case $key in
+    -s)
+      BEEHIVE_HOST="$2"
+      shift
+      ;;
+    --server=*)
+      BEEHIVE_HOST="${key#*=}"
+      ;;
+      *)
+      ;;
+  esac
+  shift
+done
+
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # this will make sure that an empty eMMC card will get the waggle image
@@ -8,12 +25,12 @@ touch /root/do_recovery
 # this will trigger a self test on the first full boot
 touch /home/waggle/start_test
 
-echo -e "10.31.81.51\tedgeprocessor1 edgeprocessor" >> /etc/hosts
-for i in 2 3 4 5 ; do
-	echo -e "10.31.81.5${i}\tedgeprocessor${i}" >> /etc/hosts
-done
-
-echo -e "127.0.0.1\tnodecontroller" >> /etc/hosts
+# (re)build the /etc/hosts file
+if [ ${BEEHIVE_HOST}x != "x" ] ; then
+  cp $script_dir/../etc/hosts /etc/hosts
+  sed -i "s/NODE_HOST/$(hostname)/" /etc/hosts
+  sed -i "s/SERVER_HOST/${BEEHIVE_HOST}/" /etc/hosts
+fi
 
 # Restrict SSH connections to local port bindings and ethernet card subnet
 sed -i 's/^#ListenAddress ::$/ListenAddress 127.0.0.1/' /etc/ssh/sshd_config
