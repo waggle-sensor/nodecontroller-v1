@@ -8,7 +8,6 @@ fi
 CONFIGURE_SYSTEM=0
 while [[ $# -gt 0 ]]; do
   key="$1"
-  echo "Key: $key"
   case $key in
     -s)
       SERVER_HOST="$2"
@@ -42,11 +41,6 @@ fi
 set -e
 set -x
 #set -v
-#This configures an odroid to be a node controller
-export waggled_dir="${current_dir}/nc-wag-os/waggled"
-
-# for log files
-mkdir -p /var/log/waggle/
 
 # Create symlink if repository is not already at the expected location
 if [ `pwd` != "/usr/lib/waggle/nodecontroller" ] ; then
@@ -62,11 +56,6 @@ fi
 
 #set waggle parameters
 mkdir -p /etc/waggle/
-
-# set node controller IP for "internal" network
-if [ ! -e /etc/waggle/NCIP ] ; then
-  echo "10.31.81.10" > /etc/waggle/NCIP
-fi
 
 if [ ! -e /etc/waggle/node_controller_host ] ; then
   echo "10.31.81.10" > /etc/waggle/node_controller_host
