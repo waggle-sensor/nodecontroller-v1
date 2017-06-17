@@ -72,17 +72,6 @@ if [ ! -e /etc/waggle/node_controller_host ] ; then
   echo "10.31.81.10" > /etc/waggle/node_controller_host
 fi
 
-if [ ! -e /etc/waggle/node_id ] ; then
- source /usr/lib/waggle/core/scripts/create_node_id.sh
-fi
-
-export NODE_ID=`cat /etc/waggle/node_id`
-
-if [ "${NODE_ID}x" == "x" ] ; then
-  echo "error: NODE_ID is undefined"
-  exit 4
-fi
-
 # install RabbitMQ configuration
 cp -r ${current_dir}/etc/rabbitmq /etc
 
