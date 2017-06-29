@@ -41,6 +41,7 @@ print_result "Node ID Set" $? 0 1
 cat /etc/hostname | fgrep "${MAC_STRING}${CURRENT_DISK_DEVICE_TYPE}"
 print_result "Hostname Set" $? 0 1
 
+set +e
 units=("waggle-epoch" "waggle-heartbeat" "waggle-monitor-connectivity" \
        "waggle-monitor-shutdown" "waggle-monitor-system" \
        "waggle-monitor-wagman" "waggle-wagman-driver" "rabbitmq-server" \
