@@ -59,7 +59,7 @@ for dir in ${directories[@]}; do
   print_result "$dir Directory" $? 0 1
 done
 
-perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor)
+perms=$(stat -c '%U %G %a' /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_edge_processor)
 [ "$perms" == "root root 400" ]
 print_result "Edge Processor Key Permissions" $? 0 1
 

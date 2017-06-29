@@ -42,21 +42,21 @@ for i in $(seq 0 `expr ${#devices[@]} - 1`); do
   print_result "Optional $device_name Device" $? 1 0
 done
 
-lsusb | grep 1bc7:0021 && true
+lsusb | grep 1bc7:0021
 if [ $? -eq 0 ]; then
   # Found USB Modem Device
   print_result "Modem USB" 0 0 0
 
-  ifconfig | grep ppp0 -A 1 | fgrep "inet addr:" && true
+  ifconfig | grep ppp0 -A 1 | fgrep "inet addr:"
   print_result "Modem IP Address" $? 0 0
 else
   # No USB Modem Device Present
-  ifconfig | grep -A 1 enx | grep 'inet addr:' && true
+  ifconfig | grep -A 1 enx | grep 'inet addr:'
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
     # give networking another try after a brief rest
     sleep 10
-    ifconfig | grep -A 1 enx | grep 'inet addr:' && true
+    ifconfig | grep -A 1 enx | grep 'inet addr:'
     exit_code=$?
   fi
   print_result "USB Ethernet IP Address" $exit_code 0 0
