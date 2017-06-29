@@ -6,7 +6,7 @@ simple example of using it to repeatedly send sensor data:
 import beehive
 
 connection = beehive.Connection(
-    host='beehive1.mcs.anl.gov',
+    host='beehive',
     port=23181,
     node='0000000000AAAAAA',
     keyfile='/usr/lib/waggle/SSL/node/key.pem',

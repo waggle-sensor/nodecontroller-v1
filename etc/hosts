@@ -1,0 +1,12 @@
+127.0.0.1 localhost
+::1       localhost ip6-localhost ip6-loopback
+ff02::1   ip6-allnodes
+ff02::2   ip6-allrouters
+
+10.31.81.51 edgeprocessor1 edgeprocessor
+10.31.81.52 edgeprocessor2
+10.31.81.53 edgeprocessor3
+10.31.81.54 edgeprocessor4
+10.31.81.55 edgeprocessor5
+127.0.0.1   NODE_HOST nodecontroller
+SERVER_HOST beehive

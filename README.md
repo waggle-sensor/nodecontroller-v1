@@ -14,13 +14,8 @@ Alternatively you can do a git clone on any Linux:
 ```bash
 mkdir -p /usr/lib/waggle/
 cd /usr/lib/waggle/
-git clone --recursive https://github.com/waggle-sensor/nodecontroller.git
+git clone https://github.com/waggle-sensor/nodecontroller.git
 cd nodecontroller
-```
-
-Also, if you are not using the Waggle image, you may have to install the dependencies of the nodecontroller. This script uses apt-get commands. For other Linux distributions look into this file to see what needs to be installed.
-```bash
-scripts/install_dependencies.sh
 ```
 
 ### Installation with Docker (only x86)
@@ -84,58 +79,28 @@ The certificate files have to be created by the certificate authority on the bee
 
 ## Services
 
-At the moment waggle service are started by supervisor, a simple process control system. The configure script should set everything up that the service will be started automatically.
+At the moment Waggle services are started by systemd. The configure script should set everything up so that the Waggle services will be started automatically.
 
 Status of waggle services:
 ```bash
-supervisorctl status
+systemctl list-units 'waggle*'
 ```
 
-The result could look like this:
+The result will look somethinglike this:
 ```text
-waggle_communications            RUNNING    pid 7241, uptime 3:30:13
-waggle_data_cache                RUNNING    pid 7243, uptime 3:30:13
-waggle_plugin_manager            STOPPED    Feb 25 05:27 PM
-waggle_wagman                    RUNNING    pid 7242, uptime 3:30:13
+UNIT                                LOAD   ACTIVE SUB     DESCRIPTION
+waggle-epoch.service                loaded active running Maintains the date and time on the node.
+waggle-heartbeat.service            loaded active running Triggers Wagman heartbeat line.
+waggle-monitor-connectivity.service loaded active running Monitors node controller connectivity status.
+waggle-monitor-shutdown.service     loaded active running Monitors shutdown signals.
+waggle-monitor-system.service       loaded active running Monitors node controller status.
+waggle-monitor-wagman.service       loaded active running Monitors Wagman status.
+waggle-plugin-alphasense.service    loaded active running Alphasense OPC-N2 plugin.
+waggle-plugin-coresense.service     loaded active running Coresense 3.1 plugin.
+waggle-plugin-gps.service           loaded active running GPS plugin.
+waggle-reverse-tunnel.service       loaded active running Maintains an SSH reverse tunnel on Beehive.
+waggle-wagman-driver.service        loaded active running Wagman Driver
+waggle-wwan.service                 loaded active running ATT WWAN Client
+waggle-core.target                  loaded active active  Waggle Core
+waggle-platform.target              loaded active active  Waggle Platform
 ```
-
-
-Stop a service:
-```bash
-supervisorctl stop waggle_communications
-```
-
-Start a service:
-```bash
-supervisorctl start waggle_communications
-```
-
-* NOTE: waggle-communications service needs up to a minute to accept incoming connection from payloads after restart.
-
-
-## Simple CPU temperature sensor
-
-This script can be used to test sending of sensor data. Note that this script sends data to the data cache. It does not check if data actually arrives at the server.
-
-```bash
-cd /usr/lib/waggle/nodecontroller/nc-wag-os/waggled/NC
-./node_sensor.py 
-```
-
-
-
-## Developer Notes
-
-Everything that is installed on the Node Controller lives here.  There
-are three basic pieces: 
-
-* the baseOS (a Linux distro) for the ODROID
-   (we are curently using a ODROID stock ubuntu image, not in this repo)
-
-* the waggle-customized OS that includes all basic management
-  features and cloud communication layers
-
-* the in-situ processing components for processing audio, images,
-  hyperspectral data, etc.
-
-

@@ -46,13 +46,11 @@ def run_registration_command(registration_key, cert_server, command):
 
 
 def get_certificates():
-    cert_server = ""
-    with open("/etc/waggle/server_host") as cert_server_file:
-        cert_server = cert_server_file.readline().rstrip()
+    cert_server = 'beehive'
     node_id = ""
     with open("/etc/waggle/node_id") as node_id_file:
         node_id = node_id_file.readline().rstrip()
-    registration_key = "/root/id_rsa_waggle_aot_registration"
+    registration_key = "/root/id_rsa_waggle_registration"
     reverse_ssh_port_file = '/etc/waggle/reverse_ssh_port'
     ca_root_file = "/usr/lib/waggle/SSL/waggleca/cacert.pem"
     client_key_file = "/usr/lib/waggle/SSL/node/key.pem"

@@ -1,16 +1,21 @@
 #!/bin/bash
 
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit 1
+fi
+
 CONFIGURE_SYSTEM=0
 while [[ $# -gt 0 ]]; do
   key="$1"
   echo "Key: $key"
   case $key in
     -s)
-      BEEHIVE_HOST="$2"
+      SERVER_HOST="$2"
       shift
       ;;
-    --server=*)
-      BEEHIVE_HOST="${key#*=}"
+    --server-host=*)
+      SERVER_HOST="${key#*=}"
       ;;
     --system)
       CONFIGURE_SYSTEM=1
@@ -24,33 +29,26 @@ done
 export current_dir="$(pwd)"
 
 if [ $CONFIGURE_SYSTEM -eq 1 ]; then
-  echo "configuring system..."
-  ./scripts/configure-system.sh
-  cd $current_dir
+  if [ ${SERVER_HOST}x == "x" ] ; then
+    echo "Error: must specify --server-host=<SERVER_HOST> when using the --system option"
+    exit 2
+  else
+    echo "configuring system..."
+    ./scripts/configure-system.sh --server-host=${SERVER_HOST}
+    cd $current_dir
+  fi
 fi
 
 set -e
 set -x
 #set -v
-#This configures an odroid to be a node controller
-export waggled_dir="${current_dir}/nc-wag-os/waggled"
-
-export current_dir="$(pwd)"
-
-if [ "$EUID" -ne 0 ]
-  then echo "Please run as root"
-  exit
-fi
-
-# for log files
-mkdir -p /var/log/waggle/
 
 # Create symlink if repository is not already at the expected location
 if [ `pwd` != "/usr/lib/waggle/nodecontroller" ] ; then
   mkdir -p /usr/lib/waggle/
   if [ -d /usr/lib/waggle/nodecontroller ] && [ ! -L /usr/lib/waggle/nodecontroller ] ; then
     echo "Error: Directory /usr/lib/waggle/nodecontroller already exists."
-    exit 1
+    exit 3
   fi
   rm /usr/lib/waggle/nodecontroller
   ln -s `pwd` /usr/lib/waggle/nodecontroller
@@ -77,45 +75,8 @@ export NODE_ID=`cat /etc/waggle/node_id`
 
 if [ "${NODE_ID}x" == "x" ] ; then
   echo "error: NODE_ID is undefined"
-  exit 1
+  exit 4
 fi
-
-# this is only for backwards compatibility with PacketHandler.py
-if [ ! -e /etc/waggle/hostname ] ; then
-  echo ${NODE_ID} > /etc/waggle/hostname
-fi
-
-if [ ${BEEHIVE_HOST}x == "x" ] ; then
-  if [ -e /etc/waggle/server_host ] ; then
-    BEEHIVE_HOST=`cat /etc/waggle/server_host`
-  fi
-fi
-
-# AoT Default Server
-if [ ${BEEHIVE_HOST}x == "x" ] ; then
-  BEEHIVE_HOST="beehive1.mcs.anl.gov"
-fi
-
-#We have to move away from manual input, and take it as an argument, with the
-#default beehive server IP set to localhost. Also, we need a way to let the
-#user know that a wrong server was chosen.
-echo "The beehive server is set to ${BEEHIVE_HOST}."
-sleep 1
-echo ${BEEHIVE_HOST} > /etc/waggle/server_host
-
-
-#make directory to store data cache log files and stored messages
-#make / as large as possible, all the cached data gets stored here.
-mkdir -p /var/dc
-#store outoing messages here
-mkdir -p /var/dc/outgoing_msgs
-#store incoming messages here
-#each external guest node that registers with the nodecontroller will have a separate folder
-mkdir -p /var/dc/incoming_msgs
-
-#make directory to store comms log files
-mkdir -p /var/log/comms
-
 
 # install RabbitMQ configuration
 cp -r ${current_dir}/etc/rabbitmq /etc

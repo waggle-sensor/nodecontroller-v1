@@ -21,16 +21,6 @@ def run_command(command):
 	p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	return iter(p.stdout.readline, b'')
 
-# Get the Beehive server hostname
-def get_beehive_hostname():
-	server_host = ''
-	try:
-		with open('/etc/waggle/server_host', 'r') as f:
-			server_host = f.readline().rstrip()
-	except Exception:
-		pass
-	return server_host
-
 def reset_deadman_trigger():
 	file = "/usr/lib/waggle/core/alive"
 	rc = os.system("touch " + file + " > /dev/null 2>&1")
@@ -91,14 +81,6 @@ def check_beehive_ping(hostname):
 
 # Connect to the local sshd
 def check_local_sshd():
-	# To test, add "waggle" user to ThinkPad and setup passwordless key
-	# command = ['ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor -x',
-	# 			'-o "ProxyCommand ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor -o \\\"StrictHostKeyChecking no\\\" -q waggle@10.31.81.51 nc -q0 10.31.81.10 22"',
-	# 			'-o "PasswordAuthentication no"',
-	# 			'-o "StrictHostKeyChecking no"',
-	# 			'-o "ConnectTimeout 5" waggle@10.31.81.10',
-	# 			'date > /dev/null 2>&1']
-	#print(' '.join(command))
 	command = ['/usr/lib/waggle/nodecontroller/scripts/eplogin', '/usr/lib/waggle/edge_processor/nclogin', 'date > /dev/null 2>&1']
 	rc = os.system(' '.join(command))
 	if rc != 0:
@@ -130,7 +112,7 @@ test_names = ['USB Modem', 'Network Interface', 'Local sshd',
               'Beehive DNS', 'Beehive Ping', 'Beehive sshd']
 
 # base_sleep_time = 2  # s
-beehive_hostname = get_beehive_hostname()
+beehive_hostname = 'beehive'
 
 base_sleep_time = 60  # (seconds)
 

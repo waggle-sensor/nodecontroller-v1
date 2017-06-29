@@ -89,7 +89,7 @@ else:
 	node_id = ""
 	
 def send_node_connectivity():
-	cmd = "curl -X POST http://beehive1.mcs.anl.gov/alive/%s > /dev/null 2>&1"
+	cmd = "curl -X POST http://beehive/alive/%s > /dev/null 2>&1"
 	if node_id:
 		os.system(cmd % node_id)
 		return True, "success", False
