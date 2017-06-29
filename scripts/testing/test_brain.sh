@@ -40,17 +40,17 @@ else
 fi
 
 # Ethernet IP Address (NC)
-ifconfig | fgrep "          inet addr:10.31.81.10  Bcast:10.31.81.255  Mask:255.255.255.0" && true
+ifconfig | fgrep "          inet addr:10.31.81.10  Bcast:10.31.81.255  Mask:255.255.255.0"
 print_result "Built-in Ethernet IP Address" $? 0 0
 
 [ -e /dev/waggle_sysmon ]
 print_result "WagMan Device" $? 0 0
 
 . /usr/lib/waggle/core/scripts/detect_disk_devices.sh
-parted -s ${CURRENT_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB' && true
+parted -s ${CURRENT_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB'
 print_result "SD Size" $? 0 0
 
-parted -s ${OTHER_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB' && true
+parted -s ${OTHER_DISK_DEVICE}p2 print | grep --color=never -e ext | awk '{print $3}' | egrep '15\.[0-9]GB'
 print_result "eMMC Size" $? 0 0
 
 # ssh NC to EP

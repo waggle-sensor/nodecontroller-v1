@@ -31,14 +31,14 @@ print_result() {
 }
 
 # Ethernet IP Address (NC)
-ifconfig | fgrep "          inet addr:10.31.81.10  Bcast:10.31.81.255  Mask:255.255.255.0" && true
+ifconfig | fgrep "          inet addr:10.31.81.10  Bcast:10.31.81.255  Mask:255.255.255.0"
 print_result "Built-in Ethernet IP Address" $? 0 0
 
-cat /etc/waggle/node_id | egrep '[0-9a-f]{16}' && true
+cat /etc/waggle/node_id | egrep '[0-9a-f]{16}'
 print_result "Node ID Set" $? 0 1
 
 . /usr/lib/waggle/core/scripts/detect_mac_address.sh
-cat /etc/hostname | fgrep "${MAC_STRING}${CURRENT_DISK_DEVICE_TYPE}" && true
+cat /etc/hostname | fgrep "${MAC_STRING}${CURRENT_DISK_DEVICE_TYPE}"
 print_result "Hostname Set" $? 0 1
 
 units=("waggle-epoch" "waggle-heartbeat" "waggle-monitor-connectivity" \
@@ -46,25 +46,25 @@ units=("waggle-epoch" "waggle-heartbeat" "waggle-monitor-connectivity" \
        "waggle-monitor-wagman" "waggle-wagman-driver" "rabbitmq-server" \
        "waggle-core.target" "waggle-platform.target")
 for unit in ${units[@]}; do
-  systemctl status $unit | fgrep 'Active: active (running)' && true
+  systemctl status $unit | fgrep 'Active: active (running)'
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
     # give systemctl status another try after a brief rest
     sleep 5
-    systemctl status $unit | fgrep 'Active: active (running)' && true
+    systemctl status $unit | fgrep 'Active: active (running)'
     exit_code=$?
   fi
-  print_result "$unit Service" $? 0 1
+  print_result "$unit Service" $exit_code 0 1
 done
 
 units=("waggle-wwan" "waggle-reverse-tunnel")
 for unit in ${units[@]}; do
-  systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: activating (auto-restart)' && true
+  systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: activating (auto-restart)'
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
     # give systemctl status another try after a brief rest
     sleep 5
-    systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: activating (auto-restart)' && true
+    systemctl status $unit | fgrep -e 'Active: active (running)' -e 'Active: activating (auto-restart)'
     exit_code=$?
   fi
   print_result "$unit Service" $exit_code 0 1
