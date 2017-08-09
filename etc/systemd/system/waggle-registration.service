@@ -2,9 +2,17 @@
 Description=node registration
 After=waggle-platform.target network.target
 
+# stop the service once the credential has been removed
+# (post successful registration)
+ConditionPathExists=/root/id_rsa_waggle_registration
+
 [Service]
 WorkingDirectory=/usr/lib/waggle/nodecontroller/scripts
 ExecStart=/usr/lib/waggle/nodecontroller/scripts/registration-service --force
+
+# keep trying if there was a fatal error during an attempt to register
+Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=waggle-platform.target
