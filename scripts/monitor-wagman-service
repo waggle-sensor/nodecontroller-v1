@@ -10,11 +10,27 @@ import os
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-beehive_reporter = waggle.logging.getLogger('monitor-wagman')
+beehive_reporter = None
 
 ############################
 ##### Helper Functions #####
 ############################
+
+def report_beehive(msg, lvl="info"):
+	global beehive_reporter
+	try:
+		if beehive_reporter == None:
+			beehive_reporter = waggle.logging.getLogger('monitor-wagman')
+
+		if lvl=="info":
+			beehive_reporter.info(msg)
+		elif lvl=="error":
+			beehive_reporter.error(msg)
+		else:
+			beehive_reporter.debug(msg)
+	except Exception as e:
+		beehive_reporter = None
+		logging.error("Could not send message: %s" % str(e))
 
 def reset_wagman():
 	os.system("/usr/lib/waggle/nodecontroller/scripts/reset-wagman")
@@ -149,9 +165,9 @@ class wagmanListener(object):
 
 	def report(self):
 		try:
-			beehive_reporter.info(json.dumps(self.status))
+			report_beehive(json.dumps(self.status), "info")
 		except:
-			beehive_reporter.info(self.status)
+			report_beehive(self.status, "info")
 		self.timer = time.time()
 
 	def run(self):
@@ -162,7 +178,7 @@ class wagmanListener(object):
 
 			if current_time - self.wagman_watchdog > self.max_wagman_silence_duration:
 				logging.info("WagMan is not well. Resetting WagMan...")
-				beehive_reporter.error("WagMan is not well. Resetting WagMan...")
+				report("WagMan is not well. Resetting WagMan...", "error")
 				reset_wagman()
 				self.wagman_watchdog = current_time
 

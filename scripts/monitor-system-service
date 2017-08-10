@@ -9,7 +9,23 @@ import json
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-beehive_reporter = waggle.logging.getLogger('system-monitor')
+beehive_reporter = None
+
+def report_beehive(msg, lvl="info"):
+	global beehive_reporter
+	try:
+		if beehive_reporter == None:
+			beehive_reporter = waggle.logging.getLogger('monitor-system')
+
+		if lvl=="info":
+			beehive_reporter.info(msg)
+		elif lvl=="error":
+			beehive_reporter.error(msg)
+		else:
+			beehive_reporter.debug(msg)
+	except Exception as e:
+		beehive_reporter = None
+		logging.error("Could not send message: %s" % str(e))
 
 def get_host_name():
 	"""
@@ -113,7 +129,7 @@ logging.info("waggle-system-monitor service is running...")
 
 while True:
 	current_time = time.time()
-	sleep_time = 1000000
+	sleep_time = 60
 	for entity, func, period in checklist:
 		ret = False
 		msg = ""
@@ -147,7 +163,7 @@ while True:
 			sleep_time = next_time
 			
 		if report:
-			beehive_reporter.info(json.dumps(check))
+			report_beehive(json.dumps(check), "info")
 
 		status[entity] = check
 
