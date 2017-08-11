@@ -1,0 +1,10 @@
+#!/usr/bin/env escript
+%% -*- erlang -*-
+
+main(_) ->
+  check_syntax("rabbitmq.config"),
+  check_syntax("enabled_plugins").
+
+check_syntax(Filename) ->
+  io:format(Filename),
+  io:format(": ~w~n", [file:eval(Filename)]).
