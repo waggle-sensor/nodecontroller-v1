@@ -24,12 +24,11 @@ STATUS=0
 if [ -z "$PORT" ];then 
     echo "No PORT number set."
     STATUS=1
-fi
-
-if ! [ "$PORT" -eq "$PORT" ] 2> /dev/null
+else if ! [ "$PORT" -eq "$PORT" ] 2> /dev/null
 then
     echo "Invalid PORT number."
     STATUS=1
+fi
 fi
 
 if [ ! -f /usr/lib/waggle/SSL/node/key.pem ]; then
