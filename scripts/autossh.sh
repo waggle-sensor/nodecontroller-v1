@@ -19,6 +19,29 @@ fi
 echo 'HOST = ' ${HOST}
 echo 'PORT = ' ${PORT}
 
+STATUS=0
+
+if [ -z "$PORT" ];then 
+    echo "No PORT number set."
+    STATUS=1
+fi
+
+if ! [ "$PORT" -eq "$PORT" ] 2> /dev/null
+then
+    echo "Invalid PORT number."
+    STATUS=1
+fi
+
+if [ ! -f /usr/lib/waggle/SSL/node/key.pem ]; then
+    echo "SSH key file not found."
+    STATUS=1
+fi
+
+
+if [ $STATUS -eq 1 ]; then
+exit 1
+fi
+
 # TODO! remove these options: -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null"
 autossh -i /usr/lib/waggle/SSL/node/key.pem -M 0 -gNC -o "ServerAliveInterval 5" -o "ServerAliveCountMax 3" -R ${PORT}:localhost:22 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -o "ExitOnForwardFailure yes" ${HOST} -p 20022
 
