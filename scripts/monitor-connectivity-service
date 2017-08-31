@@ -38,7 +38,7 @@ def run_command(command):
 	return iter(p.stdout.readline, b'')
 
 def reset_deadman_trigger():
-	file = "/usr/lib/waggle/core/alive"
+	file = "/tmp/alive"
 	rc = os.system("touch " + file + " > /dev/null 2>&1")
 	if rc != 0:
 		return False
