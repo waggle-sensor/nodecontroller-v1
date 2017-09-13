@@ -61,6 +61,9 @@ if [ ! -e /etc/waggle/node_controller_host ] ; then
   echo "10.31.81.10" > /etc/waggle/node_controller_host
 fi
 
+# copy avrdude.conf
+cp ${current_dir}/etc/avrdude.conf /etc
+
 # install RabbitMQ configuration
 cp -r ${current_dir}/etc/rabbitmq /etc
 
