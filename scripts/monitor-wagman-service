@@ -7,6 +7,7 @@ import math
 import waggle.logging
 import json
 import os
+import calendar
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -168,6 +169,7 @@ class wagmanListener(object):
 			report_beehive(json.dumps(self.status), "info")
 		except:
 			report_beehive(self.status, "info")
+		self.status = {}
 		self.timer = time.time()
 
 	def run(self):
@@ -180,6 +182,7 @@ class wagmanListener(object):
 				logging.info("WagMan is not well. Resetting WagMan...")
 				report("WagMan is not well. Resetting WagMan...", "error")
 				reset_wagman()
+				time.sleep(10)
 				self.wagman_watchdog = current_time
 
 			msg = ""
@@ -220,7 +223,14 @@ class wagmanListener(object):
 			elif "id" in prefix:
 				self.status['wagman_id'] = content
 			elif "date" in prefix:
-				self.status['wagman_date'] = content
+				try:
+					# date format from Wagman is %Y %m %d %H %M %S
+					struct_time = time.strptime(content, '%Y %m %d %H %M %S')
+					self.status['wagman_date'] = calendar.timegm(struct_time)
+				except ValueError as ex:
+					self.status['wagman_date'] = content
+					logging.error('Could not parse Wagman date %s: %s' % (content, str(ex)))
+					
 				self.status['wagmans_date_lastupdated'] = time.time()
 			elif "cu" in prefix:
 				splits = self.ssplit(content)
