@@ -139,8 +139,8 @@ if __name__ == '__main__':
                 logger.info('creating workers')
 
                 processes = [
-                    Process(target=publisher, args=(serial,)),
-                    Process(target=server, args=(serial,)),
+                    Process(name='publisher', target=publisher, args=(serial,)),
+                    Process(name='server', target=server, args=(serial,)),
                 ]
 
                 logger.info('starting workers')
@@ -153,12 +153,16 @@ if __name__ == '__main__':
                 while all(p.is_alive() for p in processes):
                     time.sleep(1)
 
-                logger.info('worker process failed - terminating')
+                for p in processes:
+                    if not p.is_alive():
+                        logger.info('worker {} failed'.format(p.name))
+
+                logger.info('terminating workers')
 
                 for p in processes:
                     p.terminate()
 
-                logger.info('workers terminated')
+                logger.info('terminated workers')
         except OSError:
             logger.error('could not connect to device {}'.format(wagman_device))
 
