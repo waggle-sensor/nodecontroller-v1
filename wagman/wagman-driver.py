@@ -11,7 +11,7 @@ import re
 import logging
 from multiprocessing import Process
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 header_prefix = '<<<-'
 footer_prefix = '->>>'
@@ -19,6 +19,7 @@ footer_prefix = '->>>'
 
 def publisher(serial):
     logger = logging.getLogger('publisher')
+    wagman_logger = logging.getLogger('wagman')
 
     logger.info('starting')
 
@@ -67,8 +68,8 @@ def publisher(serial):
                     logger.debug("sending body: {}".format(repr(body)))
 
                     msg = '{}\n{}'.format(header, body)
-
                     socket.send_string(msg)
+
                     output = []
             elif line.startswith(header_prefix):
                 session_id = ''
@@ -90,8 +91,9 @@ def publisher(serial):
                 incommand = True
             elif line.startswith('log:'):
                 socket.send_string(line)
+                wagman_logger.info(line.lstrip('log:').strip())
     except Exception as exc:
-        logger.error('fatal exception: {}'.format(exc))
+        logger.exception('fatal exception')
     finally:
         logger.info('cleaning up')
         socket.send_string('error: not connected to wagman')
@@ -123,7 +125,7 @@ def server(serial):
             else:
                 server_socket.send_string('OK')
     except Exception as exc:
-        logger.error('fatal exception: {}'.format(exc))
+        logger.exception('fatal exception')
     finally:
         logger.info('cleaning up')
         server_socket.close()
@@ -160,6 +162,7 @@ def manager(serial):
         p.terminate()
 
     logger.info('terminated workers')
+    sys.exit(1)
 
 
 def main():
@@ -170,16 +173,12 @@ def main():
     except IndexError:
         wagman_device = '/dev/waggle_sysmon'
 
-    for attempt in range(3):
-        try:
-            with Serial(wagman_device, 57600, timeout=10, writeTimeout=10) as serial:
-                manager(serial)
-        except OSError:
-            logger.warning('could not connect to device {}'.format(wagman_device))
-
-        time.sleep(10)
-
-    logger.error('too many attempts to open {}'.format(wagman_device))
+    try:
+        with Serial(wagman_device, 57600, timeout=10, writeTimeout=10) as serial:
+            manager(serial)
+    except Exception as exc:
+        logger.exception('failed to open device')
+        sys.exit(1)
 
 
 if __name__ == '__main__':
