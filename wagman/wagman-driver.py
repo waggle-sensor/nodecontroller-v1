@@ -46,7 +46,14 @@ def publisher(serial):
             logger.debug('readline: {}'.format(line))
 
             if incommand:
-                if line.startswith(footer_prefix):
+                content, sep, _ = line.partition(footer_prefix)
+
+                if content:
+                    output.append(content)
+
+                if sep:
+                    line, _, rest = line.partition(footer_prefix)
+
                     incommand = False
 
                     if session_id:
@@ -56,15 +63,13 @@ def publisher(serial):
 
                     body = '\n'.join(output)
 
-                    logger.debug("sending header: {}".format(header))
-                    logger.debug("sending body: {}".format(body))
+                    logger.debug("sending header: {}".format(repr(header)))
+                    logger.debug("sending body: {}".format(repr(body)))
 
                     msg = '{}\n{}'.format(header, body)
 
                     socket.send_string(msg)
                     output = []
-                else:
-                    output.append(line)
             elif line.startswith(header_prefix):
                 session_id = ''
                 logger.debug('received header: {}'.format(line))
@@ -169,8 +174,6 @@ def main():
         try:
             with Serial(wagman_device, 57600, timeout=10, writeTimeout=10) as serial:
                 manager(serial)
-        except KeyboardInterrupt:
-            break
         except OSError:
             logger.warning('could not connect to device {}'.format(wagman_device))
 
