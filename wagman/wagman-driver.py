@@ -125,7 +125,39 @@ def server(serial):
         logger.info('terminating')
 
 
-if __name__ == '__main__':
+def manager(serial):
+    logger = logging.getLogger('manager')
+
+    logger.info('creating workers')
+
+    processes = [
+        Process(name='publisher', target=publisher, args=(serial,)),
+        Process(name='server', target=server, args=(serial,)),
+    ]
+
+    logger.info('starting workers')
+
+    for p in processes:
+        p.start()
+
+    logger.info('started workers')
+
+    while all(p.is_alive() for p in processes):
+        time.sleep(1)
+
+    for p in processes:
+        if not p.is_alive():
+            logger.error('worker {} failed'.format(p.name))
+
+    logger.info('terminating workers')
+
+    for p in processes:
+        p.terminate()
+
+    logger.info('terminated workers')
+
+
+def main():
     logger = logging.getLogger()
 
     try:
@@ -133,37 +165,19 @@ if __name__ == '__main__':
     except IndexError:
         wagman_device = '/dev/waggle_sysmon'
 
-    while True:
+    for attempt in range(3):
         try:
             with Serial(wagman_device, 57600, timeout=10, writeTimeout=10) as serial:
-                logger.info('creating workers')
-
-                processes = [
-                    Process(name='publisher', target=publisher, args=(serial,)),
-                    Process(name='server', target=server, args=(serial,)),
-                ]
-
-                logger.info('starting workers')
-
-                for p in processes:
-                    p.start()
-
-                logger.info('started workers')
-
-                while all(p.is_alive() for p in processes):
-                    time.sleep(1)
-
-                for p in processes:
-                    if not p.is_alive():
-                        logger.error('worker {} failed'.format(p.name))
-
-                logger.info('terminating workers')
-
-                for p in processes:
-                    p.terminate()
-
-                logger.info('terminated workers')
+                manager(serial)
+        except KeyboardInterrupt:
+            break
         except OSError:
-            logger.error('could not connect to device {}'.format(wagman_device))
+            logger.warning('could not connect to device {}'.format(wagman_device))
 
-        time.sleep(3)
+        time.sleep(10)
+
+    logger.error('too many attempts to open {}'.format(wagman_device))
+
+
+if __name__ == '__main__':
+    main()
