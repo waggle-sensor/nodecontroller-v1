@@ -155,7 +155,7 @@ if __name__ == '__main__':
 
                 for p in processes:
                     if not p.is_alive():
-                        logger.info('worker {} failed'.format(p.name))
+                        logger.error('worker {} failed'.format(p.name))
 
                 logger.info('terminating workers')
 
