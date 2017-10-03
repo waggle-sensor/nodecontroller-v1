@@ -11,19 +11,25 @@ import re
 import logging
 from multiprocessing import Process
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG)
 
 header_prefix = '<<<-'
 footer_prefix = '->>>'
 
 
 def publisher(serial):
+    logger = logging.getLogger('publisher')
+
+    logger.info('starting')
+
     context = zmq.Context()
 
     socket = context.socket(zmq.PUB)
-    socket.setsockopt(zmq.SNDTIMEO, 15000)
+    socket.setsockopt(zmq.LINGER, 10000)
+    socket.setsockopt(zmq.SNDTIMEO, 10000)
     socket.bind('ipc:///tmp/zeromq_wagman-pub')
+
+    logger.info('ready')
 
     try:
         output = []
@@ -32,8 +38,12 @@ def publisher(serial):
         session_id = ''
 
         while True:
-            line = serial.readline().decode().strip()
-            print(line)
+            try:
+                line = serial.readline().decode().strip()
+            except UnicodeDecodeError:
+                continue
+
+            logger.debug('readline: {}'.format(line))
 
             if incommand:
                 if line.startswith(footer_prefix):
@@ -46,8 +56,8 @@ def publisher(serial):
 
                     body = '\n'.join(output)
 
-                    logging.debug("sending header: {}".format(header))
-                    logging.debug("sending body: {}".format(body))
+                    logger.debug("sending header: {}".format(header))
+                    logger.debug("sending body: {}".format(body))
 
                     msg = '{}\n{}'.format(header, body)
 
@@ -57,46 +67,67 @@ def publisher(serial):
                     output.append(line)
             elif line.startswith(header_prefix):
                 session_id = ''
-                logging.debug('received header: {}'.format(line))
+                logger.debug('received header: {}'.format(line))
                 matchObj = re.match(r'.*sid=(\S+)', line, re.M | re.I)
                 if matchObj:
                     session_id = matchObj.group(1).rstrip()
 
                 if session_id:
-                    logging.debug("detected session_id: {}".format(session_id))
+                    logger.debug("detected session_id: {}".format(session_id))
                 else:
-                    logging.debug("no session_id detected")
+                    logger.debug("no session_id detected")
 
                 fields = line.split()
-                logging.debug(fields)
+                logger.debug(fields)
 
                 commandname = fields[-1]
 
                 incommand = True
             elif line.startswith('log:'):
                 socket.send_string(line)
+    except Exception as exc:
+        logger.error('fatal exception: {}'.format(exc))
     finally:
+        logger.info('cleaning up')
         socket.send_string('error: not connected to wagman')
+        socket.close()
+        logger.info('terminating')
 
 
 def server(serial):
+    logger = logging.getLogger('server')
+
+    logger.info('starting')
+
     context = zmq.Context()
 
     server_socket = context.socket(zmq.REP)
-    server_socket.setsockopt(zmq.SNDTIMEO, 15000)
+    server_socket.setsockopt(zmq.LINGER, 10000)
+    server_socket.setsockopt(zmq.SNDTIMEO, 10000)
     server_socket.bind('ipc:///tmp/zeromq_wagman-server')
 
-    while True:
-        try:
-            serial.write(server_socket.recv() + b'\n')
-        except Exception as e:
-            server_socket.send_string('ERROR')
-            break
-        else:
-            server_socket.send_string('OK')
+    logger.info('ready')
+
+    try:
+        while True:
+            try:
+                serial.write(server_socket.recv() + b'\n')
+            except Exception as e:
+                server_socket.send_string('ERROR')
+                break
+            else:
+                server_socket.send_string('OK')
+    except Exception as exc:
+        logger.error('fatal exception: {}'.format(exc))
+    finally:
+        logger.info('cleaning up')
+        server_socket.close()
+        logger.info('terminating')
 
 
 if __name__ == '__main__':
+    logger = logging.getLogger()
+
     try:
         wagman_device = sys.argv[1]
     except IndexError:
@@ -105,19 +136,30 @@ if __name__ == '__main__':
     while True:
         try:
             with Serial(wagman_device, 57600, timeout=10, writeTimeout=10) as serial:
+                logger.info('creating workers')
+
                 processes = [
                     Process(target=publisher, args=(serial,)),
                     Process(target=server, args=(serial,)),
                 ]
 
+                logger.info('starting workers')
+
                 for p in processes:
                     p.start()
+
+                logger.info('started workers')
 
                 while all(p.is_alive() for p in processes):
                     time.sleep(1)
 
+                logger.info('worker process failed - terminating')
+
                 for p in processes:
                     p.terminate()
+
+                logger.info('workers terminated')
         except OSError:
-            print('could not connect to device')
+            logger.error('could not connect to device {}'.format(wagman_device))
+
         time.sleep(3)
