@@ -50,7 +50,7 @@ def publisher(serial):
                 content, sep, _ = line.partition(footer_prefix)
 
                 if content:
-                    output.append(content)
+                    output.append(content.strip())
 
                 if sep:
                     line, _, rest = line.partition(footer_prefix)
