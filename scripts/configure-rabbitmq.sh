@@ -9,3 +9,6 @@ else
   cp /usr/lib/waggle/nodecontroller/etc/rabbitmq/rabbitmq.config /etc/rabbitmq
   sed -i -e "s/%NODE_ID%/$NODE_ID/" /etc/rabbitmq/rabbitmq.config
 fi
+
+cd /etc/rabbitmq
+./check_config_files
