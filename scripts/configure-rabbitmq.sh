@@ -6,8 +6,10 @@ recover_rabbitmq_config() {
   NODE_ID=$1
   echo "rabbitmq.config is wrong"
   echo "copy /usr/lib/waggle/nodecontroller/etc/rabbitmq/rabbitmq.config to /etc/rabbitmq and put node id in the file"
+  waggle-fs-unlock
   cp /usr/lib/waggle/nodecontroller/etc/rabbitmq/rabbitmq.config /etc/rabbitmq
   sed -i -e "s/%NODE_ID%/$NODE_ID/" /etc/rabbitmq/rabbitmq.config
+  waggle-fs-lock
 }
 
 cd /etc/rabbitmq
