@@ -18,6 +18,7 @@ def readline(ser):
     global last_readline
 
     while True:
+        # give up if global readline timeout is expired
         if time.time() - last_readline > 60.0:
             raise TimeoutError('wagman timed out')
 

@@ -74,8 +74,7 @@ def main(args, timeout=15.0, retry_delay=5.0, retry_attempts=3):
 
     for attempt in range(retry_attempts):
         try:
-            body = dispatch(args, timeout=timeout)
-            print(body)
+            print(dispatch(args, timeout=timeout))
             break
         except KeyboardInterrupt:
             break
