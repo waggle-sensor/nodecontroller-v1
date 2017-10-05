@@ -5,7 +5,6 @@ import sys
 import logging
 import time
 import re
-from contextlib import closing
 from contextlib import ExitStack
 
 logger = logging.getLogger('driver')
@@ -130,11 +129,15 @@ def open_serial_port(device, retry_attempts=3, retry_delay=20):
 def main():
     with ExitStack() as stack:
         context = stack.enter_context(zmq.Context())
-
         server = stack.enter_context(context.socket(zmq.REP))
+
+        # do not wait on client for more than 1s
         server.setsockopt(zmq.RCVTIMEO, 1000)
         server.setsockopt(zmq.SNDTIMEO, 1000)
+
+        # do not attempt to complete client requests during cleanup
         server.setsockopt(zmq.LINGER, 0)
+
         server.bind('ipc://wagman-server')
 
         ser = stack.enter_context(open_serial_port(sys.argv[1]))
