@@ -55,7 +55,7 @@ def dispatch(args, timeout):
         client.setsockopt(zmq.RCVTIMEO, timeout_ms)
         client.setsockopt(zmq.SNDTIMEO, timeout_ms)
 
-        client.connect('ipc://wagman-server')
+        client.connect('ipc:///var/wagman-server')
 
         try:
             client.send_string(sanitize(' '.join(args)))
@@ -91,12 +91,10 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-
     parser.add_argument('--timeout', type=float, default=15.0)
     parser.add_argument('--retry-delay', type=float, default=5.0)
     parser.add_argument('--retry-attempts', type=int, default=3)
     parser.add_argument('args', nargs='+')
-
     args = parser.parse_args()
 
     main(args=args.args,

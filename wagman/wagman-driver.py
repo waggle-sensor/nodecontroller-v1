@@ -143,7 +143,7 @@ def main(device):
         server.setsockopt(zmq.RCVTIMEO, 1000)
         server.setsockopt(zmq.SNDTIMEO, 1000)
 
-        server.bind('ipc://wagman-server')
+        server.bind('ipc:///var/wagman-server')
 
         ser = stack.enter_context(serial.Serial(device, 57600, timeout=1.0))
 
