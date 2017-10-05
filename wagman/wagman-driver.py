@@ -1,123 +1,171 @@
 #!/usr/bin/env python3
-"""
-The WagMan publisher is responsible for distributing output of the Wagman
-serialline to subscribers. Subscribers may need to use a session ID.
-"""
-from serial import Serial
+import serial
 import zmq
-import time
 import sys
-import re
 import logging
-from multiprocessing import Process
+import time
+import re
+from contextlib import ExitStack
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger('driver')
+wagman_logger = logging.getLogger('wagman')
 
-header_prefix = '<<<-'
-footer_prefix = '->>>'
-
-
-def publisher(serial):
-    context = zmq.Context()
-
-    socket = context.socket(zmq.PUB)
-    socket.setsockopt(zmq.SNDTIMEO, 15000)
-    socket.bind('ipc:///tmp/zeromq_wagman-pub')
-
-    try:
-        output = []
-        incommand = False
-        commandname = None
-        session_id = ''
-
-        while True:
-            line = serial.readline().decode().strip()
-            print(line)
-
-            if incommand:
-                if line.startswith(footer_prefix):
-                    incommand = False
-
-                    if session_id:
-                        header = '{} cmd.{}'.format(session_id, commandname)
-                    else:
-                        header = 'cmd.{}'.format(commandname)
-
-                    body = '\n'.join(output)
-
-                    logging.debug("sending header: {}".format(header))
-                    logging.debug("sending body: {}".format(body))
-
-                    msg = '{}\n{}'.format(header, body)
-
-                    socket.send_string(msg)
-                    output = []
-                else:
-                    output.append(line)
-            elif line.startswith(header_prefix):
-                session_id = ''
-                logging.debug('received header: {}'.format(line))
-                matchObj = re.match(r'.*sid=(\S+)', line, re.M | re.I)
-                if matchObj:
-                    session_id = matchObj.group(1).rstrip()
-
-                if session_id:
-                    logging.debug("detected session_id: {}".format(session_id))
-                else:
-                    logging.debug("no session_id detected")
-
-                fields = line.split()
-                logging.debug(fields)
-
-                commandname = fields[-1]
-
-                incommand = True
-            elif line.startswith('log:'):
-                socket.send_string(line)
-    finally:
-        socket.send_string('error: not connected to wagman')
+# this is globally shared - perhaps it's not ideal, but it works for now.
+last_readline = time.time()
 
 
-def server(serial):
-    context = zmq.Context()
-
-    server_socket = context.socket(zmq.REP)
-    server_socket.setsockopt(zmq.SNDTIMEO, 15000)
-    server_socket.bind('ipc:///tmp/zeromq_wagman-server')
+def readline(ser):
+    global last_readline
 
     while True:
+        # give up if global readline timeout is expired
+        if time.time() - last_readline > 60.0:
+            raise TimeoutError('wagman timed out')
+
+        # read and decode wagman output
         try:
-            serial.write(server_socket.recv() + b'\n')
-        except Exception as e:
-            server_socket.send_string('ERROR')
+            line = ser.readline().decode()
+        except UnicodeDecodeError:
+            continue
+
+        # handle serial port timeout with an empty response
+        if len(line) == 0:
+            raise TimeoutError('readline timed out')
+
+        last_readline = time.time()
+
+        # show wagman log output instead of returning
+        if line.startswith('log:'):
+            wagman_logger.info(line.lstrip('log:').strip())
+            continue
+
+        return line
+
+
+def writeline(ser, line):
+    ser.write(line.encode())
+    ser.write(b'\n')
+
+
+def sanitize(s):
+    return ' '.join(re.findall(r'@?[A-Za-z0-9]+', s))
+
+
+def dispatch(ser, command):
+    writeline(ser, sanitize(command))
+
+    start = time.time()
+
+    # wait for header
+    while True:
+        # check for dispatch timeout
+        if time.time() - start > 15.0:
+            raise TimeoutError('dispatch timed out')
+
+        try:
+            line = readline(ser)
+        except TimeoutError:
+            continue
+
+        logger.debug('line: {}'.format(line))
+
+        _, sep, right = line.partition('<<<-')
+
+        if sep:
+            fields = right.split()
+            sid = fields[0].split('=')[1]
             break
-        else:
-            server_socket.send_string('OK')
+
+    lines = []
+
+    # wait for footer
+    while True:
+        # check for dispatch timeout
+        if time.time() - start > 15.0:
+            raise TimeoutError('dispatch timed out')
+
+        try:
+            line = readline(ser)
+        except TimeoutError:
+            continue
+
+        logger.debug('line: {}'.format(line))
+
+        if '<<<-' in line:
+            raise RuntimeError('unexpected message header')
+
+        left, sep, _ = line.partition('->>>')
+
+        if left:
+            lines.append(left.strip())
+
+        if sep:
+            break
+
+    # need support for err reponse
+    return '@{} ok\n{}'.format(sid, '\n'.join(lines))
+
+
+def manager(ser, server):
+    global last_readline
+
+    last_readline = time.time()
+
+    while True:
+        # timeout if we haven't seen any message from the wagman in the last 60s
+        if time.time() - last_readline > 60.0:
+            raise TimeoutError('wagman timed out')
+
+        # read and process requests
+        try:
+            command = server.recv_string()
+            response = dispatch(ser, command)
+            server.send_string(response)
+        except zmq.error.Again:
+            pass
+
+        # read non-request lines (logging / debug)
+        try:
+            readline(ser)
+        except TimeoutError:
+            pass
+
+
+def main(device):
+    with ExitStack() as stack:
+        context = stack.enter_context(zmq.Context())
+        server = stack.enter_context(context.socket(zmq.REP))
+
+        # do not attempt to complete client requests during cleanup
+        server.setsockopt(zmq.LINGER, 0)
+
+        # do not wait on client for more than 1s
+        server.setsockopt(zmq.RCVTIMEO, 1000)
+        server.setsockopt(zmq.SNDTIMEO, 1000)
+
+        server.bind('ipc:///var/wagman-server')
+
+        ser = stack.enter_context(serial.Serial(device, 57600, timeout=1.0))
+
+        manager(ser, server)
 
 
 if __name__ == '__main__':
-    try:
-        wagman_device = sys.argv[1]
-    except IndexError:
-        wagman_device = '/dev/waggle_sysmon'
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--device', type=str, default='/dev/waggle_sysmon')
+    args = parser.parse_args()
+
+    logging.basicConfig(level=logging.INFO)
 
     while True:
         try:
-            with Serial(wagman_device, 57600, timeout=10, writeTimeout=10) as serial:
-                processes = [
-                    Process(target=publisher, args=(serial,)),
-                    Process(target=server, args=(serial,)),
-                ]
+            logger.info('starting main')
+            main(device=args.device)
+        except KeyboardInterrupt:
+            break
+        except Exception:
+            logger.exception('fatal exception in main. will restart in 15s...')
 
-                for p in processes:
-                    p.start()
-
-                while all(p.is_alive() for p in processes):
-                    time.sleep(1)
-
-                for p in processes:
-                    p.terminate()
-        except OSError:
-            print('could not connect to device')
-        time.sleep(3)
+        time.sleep(15)
