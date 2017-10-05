@@ -158,10 +158,11 @@ if __name__ == '__main__':
 
     while True:
         try:
+            logger.info('starting main')
             main(device=sys.argv[1])
         except KeyboardInterrupt:
             break
         except Exception:
-            logger.exception('fatal exception in main. will restart in 10s')
+            logger.exception('fatal exception in main. will restart...')
 
-        time.sleep(10)
+        time.sleep(15)
