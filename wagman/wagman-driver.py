@@ -18,6 +18,9 @@ def readline(ser):
     global last_readline
 
     while True:
+        if time.time() - last_readline > 60.0:
+            raise TimeoutError('wagman timed out')
+
         # read and decode wagman output
         try:
             line = ser.readline().decode()
@@ -55,7 +58,7 @@ def dispatch(ser, command):
     # wait for header
     while True:
         # check for dispatch timeout
-        if time.time() - start > 10.0:
+        if time.time() - start > 15.0:
             raise TimeoutError('dispatch timed out')
 
         try:
@@ -77,7 +80,7 @@ def dispatch(ser, command):
     # wait for footer
     while True:
         # check for dispatch timeout
-        if time.time() - start > 10.0:
+        if time.time() - start > 15.0:
             raise TimeoutError('dispatch timed out')
 
         try:
@@ -109,7 +112,7 @@ def manager(ser, server):
 
     while True:
         # timeout if we haven't seen any message from the wagman in the last 60s
-        if time.time() - last_readline > 60:
+        if time.time() - last_readline > 60.0:
             raise TimeoutError('wagman timed out')
 
         # read and process requests
