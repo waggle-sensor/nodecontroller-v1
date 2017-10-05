@@ -44,7 +44,7 @@ def writeline(ser, line):
 
 
 def sanitize(s):
-    return ' '.join(re.findall('@?[A-Za-z0-9]+', s))
+    return ' '.join(re.findall(r'@?[A-Za-z0-9]+', s))
 
 
 def dispatch(ser, command):
@@ -104,6 +104,8 @@ def dispatch(ser, command):
 
 def manager(ser, server):
     global last_readline
+
+    last_readline = time.time()
 
     while True:
         # timeout if we haven't seen any message from the wagman in the last 60s
