@@ -1,185 +1,143 @@
 #!/usr/bin/env python3
-"""
-The WagMan publisher is responsible for distributing output of the Wagman
-serialline to subscribers. Subscribers may need to use a session ID.
-"""
-from serial import Serial
+import serial
 import zmq
-import time
 import sys
-import re
 import logging
-from multiprocessing import Process
+import time
+import re
+from contextlib import closing
 
-logging.basicConfig(level=logging.INFO)
-
-header_prefix = '<<<-'
-footer_prefix = '->>>'
-
-
-def publisher(serial):
-    logger = logging.getLogger('publisher')
-    wagman_logger = logging.getLogger('wagman')
-
-    logger.info('starting')
-
-    context = zmq.Context()
-
-    socket = context.socket(zmq.PUB)
-    socket.setsockopt(zmq.LINGER, 10000)
-    socket.setsockopt(zmq.SNDTIMEO, 10000)
-    socket.bind('ipc:///tmp/zeromq_wagman-pub')
-
-    logger.info('ready')
-
-    try:
-        output = []
-        incommand = False
-        commandname = None
-        session_id = ''
-
-        while True:
-            try:
-                line = serial.readline().decode().strip()
-            except UnicodeDecodeError:
-                continue
-
-            logger.debug('readline: {}'.format(line))
-
-            if incommand:
-                content, sep, _ = line.partition(footer_prefix)
-
-                if content:
-                    output.append(content.strip())
-
-                if sep:
-                    line, _, rest = line.partition(footer_prefix)
-
-                    incommand = False
-
-                    if session_id:
-                        header = '{} cmd.{}'.format(session_id, commandname)
-                    else:
-                        header = 'cmd.{}'.format(commandname)
-
-                    body = '\n'.join(output)
-
-                    logger.debug("sending header: {}".format(repr(header)))
-                    logger.debug("sending body: {}".format(repr(body)))
-
-                    msg = '{}\n{}'.format(header, body)
-                    socket.send_string(msg)
-
-                    output = []
-            elif line.startswith(header_prefix):
-                session_id = ''
-                logger.debug('received header: {}'.format(line))
-                matchObj = re.match(r'.*sid=(\S+)', line, re.M | re.I)
-                if matchObj:
-                    session_id = matchObj.group(1).rstrip()
-
-                if session_id:
-                    logger.debug("detected session_id: {}".format(session_id))
-                else:
-                    logger.debug("no session_id detected")
-
-                fields = line.split()
-                logger.debug(fields)
-
-                commandname = fields[-1]
-
-                incommand = True
-            elif line.startswith('log:'):
-                socket.send_string(line)
-                wagman_logger.info(line.lstrip('log:').strip())
-    except Exception as exc:
-        logger.exception('fatal exception')
-    finally:
-        logger.info('cleaning up')
-        socket.send_string('error: not connected to wagman')
-        socket.close()
-        logger.info('terminating')
+logger = logging.getLogger('driver')
+wagman_logger = logging.getLogger('wagman')
 
 
-def server(serial):
-    logger = logging.getLogger('server')
+def readline(ser):
+    while True:
+        # read and decode wagman output
+        try:
+            line = ser.readline().decode()
+        except UnicodeDecodeError:
+            continue
 
-    logger.info('starting')
+        # handle serial port timeout with an empty response
+        if len(line) == 0:
+            raise TimeoutError('readline timed out')
 
-    context = zmq.Context()
+        # show wagman log output instead of returning
+        if line.startswith('log:'):
+            wagman_logger.info(line.lstrip('log:').strip())
+            continue
 
-    server_socket = context.socket(zmq.REP)
-    server_socket.setsockopt(zmq.LINGER, 10000)
-    server_socket.setsockopt(zmq.SNDTIMEO, 10000)
-    server_socket.bind('ipc:///tmp/zeromq_wagman-server')
-
-    logger.info('ready')
-
-    try:
-        while True:
-            try:
-                serial.write(server_socket.recv() + b'\n')
-            except Exception as e:
-                server_socket.send_string('ERROR')
-                break
-            else:
-                server_socket.send_string('OK')
-    except Exception as exc:
-        logger.exception('fatal exception')
-    finally:
-        logger.info('cleaning up')
-        server_socket.close()
-        logger.info('terminating')
+        return line
 
 
-def manager(serial):
-    logger = logging.getLogger('manager')
+def writeline(ser, line):
+    ser.write(line.encode())
+    ser.write(b'\n')
 
-    logger.info('creating workers')
 
-    processes = [
-        Process(name='publisher', target=publisher, args=(serial,)),
-        Process(name='server', target=server, args=(serial,)),
-    ]
+def sanitize(s):
+    return ' '.join(re.findall('@?[A-Za-z0-9]+', s))
 
-    logger.info('starting workers')
 
-    for p in processes:
-        p.start()
+def dispatch(ser, command):
+    writeline(ser, sanitize(command))
 
-    logger.info('started workers')
+    start = time.time()
 
-    while all(p.is_alive() for p in processes):
-        time.sleep(1)
+    # wait for header
+    while True:
+        # check for dispatch timeout
+        if time.time() - start > 10.0:
+            raise TimeoutError('dispatch timed out')
 
-    for p in processes:
-        if not p.is_alive():
-            logger.error('worker {} failed'.format(p.name))
+        try:
+            line = readline(ser)
+        except TimeoutError:
+            continue
 
-    logger.info('terminating workers')
+        _, sep, right = line.partition('<<<-')
 
-    for p in processes:
-        p.terminate()
+        if sep:
+            fields = right.split()
+            sid = fields[0].split('=')[1]
+            break
 
-    logger.info('terminated workers')
-    sys.exit(1)
+    lines = []
+
+    # wait for footer
+    while True:
+        # check for dispatch timeout
+        if time.time() - start > 10.0:
+            raise TimeoutError('dispatch timed out')
+
+        try:
+            line = readline(ser)
+        except TimeoutError:
+            continue
+
+        left, sep, _ = line.partition('->>>')
+
+        if left:
+            lines.append(left.strip())
+
+        if sep:
+            break
+
+    # need support for err reponse
+    return '@{} ok\n{}'.format(sid, '\n'.join(lines))
+
+
+def manager(ser, server):
+    while True:
+        # read and process requests
+        try:
+            command = server.recv_string()
+            response = dispatch(ser, command)
+            server.send_string(response)
+        except zmq.error.Again:
+            pass
+
+        # read non-request lines (logging / debug)
+        try:
+            readline(ser)
+        except TimeoutError:
+            pass
+
+
+def open_serial_port(device, max_attempts=3, retry_delay=20):
+    for attempt in range(max_attempts):
+        try:
+            return serial.Serial(device, 57600, timeout=1.0)
+        except serial.serialutil.SerialException:
+            pass
+        except OSError:
+            pass
+
+        time.sleep(retry_delay)
+
+    raise TimeoutError('failed to open serial port')
 
 
 def main():
-    logger = logging.getLogger()
+    context = zmq.Context()
 
-    try:
-        wagman_device = sys.argv[1]
-    except IndexError:
-        wagman_device = '/dev/waggle_sysmon'
+    server = context.socket(zmq.REP)
+    server.setsockopt(zmq.RCVTIMEO, 1000)
+    server.setsockopt(zmq.SNDTIMEO, 1000)
+    server.setsockopt(zmq.LINGER, 0)
+    server.bind('ipc://wagman-server')
 
-    try:
-        with Serial(wagman_device, 57600, timeout=10, writeTimeout=10) as serial:
-            manager(serial)
-    except Exception as exc:
-        logger.exception('failed to open device')
-        sys.exit(1)
+    while True:
+        with closing(open_serial_port(sys.argv[1])) as ser:
+            try:
+                manager(ser, server)
+            except KeyboardInterrupt:
+                break
+            except Exception:
+                logger.exception('fatal exception in manager')
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     main()
