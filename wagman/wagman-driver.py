@@ -96,18 +96,26 @@ def dispatch(ser, command):
 
 
 def manager(ser, server):
+    last_interaction = time.time()
+
     while True:
+        # timeout if we haven't seen any message from the wagman in the last 60s
+        if time.time() - last_interaction > 60:
+            raise TimeoutError('wagman timed out')
+
         # read and process requests
         try:
             command = server.recv_string()
             response = dispatch(ser, command)
             server.send_string(response)
+            last_interaction = time.time()
         except zmq.error.Again:
             pass
 
         # read non-request lines (logging / debug)
         try:
             readline(ser)
+            last_interaction = time.time()
         except TimeoutError:
             pass
 
@@ -126,7 +134,7 @@ def open_serial_port(device, retry_attempts=3, retry_delay=20):
     raise TimeoutError('failed to open serial port')
 
 
-def main():
+def main(device):
     with ExitStack() as stack:
         context = stack.enter_context(zmq.Context())
         server = stack.enter_context(context.socket(zmq.REP))
@@ -140,19 +148,20 @@ def main():
 
         server.bind('ipc://wagman-server')
 
-        ser = stack.enter_context(open_serial_port(sys.argv[1]))
+        ser = stack.enter_context(open_serial_port(device))
 
-        try:
-            manager(ser, server)
-        except KeyboardInterrupt:
-            return
-        except Exception:
-            logger.exception('fatal exception in manager')
+        manager(ser, server)
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     while True:
-        main()
-        time.sleep(5)
+        try:
+            main(device=sys.argv[1])
+        except KeyboardInterrupt:
+            break
+        except Exception:
+            logger.exception('fatal exception in main. will restart in 10s')
+
+        time.sleep(10)
