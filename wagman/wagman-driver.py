@@ -11,7 +11,12 @@ logger = logging.getLogger('driver')
 wagman_logger = logging.getLogger('wagman')
 
 
+last_readline = time.time()
+
+
 def readline(ser):
+    global last_readline
+
     while True:
         # read and decode wagman output
         try:
@@ -22,6 +27,8 @@ def readline(ser):
         # handle serial port timeout with an empty response
         if len(line) == 0:
             raise TimeoutError('readline timed out')
+
+        last_readline = time.time()
 
         # show wagman log output instead of returning
         if line.startswith('log:'):
@@ -96,11 +103,11 @@ def dispatch(ser, command):
 
 
 def manager(ser, server):
-    last_interaction = time.time()
+    global last_readline
 
     while True:
         # timeout if we haven't seen any message from the wagman in the last 60s
-        if time.time() - last_interaction > 60:
+        if time.time() - last_readline > 60:
             raise TimeoutError('wagman timed out')
 
         # read and process requests
@@ -108,30 +115,14 @@ def manager(ser, server):
             command = server.recv_string()
             response = dispatch(ser, command)
             server.send_string(response)
-            last_interaction = time.time()
         except zmq.error.Again:
             pass
 
         # read non-request lines (logging / debug)
         try:
             readline(ser)
-            last_interaction = time.time()
         except TimeoutError:
             pass
-
-
-def open_serial_port(device, retry_attempts=3, retry_delay=20):
-    for attempt in range(retry_attempts):
-        try:
-            return serial.Serial(device, 57600, timeout=1.0)
-        except serial.serialutil.SerialException:
-            pass
-        except OSError:
-            pass
-
-        time.sleep(retry_delay)
-
-    raise TimeoutError('failed to open serial port')
 
 
 def main(device):
@@ -139,16 +130,16 @@ def main(device):
         context = stack.enter_context(zmq.Context())
         server = stack.enter_context(context.socket(zmq.REP))
 
+        # do not attempt to complete client requests during cleanup
+        server.setsockopt(zmq.LINGER, 0)
+
         # do not wait on client for more than 1s
         server.setsockopt(zmq.RCVTIMEO, 1000)
         server.setsockopt(zmq.SNDTIMEO, 1000)
 
-        # do not attempt to complete client requests during cleanup
-        server.setsockopt(zmq.LINGER, 0)
-
         server.bind('ipc://wagman-server')
 
-        ser = stack.enter_context(open_serial_port(device))
+        ser = stack.enter_context(serial.Serial(device, 57600, timeout=1.0))
 
         manager(ser, server)
 
@@ -163,6 +154,6 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             break
         except Exception:
-            logger.exception('fatal exception in main. will restart...')
+            logger.exception('fatal exception in main. will restart in 15s...')
 
         time.sleep(15)
