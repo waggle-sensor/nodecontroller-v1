@@ -1,193 +1,106 @@
 #!/usr/bin/env python3
-"""
-Client script/library to talk to the WagMan. The library uses zeromq to talk
-with WagMan publisher and server.
-"""
-import os
-import sys
-from tabulate import tabulate
+from contextlib import ExitStack
 import zmq
-import logging
-from datetime import datetime
+import sys
+import re
 import time
 
-
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-
-
-context = zmq.Context()
-
-header_prefix = '<<<-'
-footer_prefix = '->>>'
-
-# make sure you keep util/wagman-client.bash_completion in sync !
-usage_array = [
-    ['start',       ['start <portnum>',     'starts device on portnum']],
-    ['stop',        ['stop <portnum>',      'stops device on portnum']],
-    ['stop!',       ['stop! <portnum>',     'immediately kills power to device on portnum']],
-    ['info',        ['info',                'prints some system info']],
-    ['eedump',      ['edump',               'prints a hex dump of all EEPROM']],
-    ['date',        ['date',                'shows rtc date and time'],
-                    ['date <year> <month> <day> <hour> <minute> <second>', 'sets rtc date and time']],
-    ['cu',          ['cu',                  'current usage']],
-    ['hb',          ['hb',                  'last heartbeat times']],
-    ['therm',       ['therm',               'thermistor values (though none are connected right now)']],
-    ['help',        ['help',                'displays help']],
-    ['id',          ['id',                  'return WagMan unique identifier']],
-    ['log',         ['log',                 'toggles logging']],
-    ['bf',          ['bf',                  'displays boot reset flags']],
-    ['reset',       ['reset',               'resets the wagman']],
-    ['th',          ['th',                  'displays thermistor values']],
-    ['bs',          ['bs <devnum>',         'displays boot media selection']],
-    ['fc',          ['fc',                  'displays fail counts']],
-    ['ping',        ['ping',                'requests a pong response'],
-                    ['ping <devnum>',       'send external heartbeat for device']]
-]
+commands = {
+    'rtc',
+    'ping',
+    'start',
+    'stop',
+    'reset',
+    'id',
+    'cu',
+    'hb',
+    'env',
+    'bs',
+    'th',
+    'date',
+    'bf',
+    'fc',
+    'up',
+    'enable',
+    'disable',
+    'watch',
+    'log',
+    'eereset',
+    'boots',
+    'ver',
+    'blf',
+}
 
 
-def random_id():
-    from random import randint
-    return str(randint(0, 999))
-
-
-def send_request(command):
-    message = ''
-    socket_client = context.socket(zmq.REQ)
-    try:
-      socket_client.setsockopt(zmq.SNDTIMEO, 5000)
-      socket_client.setsockopt(zmq.RCVTIMEO, 5000)
-
-      socket_client.connect('ipc:///tmp/zeromq_wagman-server')
-
-      socket_client.send_string(command)
-      message = socket_client.recv_string()
-      socket_client.close()
-    except:
-      socket_client.close()
-      pass
-
-    if message != 'OK':
-      raise RuntimeError('wagman-server returned: {}'.format(message))
-
-
-def wagman_client(args, retries=5):
-    command = ' '.join(args)
-
-    session_id = random_id()
-
-    # first subscribe, then send request
-    socket = context.socket(zmq.SUB)
-    socket.setsockopt(zmq.RCVTIMEO, 5000)
-    socket.connect('ipc:///tmp/zeromq_wagman-pub')
-
-    socket.setsockopt_string(zmq.SUBSCRIBE, session_id)
-
-    for attempt in range(retries):
-        try:
-            send_request('@{} {}'.format(session_id, command))
-            break
-        except:
-            time.sleep(3)
-    else:
-        socket.close()
-        raise RuntimeError('wagman-server returned: ERROR')
-
-    response = socket.recv_string()
-
-    socket.setsockopt_string(zmq.UNSUBSCRIBE, session_id)
-
-    logging.debug('Response: "{}"'.format(response))
-
-    header, _, body = response.partition('\n')
-
-    logging.debug('header: {}'.format(header))
-    logging.debug('body: {}'.format(body))
-
-    return header, body
-
-
-def wagman_log():
-
-    socket = context.socket(zmq.SUB)
-    socket.connect('ipc:///tmp/zeromq_wagman-pub')
-
-    # only waits for session response
-    socket.setsockopt_string(zmq.SUBSCRIBE, 'log:')
-
-    while True:
-        response = socket.recv_string()
-        print(response)
-        prefix, _, content = response.partition(':')
-
-        if prefix.startswith('cmd'):
-            print(('{}:'.format(prefix)))
-            print((content.strip()))
-        else:
-            print((content.strip()))
-
-
-def usage():
-    theader = ['syntax', 'description']
-    data=[]
-    supported_commands={}
-    documented_commands={}
-    undocumented_commands={}
-
-    for syntax_obj in usage_array:
-        cmd = syntax_obj[0]
-        documented_commands[cmd]=1
-
-    try:
-        result = wagman_client(['help'])
-        for cmd in result[1].split('\n'):
-            supported_commands[cmd]=1
-            if not cmd in documented_commands:
-                undocumented_commands[cmd]=1
-
-    except Exception as e:
-        print(("error: ", str(e)))
-        print("Note: help is only available when the wagman is connected.")
+def check_args(args):
+    if args[0] not in commands:
+        print('invalid command: {}'.format(args[0]))
         sys.exit(1)
 
-    #for cmd in usage_dict.keys():
-    for syntax_obj in usage_array:
-        cmd = syntax_obj[0]
-        if cmd in supported_commands:
-            for syntax in syntax_obj[1:]:
-                data.append(syntax)
 
-        else:
-            data.append([cmd, ''])
-
-    for cmd in list(undocumented_commands.keys()):
-        data.append([cmd, ' '])
-
-    print((tabulate(data, theader, tablefmt="psql")))
-    sys.exit(0)
+def sanitize(s):
+    return ' '.join(re.findall(r'[A-Za-z0-9]+', s))
 
 
-if __name__ == "__main__":
-  try:
-    if len(sys.argv) <= 1:
-        usage()
-    elif len(sys.argv) == 2 and sys.argv[1] == 'epoch':
-        _, result = wagman_client(['date'])
-        year, month, day, hour, minute, second = map(int, result.split())
-        epoch = datetime(year, month, day, hour, minute, second).strftime('%s')
-        print(epoch)
-    elif len(sys.argv) == 3 and sys.argv[1] == 'epoch':
-        dt = datetime.fromtimestamp(int(sys.argv[2]))
-        args = ['date'] + dt.strftime('%Y %m %d %H %M %S').split()
-        result = wagman_client(args)
-        print(result[1])
-    elif len(sys.argv) > 1:
-        if sys.argv[1] == 'help' or sys.argv[1] == '?':
-            usage()
-        if sys.argv[1] == 'log':
-            wagman_log()
-            sys.exit(0)
-        result = wagman_client(sys.argv[1:])
-        print(result[1])
-  except:
-    os._exit(1)
+def dispatch(args, timeout):
+    with ExitStack() as stack:
+        context = stack.enter_context(zmq.Context())
+        client = stack.enter_context(context.socket(zmq.REQ))
+
+        # do not attempt to complete incomplete request on exit
+        client.setsockopt(zmq.LINGER, 0)
+
+        # do not wait for more than timeout seconds
+        timeout_ms = int(timeout * 1000)
+        client.setsockopt(zmq.RCVTIMEO, timeout_ms)
+        client.setsockopt(zmq.SNDTIMEO, timeout_ms)
+
+        client.connect('ipc://wagman-server')
+
+        try:
+            client.send_string(sanitize(' '.join(args)))
+            header, _, body = client.recv_string().partition('\n')
+        except zmq.error.Again:
+            raise TimeoutError('request timed out')
+
+        if 'invalid command' in body:
+            raise RuntimeError('invalid command')
+
+        return body
+
+
+def main(args, timeout=15.0, retry_delay=5.0, retry_attempts=3):
+    check_args(args)
+
+    for attempt in range(retry_attempts):
+        try:
+            body = dispatch(args, timeout=timeout)
+            print(body)
+            break
+        except KeyboardInterrupt:
+            break
+        except Exception:
+            pass
+
+        time.sleep(retry_delay)
+    else:
+        print('request failed', file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--timeout', type=float, default=15.0)
+    parser.add_argument('--retry-delay', type=float, default=5.0)
+    parser.add_argument('--retry-attempts', type=int, default=3)
+    parser.add_argument('args', nargs='+')
+
+    args = parser.parse_args()
+
+    main(args=args.args,
+         timeout=args.timeout,
+         retry_delay=args.retry_delay,
+         retry_attempts=args.retry_attempts)
