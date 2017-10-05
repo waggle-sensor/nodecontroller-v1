@@ -6,6 +6,7 @@ import logging
 import time
 import re
 from contextlib import closing
+from contextlib import ExitStack
 
 logger = logging.getLogger('driver')
 wagman_logger = logging.getLogger('wagman')
@@ -56,6 +57,8 @@ def dispatch(ser, command):
         except TimeoutError:
             continue
 
+        logger.debug('line: {}'.format(line))
+
         _, sep, right = line.partition('<<<-')
 
         if sep:
@@ -75,6 +78,11 @@ def dispatch(ser, command):
             line = readline(ser)
         except TimeoutError:
             continue
+
+        logger.debug('line: {}'.format(line))
+
+        if '<<<-' in line:
+            raise RuntimeError('unexpected message header')
 
         left, sep, _ = line.partition('->>>')
 
@@ -105,8 +113,8 @@ def manager(ser, server):
             pass
 
 
-def open_serial_port(device, max_attempts=3, retry_delay=20):
-    for attempt in range(max_attempts):
+def open_serial_port(device, retry_attempts=3, retry_delay=20):
+    for attempt in range(retry_attempts):
         try:
             return serial.Serial(device, 57600, timeout=1.0)
         except serial.serialutil.SerialException:
@@ -120,22 +128,26 @@ def open_serial_port(device, max_attempts=3, retry_delay=20):
 
 
 def main():
-    context = zmq.Context()
-
-    server = context.socket(zmq.REP)
-    server.setsockopt(zmq.RCVTIMEO, 1000)
-    server.setsockopt(zmq.SNDTIMEO, 1000)
-    server.setsockopt(zmq.LINGER, 0)
-    server.bind('ipc://wagman-server')
-
     while True:
-        with closing(open_serial_port(sys.argv[1])) as ser:
+        with ExitStack() as stack:
+            context = stack.enter_context(zmq.Context())
+
+            server = stack.enter_context(context.socket(zmq.REP))
+            server.setsockopt(zmq.RCVTIMEO, 1000)
+            server.setsockopt(zmq.SNDTIMEO, 1000)
+            server.setsockopt(zmq.LINGER, 0)
+            server.bind('ipc://wagman-server')
+
+            ser = stack.enter_context(open_serial_port(sys.argv[1]))
+
             try:
                 manager(ser, server)
             except KeyboardInterrupt:
                 break
             except Exception:
                 logger.exception('fatal exception in manager')
+
+        time.sleep(5)
 
 
 if __name__ == '__main__':
