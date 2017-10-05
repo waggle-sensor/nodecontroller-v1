@@ -154,10 +154,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-
     parser.add_argument('--device', type=str, default='/dev/waggle_sysmon')
-    parser.add_argument('args', nargs='+')
-
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
