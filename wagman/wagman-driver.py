@@ -128,28 +128,28 @@ def open_serial_port(device, retry_attempts=3, retry_delay=20):
 
 
 def main():
-    while True:
-        with ExitStack() as stack:
-            context = stack.enter_context(zmq.Context())
+    with ExitStack() as stack:
+        context = stack.enter_context(zmq.Context())
 
-            server = stack.enter_context(context.socket(zmq.REP))
-            server.setsockopt(zmq.RCVTIMEO, 1000)
-            server.setsockopt(zmq.SNDTIMEO, 1000)
-            server.setsockopt(zmq.LINGER, 0)
-            server.bind('ipc://wagman-server')
+        server = stack.enter_context(context.socket(zmq.REP))
+        server.setsockopt(zmq.RCVTIMEO, 1000)
+        server.setsockopt(zmq.SNDTIMEO, 1000)
+        server.setsockopt(zmq.LINGER, 0)
+        server.bind('ipc://wagman-server')
 
-            ser = stack.enter_context(open_serial_port(sys.argv[1]))
+        ser = stack.enter_context(open_serial_port(sys.argv[1]))
 
-            try:
-                manager(ser, server)
-            except KeyboardInterrupt:
-                break
-            except Exception:
-                logger.exception('fatal exception in manager')
-
-        time.sleep(5)
+        try:
+            manager(ser, server)
+        except KeyboardInterrupt:
+            return
+        except Exception:
+            logger.exception('fatal exception in manager')
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    main()
+
+    while True:
+        main()
+        time.sleep(5)
