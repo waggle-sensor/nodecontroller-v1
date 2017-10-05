@@ -10,7 +10,7 @@ descriptions = sorted([
     ('ping', 'simulate a device heartbeat'),
     ('start', 'starts a device immediately'),
     ('stop', 'stops a device after specified number of seconds'),
-    ('reset', 'resets the wagman (careful!)'),
+    ('reset', 'resets the wagman!'),
     ('id', 'shows wagman id'),
     ('cu', 'shows current usage'),
     ('hb', 'shows milliseconds since device heartbeats'),
@@ -20,13 +20,13 @@ descriptions = sorted([
     ('date', 'shows current date'),
     ('bf', 'shows wagman boot flags'),
     ('fc', 'shows device failure counts'),
-    ('up', 'wagman uptime'),
+    ('up', 'shows wagman uptime'),
     ('enable', 'enables device'),
     ('disable', 'disables device'),
     ('eereset', 'prepares wagman to persistant memory on next reset'),
-    ('boots', 'number of times wagman has booted'),
-    ('ver', 'hardware and firmware version info'),
-    ('blf', 'view / set bootloader phase boot flag'),
+    ('boots', 'shows number of times wagman has booted'),
+    ('ver', 'shows hardware and firmware version info'),
+    ('blf', 'show / set bootloader phase boot flag'),
 ])
 
 commands = {name for name, _ in descriptions}
