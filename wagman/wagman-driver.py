@@ -10,7 +10,7 @@ from contextlib import ExitStack
 logger = logging.getLogger('driver')
 wagman_logger = logging.getLogger('wagman')
 
-
+# this is globally shared - perhaps it's not ideal, but it works for now.
 last_readline = time.time()
 
 
