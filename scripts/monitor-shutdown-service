@@ -96,4 +96,4 @@ while True:
         nc_stopper.start()
         time.sleep(5)
 
-    time.sleep(10)
+    time.sleep(5)
