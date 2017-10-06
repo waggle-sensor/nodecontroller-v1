@@ -1,7 +1,7 @@
 #!/bin/bash
 
 wagman_get_epoch() {
-  date -d"$(printf '%d/%d/%d %d:%d:%d' $(wagman-client date))" +'%s' || echo 0
+  date -d"$(printf '%d/%d/%d %d:%d:%d\n' $(wagman-client date))" +'%s' || echo 0
 }
 
 try_set_time()
