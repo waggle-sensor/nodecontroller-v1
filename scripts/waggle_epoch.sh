@@ -1,5 +1,8 @@
 #!/bin/bash
 
+wagman_get_epoch() {
+  date -d"$(printf '%d/%d/%d %d:%d:%d' $(wagman-client date))" +'%s' || echo 0
+}
 
 try_set_time()
 {
@@ -49,7 +52,7 @@ try_set_time()
   else
     echo "Setting the date/time update interval to 10 seconds..."
     CHECK_INTERVAL='10'  # seconds
-    wagman_date=$(wagman-client epoch) || wagman_date=0
+    wagman_date=$(wagman_get_epoch)
     echo "Wagman epoch: ${wagman_date}"
     system_date=$(date +%s)
     echo "System epoch: ${system_date}"
