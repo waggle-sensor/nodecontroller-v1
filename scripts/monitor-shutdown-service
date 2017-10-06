@@ -1,173 +1,79 @@
 #!/usr/bin/python3
-
-import json
 import logging
 import os
-import pika
 import threading
 import time
-import zmq
+import subprocess
+import re
+
 
 class NodeControllerShutdownThread(threading.Thread):
-  def __init__(self):
-    threading.Thread.__init__(self, group=None, target=None, name=None)
-    self.wait_for_ep = False
 
-  def run(self):
-    logging.info("Wagman is cycling the node controller power in one minute; shutdown in 30 seconds")
-    os.system("shutdown -h -k +1")
-    time.sleep(30)
-    while self.wait_for_ep:
-      logging.info("waiting 1 second for Edge Processor to shutdown...")
-      time.sleep(1)
-    logging.info("node controller shutting down now")
-    os.system("shutdown -h now")
+    def __init__(self):
+        threading.Thread.__init__(self, group=None, target=None, name=None)
+        self.wait_for_ep = False
+
+    def run(self):
+        logging.info("Wagman is cycling the node controller power in one minute; shutdown in 30 seconds")
+        os.system("shutdown -h -k +1")
+        time.sleep(30)
+
+        while self.wait_for_ep:
+            logging.info("waiting 1 second for Edge Processor to shutdown...")
+            time.sleep(1)
+
+        logging.info("node controller shutting down now")
+        os.system("shutdown -h now")
+
 
 class EdgeProcessorShutdownThread():
-  def __init__(self, nc_stopper):
-    threading.Thread.__init__(self, group=None, target=None, name=None)
-    self.thread = threading.Thread(target=self.run)
-    self.nc_stopper = nc_stopper
 
-  def isAlive(self):
-    return self.thread.isAlive()
+    def __init__(self, nc_stopper):
+        threading.Thread.__init__(self, group=None, target=None, name=None)
+        self.thread = threading.Thread(target=self.run)
+        self.nc_stopper = nc_stopper
 
-  def start(self):
-    self.thread.start()
+    def isAlive(self):
+        return self.thread.isAlive()
 
-  def run(self):
-    self.nc_stopper.wait_for_ep = True
-    logging.info("Wagman is cycling the Edge Processor power in one minute; shutdown in 30 seconds")
-    os.system('/usr/lib/waggle/nodecontroller/scripts/eplogin shutdown -h -k +1')
-    time.sleep(30)
-    logging.info("Edge Processor shutting down now")
-    os.system('/usr/lib/waggle/nodecontroller/scripts/eplogin shutdown -h now')
-    self.nc_stopper.wait_for_ep = False
-    time.sleep(30)
-    self.thread = threading.Thread(target=self.run)
+    def start(self):
+        self.thread.start()
 
-class RPCConsumerThread(threading.Thread):
-  def __init__(self, wagman):
-    threading.Thread.__init__(self, group=None, target=None, name=None)
-    self.wagman = wagman
-    self.startup_timestamp = int(time.time())
-    credentials = pika.credentials.PlainCredentials('node', 'waggle')
-    ssl_options={'ca_certs':'/usr/lib/waggle/SSL/waggleca/cacert.pem',
-                 'certfile':'/usr/lib/waggle/SSL/node/cert.pem',
-                 'keyfile':'/usr/lib/waggle/SSL/node/key.pem'}
+    def run(self):
+        self.nc_stopper.wait_for_ep = True
 
-    connection = pika.BlockingConnection(pika.ConnectionParameters(
-      host='beehive', port=23181, credentials=credentials, ssl=True,
-      ssl_options=ssl_options, socket_timeout=10))
-    self.channel = connection.channel()
-    with open('/etc/waggle/node_id') as id_file:
-      node_id = id_file.read().rstrip()
-    self.queue_name = ''.join(('rpc_shutdown_', node_id))
-    arguments = {"x-max-length":1}
-    self.channel.queue_declare(queue=self.queue_name, arguments=arguments)
-    self.channel.basic_consume(self.callback, queue=self.queue_name)
+        logging.info("Wagman is cycling the Edge Processor power in one minute; shutdown in 30 seconds")
+        os.system('timeout 15 /usr/lib/waggle/nodecontroller/scripts/eplogin shutdown -h -k +1')
+        time.sleep(30)
 
-  def callback(self, channel, method, properties, body):
-    try:
-      logging.debug(" [x] Received %r at %d" % (body, properties.timestamp))
-      if properties.timestamp > self.startup_timestamp:
-        message = json.loads(body.decode())
-        if message['message_type'] == 'request':
-          if message['command'] == 'stop':
-            device = message['arguments'][0]
-            duration = 60
-            if len(message) > 1:
-              duration = int(message['arguments'][1])
-            logging.info("processing RPC request to shutdown the {0} for {1}s".format(device, duration))
-            wagman.stop(device, duration)
-          self.channel.basic_ack(delivery_tag=method.delivery_tag)
-          logging.info("acknowledged shutdown request {}".format(method.delivery_tag))
-        else:
-          logging.info("ignoring RPC message: %s" % body.decode())
-      else:
-        logging.info("ignoring RPC node shutdown request: message too old")
-    except Exception as e:
-      logging.warning("encountered an exception in RPC callback:\n", str(e))
+        logging.info("Edge Processor shutting down now")
+        os.system('timeout 15 /usr/lib/waggle/nodecontroller/scripts/eplogin shutdown -h now')
+        self.nc_stopper.wait_for_ep = False
+        time.sleep(30)
 
-  def run(self):
-    while True:
-      try:
-        self.channel.start_consuming()
-      except pika.exceptions.ConnectionClosed:
-        time.sleep(10)
-        logging.debug("Beehive connection closed. Attempting to resume consuming RPC messages...")
-      except Exception as e:
-        logging.exception('RPC message consumption interrupted', e)
-        sys.exit(99)
+        self.thread = threading.Thread(target=self.run)
+
 
 class Wagman():
-  def __init__(self, nc_stopper, ep_stopper):
-    self.nc_stopper = nc_stopper
-    self.ep_stopper = ep_stopper
 
-  def subscribe(self):
-    context = zmq.Context()
-    self.sub_socket = context.socket(zmq.SUB)
-    self.sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
-    self.sub_socket.setsockopt(zmq.SUBSCRIBE, b'')
-    self.sub_socket.connect('ipc:///tmp/zeromq_wagman-pub')
-    return self.sub_socket
+    def __init__(self, nc_stopper, ep_stopper):
+        self.nc_stopper = nc_stopper
+        self.ep_stopper = ep_stopper
 
-  def unsubscribe(self):
-    self.sub_socket.close()
+    def check_for_shutdown(self):
+        output = subprocess.check_output(['journalctl', '-u', 'waggle-wagman-driver', '--since', '-30s']).decode()
 
-  def reset(self, device):
-    # Currently there is no difference between stop and reset,
-    # but eventually stop will be for an extended period of time while
-    # reset will be immediate.
-    self.stop(device)
+        shutdown = []
 
-  def stop(self, device, duration):
-    if device == 'node':
-      self.stop('ep', duration)
-      self.stop('nc', duration)
-      return
+        if re.search('nc stopp', output):
+            logging.info('got NC stop notification from Wagman')
+            shutdown.append('nc')
 
-    context = zmq.Context()
-    socket = context.socket(zmq.REQ)
-    socket.setsockopt(zmq.SNDTIMEO, 5000)
-    socket.setsockopt(zmq.RCVTIMEO, 5000)
-    socket.connect('ipc:///tmp/zeromq_wagman-server')
-    message = ''
-    if device == 'nc':
-      if self.nc_stopper.isAlive():
-        logging.info("ignoring repeat NC shutdown request")
-        return
-      logging.info('Sending NC stop request to wagman-server...')
-      socket.send_string('stop 0 {}'.format(duration))
-      message = socket.recv_string()
-    elif device == 'ep':
-      if self.ep_stopper.isAlive():
-        logging.info("ignoring repeat EP shutdown request")
-        return
-      logging.info('Sending EP stop request to wagman-server...')
-      socket.send_string('stop 1 {}'.format(duration))
-      message = socket.recv_string()
-    socket.close()
-    logging.info('wagman-server returned {}'.format(message))
-    if message != 'OK':
-      raise RuntimeError('Error sending request to wagman-server:\n{}'.format(message))
+        if re.search('gn stopp', output):
+            logging.info('got EP stop notification from Wagman')
+            shutdown.append('ep')
 
-
-  # Check for shutdown messages
-  def check_for_shutdown(self):
-    message = ""
-    try:
-      message = self.sub_socket.recv_string()
-      if 'nc stopp' in message:
-        logging.info("got NC stop notification from Wagman")
-        return "nc"
-      elif 'gn stopp' in message:
-        logging.info("got EP stop notification from Wagman")
-        return "ep"
-    except zmq.ZMQError:
-      pass
-    return 'no'
+        return shutdown
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -178,15 +84,16 @@ nc_stopper = NodeControllerShutdownThread()
 ep_stopper = EdgeProcessorShutdownThread(nc_stopper)
 
 wagman = Wagman(nc_stopper, ep_stopper)
-wagman.subscribe()
-
-consumer = RPCConsumerThread(wagman)
-consumer.start()
 
 while True:
-  shutdown = wagman.check_for_shutdown()
-  if (shutdown == 'nc' and not nc_stopper.isAlive()):
-    nc_stopper.start()
-  elif (shutdown == 'ep' and not ep_stopper.isAlive()):
-    ep_stopper.start()
-  time.sleep(1)
+    shutdown = wagman.check_for_shutdown()
+
+    if 'ep' in shutdown and not ep_stopper.isAlive():
+        ep_stopper.start()
+        time.sleep(1)
+
+    if 'nc' in shutdown and not nc_stopper.isAlive():
+        nc_stopper.start()
+        time.sleep(1)
+
+    time.sleep(5)
