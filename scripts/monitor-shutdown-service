@@ -66,19 +66,17 @@ class Wagman():
         shutdown = []
 
         if re.search('nc stopp', output):
-            logging.info('got NC stop notification from Wagman')
+            logging.debug('got NC stop notification from Wagman')
             shutdown.append('nc')
 
         if re.search('gn stopp', output):
-            logging.info('got EP stop notification from Wagman')
+            logging.debug('got EP stop notification from Wagman')
             shutdown.append('ep')
 
         return shutdown
 
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-logging.info("waggle-shutdown-monitor service is running...")
+logging.basicConfig(level=logging.INFO)
 
 nc_stopper = NodeControllerShutdownThread()
 ep_stopper = EdgeProcessorShutdownThread(nc_stopper)
@@ -89,11 +87,13 @@ while True:
     shutdown = wagman.check_for_shutdown()
 
     if 'ep' in shutdown and not ep_stopper.isAlive():
+        logging.info('starting ep stopper')
         ep_stopper.start()
-        time.sleep(1)
+        time.sleep(5)
 
     if 'nc' in shutdown and not nc_stopper.isAlive():
+        logging.info('starting nc stopper')
         nc_stopper.start()
-        time.sleep(1)
+        time.sleep(5)
 
-    time.sleep(5)
+    time.sleep(10)
