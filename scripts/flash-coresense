@@ -17,21 +17,37 @@ then
     exit
 fi
 
+coresense-plugin=$(systemctl is-active waggle-plugin-coresense.service)
+if [ "${coresense-plugin}" != "inactive" ]
+then
+    echo "Stopping waggle-plugin-coresense.service..."
+    systemctl stop waggle-plugin-coresense.service
+    if [ $? -nq 0 ]
+    then
+        echo "Could not stop waggle-plugin-coresense.service. Please stop the service manually and try again."
+        echo
+        exit
+    fi
+fi
+
 if [ -e "/dev/waggle_coresense" ]
 then
-
-echo "Resetting Coresense board to bootloader mode... (Step 1/2)"
-echo
-stty -F /dev/waggle_coresense 1200 hupcl; sleep 2
-echo "Flashing Coresense board with new firmware... (Step 2/2)"
-echo
-/usr/bin/bossac -i -d --port=waggle_coresense -U true -e -w -v -b $1 -R
-echo 
-echo "############ Firmware flash process completed #############"
-echo
-
+    echo "Resetting Coresense board to bootloader mode... (Step 1/2)"
+    echo
+    stty -F /dev/waggle_coresense 1200 hupcl; sleep 2
+    echo "Flashing Coresense board with new firmware... (Step 2/2)"
+    echo
+    /usr/bin/bossac -i -d --port=waggle_coresense -U true -e -w -v -b $1 -R
+    echo 
+    echo "############ Firmware flash process completed #############"
+    echo
 else 
+    echo "Coresense device not found."
+fi
 
-echo "Coresense device not found."
-
+if [ "${coresense-plugin}" != "inactive" ]
+then
+    sleep 3
+    echo "Restarting waggle-plugin-coresense.service..."
+    systemctl start waggle-plugin-coresense.service
 fi

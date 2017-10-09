@@ -8,7 +8,6 @@ fi
 CONFIGURE_SYSTEM=0
 while [[ $# -gt 0 ]]; do
   key="$1"
-  echo "Key: $key"
   case $key in
     -s)
       SERVER_HOST="$2"
@@ -58,25 +57,12 @@ fi
 #set waggle parameters
 mkdir -p /etc/waggle/
 
-# set node controller IP for "internal" network
-if [ ! -e /etc/waggle/NCIP ] ; then
-  echo "10.31.81.10" > /etc/waggle/NCIP
-fi
-
 if [ ! -e /etc/waggle/node_controller_host ] ; then
   echo "10.31.81.10" > /etc/waggle/node_controller_host
 fi
 
-if [ ! -e /etc/waggle/node_id ] ; then
- source /usr/lib/waggle/core/scripts/create_node_id.sh
-fi
-
-export NODE_ID=`cat /etc/waggle/node_id`
-
-if [ "${NODE_ID}x" == "x" ] ; then
-  echo "error: NODE_ID is undefined"
-  exit 4
-fi
+# copy avrdude.conf
+cp ${current_dir}/etc/avrdude.conf /etc
 
 # install RabbitMQ configuration
 cp -r ${current_dir}/etc/rabbitmq /etc

@@ -3,33 +3,58 @@ echo
 echo "___Wagman Flashing Utility___"
 echo
 if [ $# -eq 0 ]
-  then
-      echo "No firmware file provided."
-      echo "Correct usage - wagmanflash firmware.ino.hex"
-      echo
-      exit
-      fi
+then
+    echo "No firmware file provided."
+    echo "Correct usage - wagmanflash firmware.ino.hex"
+    echo
+    exit
+fi
+
+if [ ! -e /usr/bin/avrdude ]
+then
+    echo "avrdude is not installed. Please install 'apt-get install avrdude' and try again."
+    echo
+    exit
+fi
 
 if [ ${1: -8} != ".ino.hex" ]
 then
-      echo "Incorrect firmware file provided. The firmware file has .ino.hex extension."
-      echo
-      exit
-      fi
+    echo "Incorrect firmware file provided. The firmware file has .ino.hex extension."
+    echo
+    exit
+fi
+
+wagman-driver=$(systemctl is-active waggle-wagman-driver.service)
+if [ "${wagman-driver}" != "inactive" ]
+then
+    echo "Stopping waggle-wagman-driver service..."
+    systemctl stop waggle-wagman-driver.service
+    if [ $? -nq 0 ]
+    then
+        echo "Could not stop waggle-wagman-driver service. Please stop the service manually and try again."
+        echo
+        exit
+    fi
+fi
 
 if [ -e "/dev/waggle_sysmon" ]
 then 
-echo "Resetting Wagman to bootloader mode... (Step 1/2)"
-echo
-stty -F /dev/waggle_sysmon 1200 hupcl; sleep 5
-echo "Flashing wagman board with new firmware... (Step 2/2)"
-echo
-/usr/bin/avrdude -C /etc/waggle/avrdude.conf -v -p m32u4 -c avr109 -P /dev/waggle_sysmon -b 57600 -D -Uflash:w:$1:i
-echo 
-echo ">>>>>>>>>>>> Firmware flash process completed <<<<<<<<<<<<<"
-echo
-
+    echo "Resetting Wagman to bootloader mode... (Step 1/2)"
+    echo
+    stty -F /dev/waggle_sysmon 1200 hupcl; sleep 5
+    echo "Flashing wagman board with new firmware... (Step 2/2)"
+    echo
+    /usr/bin/avrdude -C /etc/waggle/avrdude.conf -v -p m32u4 -c avr109 -P /dev/waggle_sysmon -b 57600 -D -Uflash:w:$1:i
+    echo 
+    echo ">>>>>>>>>>>> Firmware flash process completed <<<<<<<<<<<<<"
+    echo
 else
-echo "Wagman device not found."
+    echo "Wagman device not found."
 fi
 
+if [ "${wagman-driver}" != "inactive" ]
+then
+    sleep 3
+    echo "Restarting waggle-wagman-driver service..."
+    systemctl start waggle-wagman-driver.service
+fi

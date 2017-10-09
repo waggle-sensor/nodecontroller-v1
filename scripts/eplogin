@@ -1,6 +1,3 @@
 #!/bin/bash
 
-eval $(ssh-agent) > /dev/null
-ssh-add /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_edge_processor 2> /dev/null
-ssh edgeprocessor $@
-kill ${SSH_AGENT_PID}
+ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_edge_processor -o ConnectTimeout=3 edgeprocessor $@
