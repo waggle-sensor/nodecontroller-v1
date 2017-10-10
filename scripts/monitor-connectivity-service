@@ -142,8 +142,7 @@ while True:
 	# Local checks (done every minute)
 	#print("Performing local checks...")
 	local_check_results = [check_USB_modem(),
-							check_network_interface(),
-							check_local_sshd()]
+							check_network_interface()]
 
 	# Beehive checks
 	beehive_check_results = []
