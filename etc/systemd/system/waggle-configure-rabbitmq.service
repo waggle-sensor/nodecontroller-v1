@@ -3,6 +3,7 @@ Description=Ensures RabbitMQ configuration files are up to date.
 Before=rabbitmq-server.service
 
 [Service]
+Environment=HOME=/root
 Type=oneshot
 ExecStart=/usr/lib/waggle/nodecontroller/scripts/configure-rabbitmq.sh
 
