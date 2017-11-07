@@ -1,6 +1,7 @@
 [Unit]
 Description=node registration
-After=waggle-platform.target network.target
+After=waggle-init.service network.target
+Before=waggle-platform.target
 
 # stop the service once the credential has been removed
 # (post successful registration)
@@ -15,4 +16,5 @@ Restart=always
 RestartSec=5
 
 [Install]
-WantedBy=waggle-platform.target
+WantedBy=waggle-core.target
+RequiredBy=waggle-platform.target
