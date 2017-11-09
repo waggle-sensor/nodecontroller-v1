@@ -96,7 +96,11 @@ def get_certificates():
         else:
             logger.info("All certificate files found.")
             if os.path.isfile(registration_key):
-              os.remove(registration_key)
+                os.remove(registration_key)
+                logger.info('Setting default target to waggle-platform')
+                subprocess.Popen('systemctl set-default waggle-platform.target', shell=True).communicate()
+                logger.info('Isolating waggle-platform target')
+                subprocess.Popen('systemctl isolate waggle-platform.target', shell=True).communicate()
             break
 
         # make sure certficate files exist.

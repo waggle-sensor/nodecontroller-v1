@@ -1,9 +1,10 @@
 [Unit]
-Description=Waggle status  every 10 minutes
+Description=Waggle status every 10 minutes
+After=waggle-platform.tartget
 
 [Timer]
 OnBootSec=5min
 OnUnitActiveSec=5min
 
 [Install]
-WantedBy=timers.target
+WantedBy=timers.target waggle-platform.target

@@ -1,6 +1,6 @@
 [Unit]
 Description=node registration
-After=waggle-init.service network.target
+After=waggle-core.target waggle-init.service network.target
 Before=waggle-platform.target
 
 # stop the service once the credential has been removed
@@ -13,8 +13,7 @@ ExecStart=/usr/lib/waggle/nodecontroller/scripts/registration-service --force
 
 # keep trying if there was a fatal error during an attempt to register
 Restart=always
-RestartSec=5
+RestartSec=30
 
 [Install]
 WantedBy=waggle-core.target
-RequiredBy=waggle-platform.target

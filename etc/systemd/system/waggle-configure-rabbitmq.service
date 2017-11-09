@@ -1,5 +1,6 @@
 [Unit]
 Description=Ensures RabbitMQ configuration files are up to date.
+After=waggle-init.service
 Before=rabbitmq-server.service
 
 [Service]
