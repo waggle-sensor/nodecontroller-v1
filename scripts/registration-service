@@ -101,16 +101,13 @@ def get_certificates():
             logger.info("All certificate files found.")
             if os.path.isfile(registration_key):
                 os.remove(registration_key)
-                # Lock the filesystem
-                rc, out = call('/usr/lib/waggle/core/waggle-fs-lock')
-                if rc == 0:
-                    logger.info('Setting default target to waggle-platform')
-                    _rc, _out = call('systemctl set-default waggle-platform.target')
-                    logger.info('Isolating waggle-platform target')
-                    _rc, _out = call('systemctl isolate waggle-platform.target')
-                else:
-                    logger.error('Cannot lock root filesystem')
-                    logger.error('Stay in waggle-core target')
+
+                logger.info('Setting default target to waggle-platform')
+                rc, out = call('systemctl set-default waggle-platform.target')
+                logger.info('Isolating waggle-platform target')
+                rc, out = call('systemctl isolate waggle-platform.target')
+                logger.info('Locking fielsystem')
+                rc, out = call('/usr/lib/waggle/core/scripts/waggle-fs-lock')
             break
 
         # make sure certficate files exist.
