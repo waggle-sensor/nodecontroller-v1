@@ -1,9 +1,6 @@
 #!/bin/bash
 
-. /usr/lib/waggle/core/scripts/detect_mac_address.sh
-
 recover_rabbitmq_config() {
-  echo "* copy /usr/lib/waggle/nodecontroller/etc/rabbitmq/rabbitmq.config to /etc/rabbitmq and recover the file (put node id in the file)" 
   NODE_ID=$1
   if [ -w / ]; then
     cp /usr/lib/waggle/nodecontroller/etc/rabbitmq/rabbitmq.config /etc/rabbitmq
@@ -17,8 +14,6 @@ recover_rabbitmq_config() {
 }
 
 recover_enabled_plugins() {
-  echo "* enabled_plugins is wrong"
-  echo "* copy /usr/lib/waggle/nodecontroller/etc/rabbitmq/enabled_plugins to /etc/rabbitmq"
   if [ -w / ]; then
     cp /usr/lib/waggle/nodecontroller/etc/rabbitmq/enabled_plugins /etc/rabbitmq
   else
@@ -28,54 +23,38 @@ recover_enabled_plugins() {
   fi
 }
 
-check_rabbitmq_config() {
-  NODE_ID=$1
-  config=$2
-  if [ $config == "ok" ]; then
-    echo "* rabbitmq.config is correct synthetically"
-  else
-    echo "* rabbitmq.config is synthetically wrong"
-    recover_rabbitmq_config $NODE_ID
-  fi
-}
+echo "Checking Rabbitmq Config files..."
+NODE_ID=$(/usr/lib/waggle/core/scripts/detect_mac_address.sh | grep MAC_STRING | cut -d '=' -f 2)
+cd /etc/rabbitmq
+check_result=$(./check_config_files)
 
-check_enabled_plugins() {
-  enabled=$1
-  if [ $enabled == "ok" ]; then
-    echo "* enabled_plugins is correct synthetically, but what if elements"
-    check_enabled_plugins_elements
-  else
-    recover_enabled_plugins
-  fi
-}
-
-check_enabled_plugins_elements() {
-  if grep "rabbitmq_management,rabbitmq_shovel,rabbitmq_shovel_management" /etc/rabbitmq/enabled_plugins; then
-    echo "* enabled_plugins is correct"
-  else
-    recover_enabled_plugins
-  fi
-}
-
-check_syntex() {
-  NODE_ID=$1
-  echo "* check syntex of config files"
-  cd /etc/rabbitmq
-  ./check_config_files
-  check_result=$(./check_config_files)
-
-  rabbitmq_config=$(echo "$check_result" | grep rabbitmq.config | cut -d ' ' -f 2)
-  enabled_plugins=$(echo "$check_result" | grep enabled_plugins | cut -d ' ' -f 2)
-
-  check_rabbitmq_config $NODE_ID $rabbitmq_config
-  check_enabled_plugins $enabled_plugins
-}
-
-if grep -q "reply_to, <<\"$NODE_ID\">>" "/etc/rabbitmq/rabbitmq.config"; then
-  echo "* rabbitmq.config is correct, but let see syntex"
-  check_syntex $NODE_ID
+echo -n "Checking rabbitmq.config..."
+syntax_check_result=$(echo "$check_result" | grep rabbitmq.config | cut -d ' ' -f 2)
+node_id_check_result=$(grep "reply_to, <<\"$NODE_ID\">>" "/etc/rabbitmq/rabbitmq.config" | wc -l)
+if [ "$syntax_check_result" == "ok" ] && [ "$node_id_check_result" == "1" ]; then
+  echo "correct"
 else
-  echo "* rabbitmq.config is wrong, so recovery it first, and then let's see syntex"
+  echo "wrong - recoverying rabbitmq.config..."
   recover_rabbitmq_config $NODE_ID
-  check_syntex $NODE_ID
 fi
+
+echo -n "Checking enabled_plugins..."
+syntax_check_result=$(echo "$check_result" | grep enabled_plugins | cut -d ' ' -f 2)
+enabled_plugins_check_result=$(grep "rabbitmq_management,rabbitmq_shovel,rabbitmq_shovel_management" "/etc/rabbitmq/enabled_plugins" | wc -l)
+if [ "$syntax_check_result" == "ok" ] && [ "$enabled_plugins_check_result" == "1" ]; then
+  echo "correct"
+else
+  echo "wrong - recovering enabled_plugins..."
+  recover_enabled_plugins
+fi
+
+echo -n "Checking .erlang.cookie..."
+cookie_length_check_result=$(cat /var/lib/rabbitmq/.erlang.cookie | wc -c)
+if [ "$cookie_length_check_result" != "0" ];  then
+  echo "correct"
+else
+  echo "wrong - removing /var/lib/rabbitmq/.erlang.cookie file..."
+  rm -f /var/lib/rabbitmq/.erlang.cookie
+fi
+
+echo "Checking done"

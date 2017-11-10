@@ -44,6 +44,10 @@ def run_registration_command(registration_key, cert_server, command):
     stderr=subprocess.PIPE)
   return p.stdout.read().decode()
 
+def call(command):
+    cmd =  subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    output = cmd.communicate()[0].decode().strip()
+    return cmd.returncode, output
 
 def get_certificates():
     cert_server = 'beehive'
@@ -97,10 +101,16 @@ def get_certificates():
             logger.info("All certificate files found.")
             if os.path.isfile(registration_key):
                 os.remove(registration_key)
-                logger.info('Setting default target to waggle-platform')
-                subprocess.Popen('systemctl set-default waggle-platform.target', shell=True).communicate()
-                logger.info('Isolating waggle-platform target')
-                subprocess.Popen('systemctl isolate waggle-platform.target', shell=True).communicate()
+                # Lock the filesystem
+                rc, out = call('/usr/lib/waggle/core/waggle-fs-lock')
+                if rc == 0:
+                    logger.info('Setting default target to waggle-platform')
+                    _rc, _out = call('systemctl set-default waggle-platform.target')
+                    logger.info('Isolating waggle-platform target')
+                    _rc, _out = call('systemctl isolate waggle-platform.target')
+                else:
+                    logger.error('Cannot lock root filesystem')
+                    logger.error('Stay in waggle-core target')
             break
 
         # make sure certficate files exist.
