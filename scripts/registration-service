@@ -102,12 +102,8 @@ def get_certificates():
             if os.path.isfile(registration_key):
                 os.remove(registration_key)
 
-                logger.info('Setting default target to waggle-platform')
-                rc, out = call('systemctl set-default waggle-platform.target')
-                logger.info('Isolating waggle-platform target')
-                rc, out = call('systemctl isolate waggle-platform.target')
-                logger.info('Locking fielsystem')
-                rc, out = call('/usr/lib/waggle/core/scripts/waggle-fs-lock')
+                logger.info('Switching to operation mode')
+                rc, out = call('waggle-switch-to-operation-mode')
             break
 
         # make sure certficate files exist.
