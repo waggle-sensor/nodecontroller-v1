@@ -1,6 +1,6 @@
 [Unit]
 Description=Monitors node controller connectivity status.
-After=waggle-platform.target
+After=waggle-core.target
 
 [Service]
 ExecStart=/usr/lib/waggle/nodecontroller/scripts/monitor-connectivity-service
@@ -9,4 +9,4 @@ Restart=always
 RestartSec=5
 
 [Install]
-WantedBy=waggle-platform.target
+WantedBy=waggle-core.target
