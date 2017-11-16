@@ -237,3 +237,4 @@ if __name__ == "__main__":
             name2process[name].terminate()
     except Exception as e:
         logger.error("Error (%s): %s" % ( str(type(e)), str(e)))
+
