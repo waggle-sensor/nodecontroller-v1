@@ -3,6 +3,8 @@ Description=Ensures RabbitMQ configuration files are up to date.
 After=waggle-init.service
 Before=rabbitmq-server.service
 
+ConditionPathExists=/root/fs_locked
+
 [Service]
 Environment=HOME=/root
 Type=oneshot
