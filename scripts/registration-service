@@ -8,7 +8,7 @@ import re
 import subprocess
 import sys
 import time
-from waggle.protocol.utils.pidfile import PidFile, AlreadyRunning
+from waggle.protocol.v4.pidfile import PidFile, AlreadyRunning
 
 logger = logging.getLogger("registration-service")
 logger.setLevel(logging.INFO)
