@@ -2,4 +2,4 @@
 Description=Waggle status
 
 [Service]
-ExecStart=/usr/lib/waggle/core/scripts/status-service --beehive --silent
+ExecStart=/usr/bin/python3 -u /usr/lib/waggle/core/scripts/status-service --beehive --silent
