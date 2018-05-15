@@ -1,4 +1,10 @@
+<!--
+waggle_topic=IGNORE
+waggle_topic=!Waggle/Node/Node Controller
+-->
+
 # First Boot
+
 * /aafirstboot is executed (resize data partition to fill the disk)
 * reboot
 
@@ -22,4 +28,3 @@
 	- created upon image creation (can be manually added)
 	- deleted by init service
 	- signals the init service to recover the other disk
-

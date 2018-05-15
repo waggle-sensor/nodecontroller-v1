@@ -1,3 +1,7 @@
+<!--
+waggle_topic=IGNORE
+-->
+
 ## Scripts for communications in nodecontroller
 
 This document enumulates python scripts that the nodecontroller uses to communicate with beehive server.

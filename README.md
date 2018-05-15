@@ -1,4 +1,8 @@
+<!--
+waggle_topic=Waggle/Node/Node Controller
+-->
 
+# Node Controller Overview
 
 ## Installation
 
@@ -54,7 +58,7 @@ export BEEHIVE_HOST=<HOSTNAME>
 ./configure
 ```
 
-Inside of a Docker container communication with the guest node may require overwriting NCIP. Access to ports 9090 and 9091 is restricted by only exposing them instead of publishing them. 
+Inside of a Docker container communication with the guest node may require overwriting NCIP. Access to ports 9090 and 9091 is restricted by only exposing them instead of publishing them.
 ```bash
 echo "0.0.0.0" > /etc/waggle/NCIP
 ```
@@ -70,10 +74,10 @@ Public certificate of the node:            /usr/lib/waggle/SSL/node/cert.pem
 Public certificate of the RabbitMQ server: /usr/lib/waggle/SSL/waggleca/cacert.pem
 ```
 
-The certificate files have to be created by the certificate authority on the beehive server. In principle there are two ways for the nodecontroller to get theses files. 
+The certificate files have to be created by the certificate authority on the beehive server. In principle there are two ways for the nodecontroller to get theses files.
 
 1. Manual: The beehive administrator creates keys for the node and the node user has to copy them onto the node, e.g. using ssh.
-2. Automatic: In some circumstances it can be an option to use a certificate server. If the certificate server is running, the nodecontroller software can automatically download the required files. Note that for security reasons this option might be available only in internal networks or with other special restrictions to avoid abuse. 
+2. Automatic: In some circumstances it can be an option to use a certificate server. If the certificate server is running, the nodecontroller software can automatically download the required files. Note that for security reasons this option might be available only in internal networks or with other special restrictions to avoid abuse.
 
 
 

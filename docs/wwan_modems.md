@@ -1,10 +1,16 @@
+<!--
+waggle_topic=IGNORE
+-->
+
+# wvdial Info
+
 ##Using "wvdial" to connect to WWAN using Point-to-Point Protocol:##
 
 
-The connection to Internet is accomplished through wvdial. wvdial uses a 
-config file wvdial.conf. The wvdial application is started by udev when 
-it finds a WWAN modem being attached to the system. This is accomplished 
-using the 75-wwan-net.rules file. 
+The connection to Internet is accomplished through wvdial. wvdial uses a
+config file wvdial.conf. The wvdial application is started by udev when
+it finds a WWAN modem being attached to the system. This is accomplished
+using the 75-wwan-net.rules file.
 
 ##Setup:##
 
@@ -15,9 +21,7 @@ using the 75-wwan-net.rules file.
  3. Copy wvdial.conf to */etc/*
  4. reload udevrules - *udevadm control --reload-rules*
 
-After the above steps, connect the modem and the system should attempt to get 
+After the above steps, connect the modem and the system should attempt to get
 network connection ___30-35 seconds___  after the modem is plugged in.
 
-A successful network connection will show up under ___ppp0___  entry  when *ifconfig* is issued. 
-
-
+A successful network connection will show up under ___ppp0___  entry  when *ifconfig* is issued.

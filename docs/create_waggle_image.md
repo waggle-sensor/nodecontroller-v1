@@ -1,14 +1,17 @@
+<!--
+waggle_topic=IGNORE
+-->
 
 Users of waggle should not need to build the waggle image on their own, but if they want to, here are the instructions to do that (see Section "Manually"). Further below there are also instructions on how to do automatic (e.g. nightly) waggle image builds. Those instructions are mostly of interest to the waggle team itself.
 
 
-# Manually 
+# Manually
 ### 1) Boot the stock odroid ubuntu image
    1. Copy ODROID ubuntu image onto SD-card, see [copy_waggle_image_to_memory_card.md](https://github.com/waggle-sensor/waggle/blob/master/user_documentation/copy_waggle_image_to_memory_card.md).
    2. Boot the ODROID with SD-card.
    3. ssh into ODROID as root ! Do not ssh as "odroid", and if you do accidentally, reboot! Otherwise the waggle script cannot rename the default user.
 
-### 2) Download and execute create_waggle_image.sh. 
+### 2) Download and execute create_waggle_image.sh.
 ```bash
 wget https://raw.githubusercontent.com/waggle-sensor/waggle/master/nodecontroller/scripts/create_waggle_image.sh
 chmod +x create_waggle_image.sh
