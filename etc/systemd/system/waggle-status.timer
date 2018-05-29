@@ -1,6 +1,6 @@
 [Unit]
 Description=Waggle status every 5 minutes
-After=waggle-platform.tartget
+After=waggle-platform.target
 
 [Timer]
 OnBootSec=5min
