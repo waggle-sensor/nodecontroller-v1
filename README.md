@@ -1,5 +1,5 @@
 <!--
-waggle_topic=Waggle/Node/Node Controller
+waggle_topic=/node_controller/introduction
 -->
 
 # Node Controller Overview
