@@ -2,6 +2,8 @@ SUBSYSTEM!="usb", ACTION!="add", GOTO="rules_end"
 
 #Product: 6 CDC-ACM Manufacturer: Telit (Multitech QuickCarrier USB-D)
 SUBSYSTEM=="tty", ATTRS{idVendor}=="058b", ATTRS{idProduct}=="0041", RUN +="usb_modeswitch '%b/%k'"
+ATTRS{idVendor}=="12d1", ATTRS{idProduct}=="1f01", RUN+="usb_modeswitch '%b/%k'"
+
 
 LABEL="rules_end"
 
