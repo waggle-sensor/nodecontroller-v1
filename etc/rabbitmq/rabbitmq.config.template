@@ -1,0 +1,50 @@
+[
+  {rabbit, [
+    {tcp_listeners, [{"127.0.0.1", 5672}]},
+    {loopback_users, [<<"guest">>]}
+  ]},
+  {rabbitmq_shovel, [
+    {shovels, [
+      {push_to_beehive, [
+        {sources, [
+          {brokers, ["amqp://"]},
+          {declarations, []}
+        ]},
+        {queue, <<"to-beehive">>},
+        {destinations, [
+          {broker, "amqps://beehive:23181?auth_mechanism=external&cacertfile=/usr/lib/waggle/SSL/waggleca/cacert.pem&certfile=/usr/lib/waggle/SSL/node/cert.pem&keyfile=/usr/lib/waggle/SSL/node/key.pem&verify=verify_peer"},
+          {declarations, []}
+        ]},
+        {publish_fields, [
+          {exchange, <<"messages">>}
+        ]},
+        {publish_properties, [
+          {delivery_mode, 2},
+          {user_id, <<"node%NODE_ID%">>}
+        ]}
+      ]},
+      {pull_from_beehive, [
+        {sources, [
+          {brokers, ["amqps://beehive:23181?auth_mechanism=external&cacertfile=/usr/lib/waggle/SSL/waggleca/cacert.pem&certfile=/usr/lib/waggle/SSL/node/cert.pem&keyfile=/usr/lib/waggle/SSL/node/key.pem&verify=verify_peer"]},
+          {declarations, []}
+        ]},
+        {queue, <<"to-node-0000%NODE_ID%">>},
+        {destinations, [
+          {broker, "amqp://"},
+          {declarations, []}
+        ]},
+        {publish_fields, [
+          {exchange, <<"messages">>}
+        ]},
+        {publish_properties, [
+          {delivery_mode, 2}
+        ]}
+      ]}
+    ]},
+    {defaults, [
+      {prefetch_count, 0},
+      {ack_mode, on_confirm},
+      {reconnect_delay, 60}
+    ]}
+  ]}
+].
