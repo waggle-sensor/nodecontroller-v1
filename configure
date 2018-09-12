@@ -69,14 +69,20 @@ cp -r ${current_dir}/etc/rabbitmq /etc
 
 # copy systemd scripts
 cp ${current_dir}/etc/systemd/system/* /etc/systemd/system
-systemctl enable waggle-epoch.service
-systemctl enable waggle-registration.service
-systemctl enable waggle-reverse-tunnel.service
-systemctl enable waggle-wagman-driver.service
-systemctl enable waggle-monitor-connectivity.service
-systemctl enable waggle-monitor-shutdown.service
-systemctl enable waggle-wwan.service
-systemctl enable waggle-status.timer
+
+systemctl enable \
+  waggle-epoch.service \
+  waggle-registration.service \
+  waggle-reverse-tunnel.service \
+  waggle-wagman-driver.service \
+  waggle-monitor-connectivity.service \
+  waggle-monitor-shutdown.service \
+  waggle-wwan.service \
+  waggle-status.timer \
+  waggle-node-message-router.service \
+  waggle-stage-messages-nc.service \
+  waggle-stage-messages-ep.service
+
 systemctl disable waggle-test.service
 
 

@@ -2,7 +2,7 @@
 Description=Stage messages from edge processor.
 
 [Service]
-ExecStart=/wagglerw/message-pipeline/bin/stage-messages-amqp amqp://edgeprocessor validate 1 amqp://localhost to-beehive
+ExecStart=/usr/lib/waggle/nodecontroller/bin/stage-messages-amqp amqp://edgeprocessor validate 1 amqp://localhost to-beehive
 Restart=always
 RestartSec=60
 

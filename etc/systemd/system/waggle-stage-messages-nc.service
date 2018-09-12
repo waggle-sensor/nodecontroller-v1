@@ -2,7 +2,7 @@
 Description=Stage messages from node controller.
 
 [Service]
-ExecStart=/wagglerw/message-pipeline/bin/stage-messages-amqp amqp://localhost validate 0 amqp://localhost to-beehive
+ExecStart=/usr/lib/waggle/nodecontroller/bin/stage-messages-amqp amqp://localhost validate 0 amqp://localhost to-beehive
 Restart=always
 RestartSec=60
 

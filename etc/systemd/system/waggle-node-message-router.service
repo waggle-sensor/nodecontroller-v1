@@ -2,7 +2,7 @@
 Description=Routes messages to subsystems within a node.
 
 [Service]
-ExecStart=/wagglerw/message-pipeline/bin/node-message-router messages
+ExecStart=/usr/lib/waggle/nodecontroller/bin/node-message-router messages
 Restart=always
 RestartSec=60
 
