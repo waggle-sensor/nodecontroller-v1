@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import re
+import subprocess
+
+
+def get_certfile_subject(filename):
+    output = subprocess.check_output([
+        'openssl',
+        'x509',
+        '-noout',
+        '-subject',
+        '-in', filename,
+    ]).decode()
+
+    return dict(re.findall('/([^=]+)=([^/]+)', output.strip()))
+
+
+def scan_device_id(s):
+    match = re.search(r'00:1e:06:\S+', s)
+    return match.group().replace(':', '').rjust(16, '0')
+
+
+def get_ep_sub_id():
+    output = subprocess.check_output([
+        'ssh',
+        '-i', '/usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_edge_processor',
+        '-o', 'BatchMode=yes',
+        '-o', 'ConnectTimeout=10',
+        '-o', 'StrictHostKeyChecking=no',
+        'edgeprocessor',
+        'ip link'
+    ]).decode()
+
+    return scan_device_id(output)
+
+
+def get_shovel_configs():
+    node_uri = 'amqp://localhost'
+    beehive_uri = (
+        'amqps://beehive:23181'
+        '?auth_mechanism=external'
+        '&cacertfile=/usr/lib/waggle/SSL/waggleca/cacert.pem'
+        '&certfile=/usr/lib/waggle/SSL/node/cert.pem'
+        '&keyfile=/usr/lib/waggle/SSL/node/key.pem'
+        '&verify=verify_peer'
+    )
+
+    subject = get_certfile_subject('/usr/lib/waggle/SSL/node/cert.pem')
+    username = subject['CN']
+
+    shovels = {}
+
+    shovels['push-to-beehive'] = {
+        'src-uri': node_uri,
+        'src-queue': 'to-beehive',
+        'dest-uri': beehive_uri,
+        'dest-exchange': 'messages',
+        'publish-properties': {
+            'delivery_mode': 2,
+            'user_id': username,
+        }
+    }
+
+    shovels['pull-from-beehive'] = {
+        'src-uri': beehive_uri,
+        'src-queue': 'to-{}'.format(username),
+        'dest-uri': node_uri,
+        'dest-queue': 'messages',
+        'publish-properties': {
+            'delivery_mode': 2,
+        }
+    }
+
+    try:
+        # TODO eventually change to just sub_id 1
+        ep_sub_id = get_ep_sub_id()
+
+        shovels['forward-to-ep'] = {
+            'src-uri': node_uri,
+            'src-queue': 'to-plugins@{}'.format(ep_sub_id),
+            'dest-uri': 'amqp://edgeprocessor',
+            'dest-queue': 'to-plugins@{}'.format(ep_sub_id),
+            'publish-properties': {
+                'delivery_mode': 2,
+            }
+        }
+    except subprocess.CalledProcessError:
+        print('could not reach ep')
+
+    return shovels
+
+
+def start_shovels():
+    for name, config in get_shovel_configs().items():
+        try:
+            subprocess.check_call([
+                'rabbitmqctl',
+                'set_parameter',
+                'shovel',
+                name,
+                json.dumps(config),
+            ])
+        except subprocess.CalledProcessError:
+            print('shovel', name, 'failed to start')
+
+
+def stop_shovels():
+    for name in get_shovel_configs().keys():
+        try:
+            subprocess.check_call([
+                'rabbitmqctl',
+                'clear_parameter',
+                'shovel',
+                name,
+            ])
+        except subprocess.CalledProcessError:
+            print('shovel', name, 'failed to stop')
+
+
+actions = {
+    'start': start_shovels,
+    'stop': stop_shovels,
+}
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('action', choices=actions.keys())
+    args = parser.parse_args()
+    actions[args.action]()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+import argparse
+import logging
+import pika
+import re
+import subprocess
+import waggle.protocol
+
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y/%m/%d %H:%M:%S %Z',
+    level=logging.INFO,
+)
+
+
+def parse_version_string(s):
+    ver = tuple(map(int, s.split('.')))
+
+    if len(ver) < 2:
+        raise ValueError('Invalid version string.')
+
+    return ver
+
+
+def parse_plugin_user_id(user_id):
+    match = re.match('plugin-([^-]+)-([^-]+)-([^-]+)', user_id)
+
+    if match is None:
+        raise ValueError('Invalid plugin user ID.')
+
+    id_string, version_string, instance_string = match.groups()
+
+    return {
+        'id': int(id_string),
+        'version': parse_version_string(version_string),
+        'instance': int(instance_string),
+    }
+
+
+def get_node_id():
+    logging.info('Autodetecting node ID.')
+
+    output = subprocess.check_output(['ip', 'link']).decode()
+    mac = re.search(r'00:1e:\S+', output).group()
+    return mac.replace(':', '').rjust(16, '0')
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--node_id')
+    parser.add_argument('source_url')
+    parser.add_argument('source_queue')
+    parser.add_argument('source_id')
+    parser.add_argument('target_url')
+    parser.add_argument('target_queue')
+    args = parser.parse_args()
+
+    node_id = args.node_id
+
+    if not node_id:
+        node_id = get_node_id()
+
+    sub_id = args.source_id.rjust(16, '0')
+
+    logging.info('Using node ID "%s".', node_id)
+
+    source_parameters = pika.URLParameters(args.source_url)
+    source_connection = pika.BlockingConnection(source_parameters)
+    source_channel = source_connection.channel()
+    source_channel.queue_declare(queue=args.source_queue, durable=True)
+
+    # TODO Decide where this declare should live!
+    source_channel.exchange_declare(exchange='publish', exchange_type='fanout', durable=True)
+    source_channel.queue_bind(queue=args.source_queue, exchange='publish')
+
+    target_parameters = pika.URLParameters(args.target_url)
+    target_connection = pika.BlockingConnection(target_parameters)
+    target_channel = target_connection.channel()
+    target_channel.queue_declare(queue=args.target_queue, durable=True)
+
+    def message_handler(ch, method, properties, body):
+        user_id = properties.user_id
+
+        if user_id is None:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            logging.info('Dropping message with missing user ID.')
+            return
+
+        try:
+            plugin_info = parse_plugin_user_id(user_id)
+        except ValueError:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            logging.info('Dropping message with missing user ID.')
+            return
+
+        packets = waggle.protocol.unpack_waggle_packets(body)
+
+        for packet in packets:
+            # needs to reflect actual device
+            packet['sender_id'] = node_id
+            packet['sender_sub_id'] = sub_id
+
+            datagrams = waggle.protocol.unpack_datagrams(packet['body'])
+
+            for datagram in datagrams:
+                datagram['plugin_id'] = plugin_info['id']
+                datagram['plugin_major_version'] = plugin_info['version'][0]
+                datagram['plugin_minor_version'] = plugin_info['version'][1]
+                datagram['plugin_instance'] = plugin_info['instance']
+
+            packet['body'] = waggle.protocol.pack_datagrams(datagrams)
+
+        data = waggle.protocol.pack_waggle_packets(packets)
+
+        target_channel.basic_publish(
+          exchange='',
+          routing_key=args.target_queue,
+          properties=pika.BasicProperties(
+            delivery_mode=2),
+          body=data)
+
+        source_channel.basic_ack(delivery_tag=method.delivery_tag)
+        logging.info('Validated message from %s on %s.', user_id, sub_id)
+
+    source_channel.basic_consume(message_handler, args.source_queue)
+    source_channel.start_consuming()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,10 @@
+[Unit]
+Description=Stage messages from node controller.
+
+[Service]
+ExecStart=/wagglerw/message-pipeline/bin/stage-messages-amqp amqp://localhost validate 0 amqp://localhost to-beehive
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=waggle-platform.target

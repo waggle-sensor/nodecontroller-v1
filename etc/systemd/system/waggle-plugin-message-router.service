@@ -1,0 +1,10 @@
+[Unit]
+Description=Routes messages to plugins within a subsystem.
+
+[Service]
+ExecStart=/wagglerw/message-pipeline/bin/plugin-message-router messages
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=waggle-platform.target

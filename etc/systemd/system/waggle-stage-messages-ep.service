@@ -1,0 +1,10 @@
+[Unit]
+Description=Stage messages from edge processor.
+
+[Service]
+ExecStart=/wagglerw/message-pipeline/bin/stage-messages-amqp amqp://edgeprocessor validate 1 amqp://localhost to-beehive
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=waggle-platform.target
