@@ -96,7 +96,7 @@ def scan_ssh_port(s):
 
 def scan_token(s):
     try:
-        return re.search(r'TOKEN=(\d+)', s).group(1)
+        return re.search(r'TOKEN=(\S+)', s).group(1)
     except AttributeError:
         raise ValueError('No matching token:\n{}.'.format(s))
 
