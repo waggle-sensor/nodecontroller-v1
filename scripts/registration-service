@@ -13,12 +13,15 @@ logger = logging.getLogger('registration-service')
 logger.setLevel(logging.INFO)
 
 pid_file = '/var/run/waggle/communications.pid'
+
 cert_server = 'beehive'
 registration_key = '/root/id_rsa_waggle_registration'
+
+ca_root_file = '/etc/waggle/cacert.pem'
+client_key_file = '/etc/waggle/key.pem'
+client_cert_file = '/etc/waggle/cert.pem'
+
 reverse_ssh_port_file = '/etc/waggle/reverse_ssh_port'
-ca_root_file = '/usr/lib/waggle/SSL/waggleca/cacert.pem'
-client_key_file = '/usr/lib/waggle/SSL/node/key.pem'
-client_cert_file = '/usr/lib/waggle/SSL/node/cert.pem'
 
 
 def read_file(path):
