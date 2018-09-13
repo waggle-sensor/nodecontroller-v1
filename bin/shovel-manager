@@ -41,13 +41,13 @@ def get_shovel_configs():
     beehive_uri = (
         'amqps://beehive:23181'
         '?auth_mechanism=external'
-        '&cacertfile=/usr/lib/waggle/SSL/waggleca/cacert.pem'
-        '&certfile=/usr/lib/waggle/SSL/node/cert.pem'
-        '&keyfile=/usr/lib/waggle/SSL/node/key.pem'
+        '&cacertfile=/etc/waggle/cacert.pem'
+        '&certfile=/etc/waggle/cert.pem'
+        '&keyfile=/etc/waggle/key.pem'
         '&verify=verify_peer'
     )
 
-    subject = get_certfile_subject('/usr/lib/waggle/SSL/node/cert.pem')
+    subject = get_certfile_subject('/etc/waggle/cert.pem')
     username = subject['CN']
 
     shovels = {}

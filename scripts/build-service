@@ -15,9 +15,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 '''
 credentials = pika.credentials.PlainCredentials('node', 'waggle')
-ssl_options={'ca_certs':'/usr/lib/waggle/SSL/waggleca/cacert.pem',
-             'certfile':'/usr/lib/waggle/SSL/node/cert.pem',
-             'keyfile':'/usr/lib/waggle/SSL/node/key.pem'}
+ssl_options={'ca_certs':'/etc/waggle/cacert.pem',
+             'certfile':'/etc/waggle/cert.pem',
+             'keyfile':'/etc/waggle/key.pem'}
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(
   host='beehive', port=23181, credentials=credentials, ssl=True,

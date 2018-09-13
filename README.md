@@ -69,9 +69,9 @@ The nodecontroller needs SSL certificates to be able to talk to the RabbitMQ com
 
 SSL related files expected by the nodecontroller:
 ```text
-Private key of the node:                   /usr/lib/waggle/SSL/node/key.pem
-Public certificate of the node:            /usr/lib/waggle/SSL/node/cert.pem
-Public certificate of the RabbitMQ server: /usr/lib/waggle/SSL/waggleca/cacert.pem
+Private key of the node:                   /etc/waggle/key.pem
+Public certificate of the node:            /etc/waggle/cert.pem
+Public certificate of the RabbitMQ server: /etc/waggle/cacert.pem
 ```
 
 The certificate files have to be created by the certificate authority on the beehive server. In principle there are two ways for the nodecontroller to get theses files.

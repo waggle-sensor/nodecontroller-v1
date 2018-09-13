@@ -9,9 +9,9 @@ connection = beehive.Connection(
     host='beehive',
     port=23181,
     node='0000000000AAAAAA',
-    keyfile='/usr/lib/waggle/SSL/node/key.pem',
-    certfile='/usr/lib/waggle/SSL/node/cert.pem',
-    caroot='/usr/lib/waggle/SSL/waggleca/cacert.pem')
+    keyfile='/etc/waggle/key.pem',
+    certfile='/etc/waggle/cert.pem',
+    caroot='/etc/waggle/cacert.pem')
 
 while True:
     timestamp_utc = datetime.datetime.utcnow()

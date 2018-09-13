@@ -85,7 +85,7 @@ def check_local_sshd():
 
 # Connect to the Beehive server's sshd
 def check_beehive_sshd(hostname):
-	command = ['ssh -i /usr/lib/waggle/SSL/node/key.pem -x',
+	command = ['ssh -i /etc/waggle/key.pem -x',
 				'-o "PasswordAuthentication no"',
 				'-o "StrictHostKeyChecking no"',
 				'root@'+hostname, '-p 20022',
