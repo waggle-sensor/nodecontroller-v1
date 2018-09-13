@@ -22,6 +22,7 @@ client_key_file = '/etc/waggle/key.pem'
 client_cert_file = '/etc/waggle/cert.pem'
 
 reverse_ssh_port_file = '/etc/waggle/reverse_ssh_port'
+token_path = '/etc/waggle/token'
 
 
 def read_file(path):
@@ -62,7 +63,9 @@ def make_request(command):
 
     while time.time() - start_time < 300:
         try:
-            return run_registration_command(registration_key, cert_server, command)
+            response = run_registration_command(registration_key, cert_server, command)
+            logger.debug('Response for %s:\n%s.', command, response)
+            return response
         except subprocess.CalledProcessError:
             logger.exception('Failed to get credentials from %s. Will retry in 30s...', cert_server)
             time.sleep(30)
@@ -71,23 +74,38 @@ def make_request(command):
 
 
 def scan_certificate(s):
-    return re.search(r'-----BEGIN CERTIFICATE-----(.|\n)*-----END CERTIFICATE-----', s).group()
+    try:
+        return re.search(r'-----BEGIN CERTIFICATE-----(.|\n)*-----END CERTIFICATE-----', s).group()
+    except AttributeError:
+        raise ValueError('No matching certification:\n{}.'.format(s))
 
 
 def scan_private_key(s):
-    return re.search(r'-----BEGIN RSA PRIVATE KEY-----(.|\n)*-----END RSA PRIVATE KEY-----', s).group()
+    try:
+        return re.search(r'-----BEGIN RSA PRIVATE KEY-----(.|\n)*-----END RSA PRIVATE KEY-----', s).group()
+    except AttributeError:
+        raise ValueError('No matching private key:\n{}.'.format(s))
 
 
 def scan_ssh_port(s):
-    return int(re.search(r'PORT=(\d+)', s).group(1))
+    try:
+        return int(re.search(r'PORT=(\d+)', s).group(1))
+    except AttributeError:
+        raise ValueError('No matching SSH port:\n{}.'.format(s))
 
 
 def scan_token(s):
-    return int(re.search(r'TOKEN=(\d+)', s).group(1))
+    try:
+        return re.search(r'TOKEN=(\d+)', s).group(1)
+    except AttributeError:
+        raise ValueError('No matching token:\n{}.'.format(s))
 
 
 def scan_ssh_key(s):
-    return re.search(r'ssh-rsa.*', s).group()
+    try:
+        return re.search(r'ssh-rsa.*', s).group()
+    except AttributeError:
+        raise ValueError('No matching SSH key:\n{}.'.format(s))
 
 
 def request_waggleca_info():
@@ -111,6 +129,7 @@ def request_node_info(node_id):
         'key': scan_private_key(response),
         'ssh_port': scan_ssh_port(response),
         'ssh_key': scan_ssh_key(response),
+        'token': scan_token(response),
     }
 
 
@@ -141,9 +160,9 @@ def get_certificates():
         subprocess.call(['chown', 'rabbitmq:rabbitmq', client_key_file])
 
         write_file(reverse_ssh_port_file, str(node_info['ssh_port']))
+        write_file(token_path, node_info['token'])
 
     # os.remove(registration_key)
-
     logger.info('Switching to operation mode')
     subprocess.call('waggle-switch-to-operation-mode')
 
