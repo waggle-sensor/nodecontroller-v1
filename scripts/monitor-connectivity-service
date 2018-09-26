@@ -5,7 +5,6 @@ import re
 import socket
 import subprocess
 import sched
-import time
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -18,8 +17,8 @@ def run_command(command):
 
 def reset_deadman_trigger():
     logging.info('resetting deadman trigger')
-    file = "/tmp/alive"
-    os.system("touch " + file + " > /dev/null 2>&1")
+    with open('/tmp/alive', 'w'):
+        pass
 
 
 def check_USB_modem():
