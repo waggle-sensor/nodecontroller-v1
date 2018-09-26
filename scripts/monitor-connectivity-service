@@ -54,7 +54,7 @@ def check_local_sshd():
 
 def main():
     results = {}
-    scheduler = sched.scheduler(time.time, time.sleep)
+    scheduler = sched.scheduler()
 
     def update_local_results():
         results['USB Modem'] = check_USB_modem()
