@@ -68,11 +68,13 @@ def main():
 
     def update_deadman_trigger():
         for name, status in results.items():
-            logging.info('%s - %s', name, 'pass' if status else 'fail')
+            logging.info('check - %s - %s', name, 'pass' if status else 'fail')
 
         if all(results.values()):
-            logging.info('Node Controller is well')
+            logging.info('connectivity - pass')
             reset_deadman_trigger()
+        else:
+            logging.info('connectivity - fail')
 
         scheduler.enter(30, 0, update_deadman_trigger)
 
