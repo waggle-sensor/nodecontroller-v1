@@ -145,6 +145,10 @@ def get_certificates():
         reverse_ssh_port_file,
     ]
 
+    if all(is_file_nonempty(f) for f in required_files):
+        logger.info('Node already has all credentials. Skipping registration.')
+        return
+
     while not all(is_file_nonempty(f) for f in required_files):
         waggleca_info = request_waggleca_info()
         node_info = request_node_info(node_id)
