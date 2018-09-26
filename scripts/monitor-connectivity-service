@@ -1,11 +1,9 @@
 #!/usr/bin/python3
-
 import os
 import socket
 import time
 import subprocess
 import logging
-import waggle.logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -140,7 +138,7 @@ while True:
 		logging.info("Node Controller is well.")
 	else:
 		#print("Logging test failures...")
-		logging.info("The following tests failed: " + 
+		logging.info("The following tests failed: " +
 					str([n for x,n in zip(results,test_names) if not x]) + "\n")
 
 	time.sleep(base_sleep_time)
