@@ -1,144 +1,86 @@
 #!/usr/bin/python3
-import os
-import socket
-import time
-import subprocess
 import logging
+import os
+import re
+import socket
+import subprocess
+import sched
+import time
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 # Run a command and capture it's output
 def run_command(command):
-	p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	return iter(p.stdout.readline, b'')
+    return subprocess.check_output(command).decode()
+
 
 def reset_deadman_trigger():
-	file = "/tmp/alive"
-	rc = os.system("touch " + file + " > /dev/null 2>&1")
-	if rc != 0:
-		return False
+    logging.info('resetting deadman trigger')
+    file = "/tmp/alive"
+    os.system("touch " + file + " > /dev/null 2>&1")
 
-###########################
-##### Wellness Checks #####
-###########################
 
-# Check that there is a "Wireless" or "Realtek" (LAN) device
-# connected to the USB hub
 def check_USB_modem():
-	output = run_command(['lsusb'])
-	for line in output:
-		if (b"Wireless" in line) or (b"Realtek" in line):
-			return True
+    output = run_command(['lsusb'])
+    return re.search(r'Wireless|Realtek', output) is not None
 
-	return False
 
-# Check that there is an IP address listed in either the PPP or
-# eth1 info of ifconfig
 def check_network_interface():
-	output = run_command(['ifconfig'])
-	next_line = False
-	for line in output:
-		if (b"eth0" in line):
-			continue
-		if (b"Point-to-Point Protocol" in line) or \
-			(b"enx" in line) or \
-			(b"eth" in line):
-			next_line = True
-		elif next_line and (b"inet addr:" in line):
-			return True
-		else:
-			next_line = False
-	return False
+    output = run_command(['ifconfig'])
+    addrs = re.findall(r'inet (\S+).*scope global', output)
+    return len(addrs) > 0
 
-# DNS lookup of the Beehive server hostname
-def check_beehive_DNS(hostname):
-	beehive_ip = ''
-	try:
-		beehive_ip = socket.gethostbyname(hostname)
-	except Exception:
-		return False
 
-	return True
+def check_beehive_DNS():
+    try:
+        socket.gethostbyname('beehive')
+        return True
+    except Exception:
+        return False
 
-# Ping the Beehive server
-# The ICMP port is disabled on the beehive servers for external IPs, so
-# just check that the beehive web portal is up
-def check_beehive_ping(hostname):
-	rc = os.system("curl " + hostname + "/api/ > /dev/null 2>&1")
-	if rc != 0:
-		return False
 
-	return True
+def check_beehive_ping():
+    rc = os.system('curl http://beehive/api/ > /dev/null 2>&1')
+    return rc == 0
 
-# Connect to the local sshd
+
 def check_local_sshd():
-	command = ['/usr/lib/waggle/nodecontroller/scripts/eplogin', '/usr/lib/waggle/edge_processor/nclogin', 'date > /dev/null 2>&1']
-	rc = os.system(' '.join(command))
-	if rc != 0:
-		return False
-
-	return True
+    command = ['/usr/lib/waggle/nodecontroller/scripts/eplogin', '/usr/lib/waggle/edge_processor/nclogin', 'date > /dev/null 2>&1']
+    rc = os.system(' '.join(command))
+    return rc == 0
 
 
-# Connect to the Beehive server's sshd
-def check_beehive_sshd(hostname):
-	command = ['ssh -i /etc/waggle/key.pem -x',
-				'-o "PasswordAuthentication no"',
-				'-o "StrictHostKeyChecking no"',
-				'root@'+hostname, '-p 20022',
-				'date > /dev/null 2>&1']
-	#print(' '.join(command))
-	rc = os.system(' '.join(command))
-	if rc != 0:
-		return False
+def main():
+    results = {}
+    scheduler = sched.scheduler(time.time, time.sleep)
 
-	return True
+    def update_local_results():
+        results['USB Modem'] = check_USB_modem()
+        results['Network Interface'] = check_network_interface()
+        scheduler.enter(30, 1, update_local_results)
 
-################
-##### Main #####
-################
+    def update_beehive_results():
+        results['Beehive DNS'] = check_beehive_DNS()
+        results['Beehive Ping'] = check_beehive_ping()
+        scheduler.enter(1800, 1, update_beehive_results)
 
-# Human readable names for the tests in the same sequence that they are run
-test_names = ['USB Modem', 'Network Interface', 'Beehive DNS', 'Beehive Ping', 'Beehive sshd']
+    def update_deadman_trigger():
+        for name, status in results.items():
+            logging.info('%s - %s', name, 'pass' if status else 'fail')
 
-# base_sleep_time = 2  # s
-beehive_hostname = 'beehive'
+        if all(results.values()):
+            logging.info('Node Controller is well')
+            reset_deadman_trigger()
 
-base_sleep_time = 60  # (seconds)
+        scheduler.enter(30, 0, update_deadman_trigger)
 
-beehive_check_duration = 1800  # (seconds) 30 minutes
-# check Beehive on start up
-beehive_check_time = time.time() - beehive_check_duration - 1
+    scheduler.enter(0, 1, update_local_results)
+    scheduler.enter(0, 1, update_beehive_results)
+    scheduler.enter(0, 0, update_deadman_trigger)
+    scheduler.run()
 
-while True:
-	current_time = time.time()
 
-	# Local checks (done every minute)
-	#print("Performing local checks...")
-	local_check_results = [check_USB_modem(),
-							check_network_interface()]
-
-	# Beehive checks
-	beehive_check_results = []
-	logging.info("Performing Beehive checks...")
-	if (current_time - beehive_check_time) > beehive_check_duration:
-		beehive_check_results = [check_beehive_DNS(beehive_hostname),
-								check_beehive_ping(beehive_hostname),
-								check_beehive_sshd(beehive_hostname),]
-		if all(beehive_check_results):
-			beehive_check_time = time.time()
-
-	# Reset deadman trigger if all local and Beehive checks have passed
-	results = local_check_results + beehive_check_results
-	if all(results):
-		#print("Resetting deadman trigger...")
-		reset_deadman_trigger()
-		#print("Node Controller is well.")
-		logging.info("Node Controller is well.")
-	else:
-		#print("Logging test failures...")
-		logging.info("The following tests failed: " +
-					str([n for x,n in zip(results,test_names) if not x]) + "\n")
-
-	time.sleep(base_sleep_time)
+if __name__ == '__main__':
+    main()
