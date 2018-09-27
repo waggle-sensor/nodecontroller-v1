@@ -5,6 +5,15 @@ import re
 import subprocess
 
 
+def scan_subject(s):
+    results = {}
+
+    for k, v in re.findall(r'(C|ST|L|O|CN)\s*=\s*([^/,]*)', s):
+        results[k] = v
+
+    return results
+
+
 def get_certfile_subject(filename):
     output = subprocess.check_output([
         'openssl',
@@ -14,12 +23,7 @@ def get_certfile_subject(filename):
         '-in', filename,
     ]).decode()
 
-    results = {}
-
-    for k, v in re.findall('/([^= ]+)=([^/]+)', output):
-        results[k.strip()] = v.strip()
-
-    return results
+    return scan_subject(output)
 
 
 def scan_device_id(s):
