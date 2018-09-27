@@ -6,7 +6,7 @@ After=waggle-core.target
 ExecStart=/usr/bin/python3 -u /usr/lib/waggle/nodecontroller/wagman/wagman-driver.py
 
 Restart=always
-RestartSec=10
+RestartSec=30
 
 [Install]
 WantedBy=waggle-core.target
