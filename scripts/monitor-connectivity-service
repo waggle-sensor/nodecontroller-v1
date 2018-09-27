@@ -55,7 +55,8 @@ def main():
     scheduler = sched.scheduler()
 
     def update_local_results():
-        results['USB Modem'] = check_USB_modem()
+        # TODO Is this really needed? If there's a network interface, that should be enough.
+        # results['USB Modem'] = check_USB_modem()
         results['Network Interface'] = check_network_interface()
         scheduler.enter(30, 1, update_local_results)
 
