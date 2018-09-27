@@ -27,9 +27,8 @@ def check_USB_modem():
 
 
 def check_network_interface():
-    output = run_command(['ifconfig'])
-    addrs = re.findall(r'inet (\S+).*scope global', output)
-    return len(addrs) > 0
+    output = run_command(['ip', 'addr'])
+    return re.search(r'inet.*scope global.*(en|ppp|eth[1-9])', output) is not None
 
 
 def check_beehive_DNS():
