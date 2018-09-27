@@ -40,7 +40,8 @@ def readline(ser):
 
         # show wagman log output instead of returning
         if line.startswith('log:'):
-            wagman_logger.info(line.lstrip('log:').strip())
+            content = line.replace('log:', '').strip()
+            wagman_logger.info(content)
             continue
 
         return line
@@ -62,6 +63,8 @@ def dispatch(ser, command):
 
     # wait for header
     while True:
+        check_global_timeout()
+
         # check for dispatch timeout
         if time.time() - start > 15.0:
             raise TimeoutError('dispatch timed out')
@@ -71,7 +74,7 @@ def dispatch(ser, command):
         except TimeoutError:
             continue
 
-        logger.debug('line: {}'.format(line))
+        logger.debug('line: %s', line)
 
         _, sep, right = line.partition('<<<-')
 
@@ -84,6 +87,8 @@ def dispatch(ser, command):
 
     # wait for footer
     while True:
+        check_global_timeout()
+
         # check for dispatch timeout
         if time.time() - start > 15.0:
             raise TimeoutError('dispatch timed out')
@@ -93,7 +98,7 @@ def dispatch(ser, command):
         except TimeoutError:
             continue
 
-        logger.debug('line: {}'.format(line))
+        logger.debug('line: %s', line)
 
         if '<<<-' in line:
             raise RuntimeError('unexpected message header')
