@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import serial
 import zmq
-import sys
 import logging
 import time
 import re
@@ -14,13 +13,18 @@ wagman_logger = logging.getLogger('wagman')
 last_readline = time.time()
 
 
+def check_global_timeout():
+    duration = time.time() - last_readline
+
+    if duration > 300.0:
+        raise TimeoutError('Unable to read line for {:0.0f} seconds.'.format(duration))
+
+
 def readline(ser):
     global last_readline
 
     while True:
-        # give up if global readline timeout is expired
-        if time.time() - last_readline > 60.0:
-            raise TimeoutError('wagman timed out')
+        check_global_timeout()
 
         # read and decode wagman output
         try:
@@ -112,9 +116,7 @@ def manager(ser, server):
     last_readline = time.time()
 
     while True:
-        # timeout if we haven't seen any message from the wagman in the last 60s
-        if time.time() - last_readline > 60.0:
-            raise TimeoutError('wagman timed out')
+        check_global_timeout()
 
         # read and process requests
         try:
@@ -159,13 +161,7 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
 
-    while True:
-        try:
-            logger.info('starting main')
-            main(device=args.device)
-        except KeyboardInterrupt:
-            break
-        except Exception:
-            logger.exception('fatal exception in main. will restart in 15s...')
-
-        time.sleep(15)
+    try:
+        main(device=args.device)
+    except KeyboardInterrupt:
+        pass
