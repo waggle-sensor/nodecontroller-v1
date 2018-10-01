@@ -14,6 +14,11 @@ logging.basicConfig(
 )
 
 
+def read_file(path):
+    with open(path) as file:
+        return file.read()
+
+
 def parse_version_string(s):
     ver = tuple(map(int, s.split('.')))
 
@@ -40,10 +45,7 @@ def parse_plugin_user_id(user_id):
 
 def get_node_id():
     logging.info('Autodetecting node ID.')
-
-    output = subprocess.check_output(['ip', 'link']).decode()
-    mac = re.search(r'00:1e:\S+', output).group()
-    return mac.replace(':', '').rjust(16, '0')
+    return read_file('/etc/waggle/node_id').strip()
 
 
 def main():
@@ -70,7 +72,6 @@ def main():
     source_channel = source_connection.channel()
     source_channel.queue_declare(queue=args.source_queue, durable=True)
 
-    # TODO Decide where this declare should live!
     source_channel.exchange_declare(exchange='messages', exchange_type='fanout', durable=True)
     source_channel.queue_bind(queue=args.source_queue, exchange='messages')
 
