@@ -6,6 +6,7 @@ import os.path
 import re
 import subprocess
 import time
+import hashlib
 from waggle.protocol.v4.pidfile import PidFile, AlreadyRunning
 
 
@@ -101,6 +102,21 @@ def scan_token(s):
         raise ValueError('No matching token:\n{}.'.format(s))
 
 
+def scan_token_or_failover(s):
+    try:
+        return scan_token(s)
+    except ValueError:
+        key = scan_private_key(s)
+        cert = scan_certificate(s)
+        return generate_token_from_key_and_cert(key, cert)
+
+
+def generate_token_from_key_and_cert(key, cert):
+    data = (key.strip() + cert.strip()).encode()
+    hexdigest = hashlib.sha1(data).hexdigest()
+    return hexdigest[:8]
+
+
 def scan_ssh_key(s):
     try:
         return re.search(r'ssh-rsa.*', s).group()
@@ -129,7 +145,7 @@ def request_node_info(node_id):
         'key': scan_private_key(response),
         'ssh_port': scan_ssh_port(response),
         'ssh_key': scan_ssh_key(response),
-        'token': scan_token(response),
+        'token': scan_token_or_failover(response),
     }
 
 
