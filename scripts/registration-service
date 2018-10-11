@@ -106,6 +106,7 @@ def scan_token_or_failover(s):
     try:
         return scan_token(s)
     except ValueError:
+        logger.warning('Token not found! Failover to generating from key and cert.')
         key = scan_private_key(s)
         cert = scan_certificate(s)
         return generate_token_from_key_and_cert(key, cert)
