@@ -76,7 +76,7 @@ def get_shovel_configs():
         'src-uri': beehive_uri,
         'src-queue': 'to-{}'.format(username),
         'dest-uri': node_uri,
-        'dest-queue': 'messages',
+        'dest-queue': 'from-beehive',
         'publish-properties': {
             'delivery_mode': 2,
         }
