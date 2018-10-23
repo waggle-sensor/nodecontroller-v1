@@ -55,7 +55,7 @@ def dispatch(args, timeout):
         client.setsockopt(zmq.RCVTIMEO, timeout_ms)
         client.setsockopt(zmq.SNDTIMEO, timeout_ms)
 
-        client.connect('ipc:///var/wagman-server')
+        client.connect('ipc:///tmp/wagman-server')
 
         try:
             client.send_string(sanitize(' '.join(args)))

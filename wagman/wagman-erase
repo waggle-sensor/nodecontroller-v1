@@ -1,0 +1,25 @@
+#!/bin/sh
+
+pins="76 77"
+
+cleanup() {
+    echo "releasing pins"
+
+    for p in $pins; do
+        echo 1 > /sys/class/gpio/gpio$p/value
+    done
+}
+
+trap cleanup EXIT
+
+echo "setting pins"
+
+for p in $pins; do
+    if [ ! -d /sys/class/gpio/gpio$p ]; then
+        echo $p > /sys/class/gpio/export
+    fi
+    echo out > /sys/class/gpio/gpio$p/direction
+    echo 0 > /sys/class/gpio/gpio$p/value
+done
+
+sleep 10
