@@ -19,6 +19,8 @@ for p in $pins; do
         echo $p > /sys/class/gpio/export
     fi
     echo out > /sys/class/gpio/gpio$p/direction
+    echo 1 > /sys/class/gpio/gpio$p/value
+    sleep 1
     echo 0 > /sys/class/gpio/gpio$p/value
 done
 
