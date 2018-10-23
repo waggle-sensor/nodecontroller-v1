@@ -10,7 +10,7 @@ cleanup() {
     done
 }
 
-trap cleanup EXIT
+trap cleanup EXIT INT TERM
 
 echo "setting pins"
 
