@@ -1,5 +1,7 @@
 ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0037", TAG+="systemd", SYMLINK+="waggle_sysmon_flash"
-ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="8037", TAG+="systemd", SYMLINK+="waggle_sysmon"
+ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="8037", TAG+="systemd", SYMLINK+="waggle_sysmon", RUN+="/bin/sh -c 'mkdir -p /wagglerw/waggle/; echo v1 > /wagglerw/waggle/wagman_version'"
+
+ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="003f", TAG+="systemd", SYMLINK+="waggle_sysmon", RUN+="/bin/sh -c 'mkdir -p /wagglerw/waggle/; echo v2 > /wagglerw/waggle/wagman_version'"
 
 ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="6124", TAG+="systemd", SYMLINK+="waggle_coresense_flash"
 ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="003e", TAG+="systemd", SYMLINK+="waggle_coresense"
