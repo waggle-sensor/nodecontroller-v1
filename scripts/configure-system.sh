@@ -55,16 +55,27 @@ echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCsYPMSrC6k33vqzulXSx8141ThfNKXiyFxwN
 echo >> /root/.ssh/authorized_keys
 
 # add AoT Edge Processor cert for root
-echo "from=\"10.31.81.5?\" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4ohQv1Qksg2sLIqpvjJuZEsIkeLfbPusEaJQerRCqI71g8hwBkED3BBv5FehLcezTg+cFJFhf2vBGV5SbV0NzbouIM+n0lAr6+Ei/XYjO0B1juDm6cUmloD4HSzQWv+cSyNmb7aXjup7V0GP1DZH3zlmvwguhMUTDrWxQxDpoV28m72aZ4qPH7VmQIeN/JG3BF9b9F8P4myOPGuk5XTjY1rVG+1Tm2mxw0L3WuL6w3DsiUrvlXsGE72KcyFBDiFqOHIdnIYWXDLZz61KXctVLPVLMevwU0YyWg70F9pb0d2LZt7Ztp9GxXBRj5WnU9IClaRh58RsYGhPjdfGuoC3P AoT_edge_processor_key" >> /root/.ssh/authorized_keys
-echo >> /root/.ssh/authorized_keys
+#echo "from=\"10.31.81.5?\" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4ohQv1Qksg2sLIqpvjJuZEsIkeLfbPusEaJQerRCqI71g8hwBkED3BBv5FehLcezTg+cFJFhf2vBGV5SbV0NzbouIM+n0lAr6+Ei/XYjO0B1juDm6cUmloD4HSzQWv+cSyNmb7aXjup7V0GP1DZH3zlmvwguhMUTDrWxQxDpoV28m72aZ4qPH7VmQIeN/JG3BF9b9F8P4myOPGuk5XTjY1rVG+1Tm2mxw0L3WuL6w3DsiUrvlXsGE72KcyFBDiFqOHIdnIYWXDLZz61KXctVLPVLMevwU0YyWg70F9pb0d2LZt7Ztp9GxXBRj5WnU9IClaRh58RsYGhPjdfGuoC3P AoT_edge_processor_key" >> /root/.ssh/authorized_keys
+#echo >> /root/.ssh/authorized_keys
 
 # add an ssh config host for the Edge Processor
 cat <<EOT > /root/.ssh/config
-Host edgeprocessor
-  StrictHostKeyChecking no
-  PasswordAuthentication no
-  ConnectTimeout 5
-  ForwardAgent yes
+ForwardAgent yes
+Host beehive
+    Hostname beehive
+    StrictHostKeyChecking no
+    BatchMode yes
+    User root
+    Port 20022
+    IdentityFile /etc/waggle/key.pem
+
+Host ep ep1
+    Hostname edgeprocessor1
+    StrictHostKeyChecking no
+    BatchMode yes
+    User root
+    Port 22
+    IdentityFile /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_edge_processor
 EOT
  
 # Setup RabbitMQ config files.
