@@ -68,7 +68,6 @@ Host beehive
     User root
     Port 20022
     IdentityFile /etc/waggle/key.pem
-
 Host ep ep1
     Hostname edgeprocessor1
     StrictHostKeyChecking no
