@@ -89,6 +89,10 @@ EOT
 # Setup RabbitMQ config files.
 cp -r /usr/lib/waggle/nodecontroller/etc/rabbitmq /etc
 
+# Updating path to nc scripts in /root/.bashrc
+echo "PATH=$PATH:/usr/lib/waggle/nodecontroller/scripts/" >> /root/.bashrc
+
+
 # Just in case for now...ideally this would be in /etc/envinronment already.
 NODE_ID=$(ip link | awk '/ether 00:1e:06/ { print $2 }' | sed 's/://g')
 sed -i -e "s/%NODE_ID%/$NODE_ID/" /etc/rabbitmq/rabbitmq.config
