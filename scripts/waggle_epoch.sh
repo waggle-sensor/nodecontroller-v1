@@ -18,7 +18,7 @@ try_set_time()
   unset date
 
   # get epoch from server
-  local exit_code
+  local exit_code=0
   
   echo "Getting the epoch from Beehive..."
   local curl_out=$(curl -s --max-time 10 --connect-timeout 10 http://beehive/api/1/epoch)
