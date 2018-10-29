@@ -58,7 +58,7 @@ try_set_time()
     fi
   else
     echo "Setting the date/time update interval to 10 seconds..."
-    CHECK_INTERVAL='10'  # seconds
+    CHECK_INTERVAL='600'  # seconds
     wagman_date=$(wagman_get_epoch)
     echo "Wagman epoch: ${wagman_date}"
     system_date=$(date +%s)
