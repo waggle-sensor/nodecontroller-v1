@@ -1,0 +1,2 @@
+#!/bin/bash
+systemctl | grep  "waggle\|rabbit" | grep -v ".mount"
