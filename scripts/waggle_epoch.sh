@@ -19,6 +19,7 @@ try_set_time()
 
   # get epoch from server
   local exit_code
+  
   echo "Getting the epoch from Beehive..."
   local curl_out=$(curl -s --max-time 10 --connect-timeout 10 http://beehive/api/1/epoch)
   exit_code=$?
@@ -47,7 +48,6 @@ try_set_time()
     echo "Setting the Wagman date/time..."
     wagman-client date $(date +"%Y %m %d %H %M %S") || true
 
-
     # Update the Edge Processor date
     echo "Setting the Edge Processor date/time..."
     ${script_dir}/eplogin /usr/lib/waggle/edge_processor/scripts/sync_date.sh ${date}
@@ -57,7 +57,8 @@ try_set_time()
        return ${exit_code}
     fi
   else
-    echo "Setting the date/time update interval to 10 seconds..."
+  
+    echo "Setting the date/time update interval to 600 seconds..."
     CHECK_INTERVAL='600'  # seconds
     wagman_date=$(wagman_get_epoch)
     echo "Wagman epoch: ${wagman_date}"
@@ -95,8 +96,8 @@ main() {
         retry=0
       else
         # did not set time, will try again.
-        echo "failed to set time. retrying in 10 seconds..."
-        sleep 10
+        echo "failed to set time. retrying in 600 seconds..."
+        sleep 600
       fi
     done
 
