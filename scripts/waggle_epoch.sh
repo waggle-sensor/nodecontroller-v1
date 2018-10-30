@@ -23,7 +23,7 @@ try_set_time()
     if [ $(($(date +%s) - $GOT_BH_TIME)) -gt 82800 ]; then
 
         echo "Getting the epoch from Beehive..."
-        local curl_out=$(curl -s --max-time 10 --connect-timeout 10 http://beehive/api/1/epoch?nodeid=$(hostname))
+        local curl_out=$(curl -s --max-time 10 --connect-timeout 10 http://beehive/api/1/epoch?nodeid=$(hostname)_bootid=$(cat /proc/sys/kernel/random/boot_id | sed "s/-//g"))
         exit_code=$?
         if [ ${exit_code} -eq 0 ] ; then
             date_json=$(echo $curl_out | tr '\n' ' ')
