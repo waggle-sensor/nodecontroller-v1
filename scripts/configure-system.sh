@@ -91,6 +91,7 @@ cp -r /usr/lib/waggle/nodecontroller/etc/rabbitmq /etc
 
 # Updating path to nc scripts in /root/.bashrc
 echo "PATH=$PATH:/usr/lib/waggle/nodecontroller/scripts/" >> /root/.bashrc
+echo "alias disks='blkid | sort -r'" >> /root/.bashrc
 
 
 # Just in case for now...ideally this would be in /etc/envinronment already.
