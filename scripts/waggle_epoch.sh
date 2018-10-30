@@ -67,6 +67,7 @@ try_set_time()
             echo "Setting the Edge Processor date/time..."
             ${script_dir}/eplogin /usr/lib/waggle/edge_processor/scripts/sync_date.sh $(date +%s)
             SET_EP_TIME=$(date +%s)
+            ${script_dir}/eplogin /usr/lib/waggle/edge_processor/scripts/sync_date.sh hwclock -w
             exit_code=$?
             if [ ${exit_code} -ne 0 ] ; then
                 SET_EP_TIME=0
@@ -94,8 +95,8 @@ try_set_time()
     fi
 
     # Sync the system time with the hardware clock
-#    echo "Syncing the Node Controller hardware clock with the system date/time..."
-#    hwclock -w
+    echo "Syncing the Node Controller hardware clock with the system date/time..."
+    hwclock -w
 
     return ${exit_code}
 }
