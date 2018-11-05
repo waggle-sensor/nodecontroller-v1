@@ -40,7 +40,7 @@ def check_beehive_DNS():
 
 
 def check_beehive_ping():
-    rc = os.system('curl http://beehive/api/ > /dev/null 2>&1')
+    rc = os.system('curl https://beehive/api/ > /dev/null 2>&1')
     return rc == 0
 
 
@@ -61,7 +61,7 @@ def main():
         scheduler.enter(30, 1, update_local_results)
 
     def update_beehive_results():
-        results['Beehive DNS'] = check_beehive_DNS()
+        # results['Beehive DNS'] = check_beehive_DNS()
         results['Beehive Ping'] = check_beehive_ping()
         scheduler.enter(1800, 1, update_beehive_results)
 
