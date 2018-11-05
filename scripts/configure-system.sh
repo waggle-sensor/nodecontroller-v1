@@ -39,7 +39,16 @@ sed -i 's/^#ListenAddress 0.0.0.0$/ListenAddress 10.31.81.10/' /etc/ssh/sshd_con
 # disable all password authentication
 sed -i 's/^#PasswordAuthentication yes$/PasswordAuthentication no/' /etc/ssh/sshd_config
 
-cp ./etc/network/interfaces /etc/network/interfaces
+
+
+if [ $(lsb_release -r | tr "\t" " " | sed "s/\ //g"  | cut -d ":" -f 2) = "16.04" ]; then
+  # NetworkManager will try to manage any interfaces *not* listed in
+  # /etc/network/interfaces, so just replace it with what we want
+  cp ./etc/network/interfaces /etc/network/interfaces
+elif [ $(lsb_release -r | tr "\t" " " | sed "s/\ //g"  | cut -d ":" -f 2) = "18.04" ]; then
+  # Ubuntu 18.04 uses netplan https://netplan.io/
+  cp ./etc/netplan/50-waggle.yaml /etc/netplan/50-waggle.yaml
+fi
 
 rm -f /etc/sudoers.d/waggle*
 cp ./etc/sudoers.d/* /etc/sudoers.d/
@@ -79,6 +88,11 @@ EOT
  
 # Setup RabbitMQ config files.
 cp -r /usr/lib/waggle/nodecontroller/etc/rabbitmq /etc
+
+# Updating path to nc scripts in /root/.bashrc
+echo "PATH=$PATH:/usr/lib/waggle/nodecontroller/scripts/" >> /root/.bashrc
+echo "alias disks='blkid | sort -r'" >> /root/.bashrc
+
 
 # Just in case for now...ideally this would be in /etc/envinronment already.
 NODE_ID=$(ip link | awk '/ether 00:1e:06/ { print $2 }' | sed 's/://g')
