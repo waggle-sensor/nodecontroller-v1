@@ -56,17 +56,18 @@ def get_ep_sub_id():
 
 def get_shovel_configs():
     node_uri = 'amqp://localhost'
+
+    subject = get_certfile_subject('/etc/waggle/cert.pem')
+    username = subject['CN']
+
     beehive_uri = (
-        'amqps://beehive:23181'
+        'amqps://{username}@beehive:23181'
         '?auth_mechanism=external'
         '&cacertfile=/etc/waggle/cacert.pem'
         '&certfile=/etc/waggle/cert.pem'
         '&keyfile=/etc/waggle/key.pem'
         '&verify=verify_peer'
-    )
-
-    subject = get_certfile_subject('/etc/waggle/cert.pem')
-    username = subject['CN']
+    ).format(username=username)
 
     node_id = get_node_id()
 
