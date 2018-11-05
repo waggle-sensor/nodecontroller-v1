@@ -5,6 +5,11 @@ import re
 import subprocess
 
 
+def read_file(path):
+    with open(path) as file:
+        return file.read()
+
+
 def scan_subject(s):
     results = {}
 
@@ -29,6 +34,10 @@ def get_certfile_subject(filename):
 def scan_device_id(s):
     match = re.search(r'00:1e:06:\S+', s)
     return match.group().replace(':', '').rjust(16, '0')
+
+
+def get_node_id():
+    return read_file('/etc/waggle/node_id')
 
 
 def get_ep_sub_id():
@@ -59,8 +68,34 @@ def get_shovel_configs():
     subject = get_certfile_subject('/etc/waggle/cert.pem')
     username = subject['CN']
 
+    node_id = get_node_id()
+
     shovels = {}
 
+    # legacy pipeline
+    shovels['data'] = {
+        'src-uri': node_uri,
+        'src-queue': 'data',
+        'dest-uri': beehive_uri,
+        'dest-exchange': 'data-pipeline-in',
+        'publish-properties': {
+            'delivery_mode': 2,
+            'reply_to': node_id[-12:].lower(),
+        }
+    }
+
+    shovels['images'] = {
+        'src-uri': 'amqp://edgeprocessor',
+        'src-queue': 'images',
+        'dest-uri': beehive_uri,
+        'dest-exchange': 'images',
+        'publish-properties': {
+            'delivery_mode': 2,
+            'reply_to': node_id[-12:].lower(),
+        }
+    }
+
+    # new pipeline
     shovels['push-to-beehive'] = {
         'src-uri': node_uri,
         'src-queue': 'to-beehive',
