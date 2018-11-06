@@ -74,27 +74,27 @@ def get_shovel_configs():
     shovels = {}
 
     # legacy pipeline
-    shovels['data'] = {
-        'src-uri': node_uri,
-        'src-queue': 'data',
-        'dest-uri': beehive_uri,
-        'dest-exchange': 'data-pipeline-in',
-        'publish-properties': {
-            'delivery_mode': 2,
-            'reply_to': node_id[-12:],
-        }
-    }
-
-    shovels['images'] = {
-        'src-uri': 'amqp://edgeprocessor',
-        'src-queue': 'images',
-        'dest-uri': beehive_uri,
-        'dest-exchange': 'images',
-        'publish-properties': {
-            'delivery_mode': 2,
-            'reply_to': node_id[-12:],
-        }
-    }
+    # shovels['data'] = {
+    #     'src-uri': node_uri,
+    #     'src-queue': 'data',
+    #     'dest-uri': beehive_uri,
+    #     'dest-exchange': 'data-pipeline-in',
+    #     'publish-properties': {
+    #         'delivery_mode': 2,
+    #         'reply_to': node_id[-12:],
+    #     }
+    # }
+    #
+    # shovels['images'] = {
+    #     'src-uri': 'amqp://edgeprocessor',
+    #     'src-queue': 'images',
+    #     'dest-uri': beehive_uri,
+    #     'dest-exchange': 'images',
+    #     'publish-properties': {
+    #         'delivery_mode': 2,
+    #         'reply_to': node_id[-12:],
+    #     }
+    # }
 
     # new pipeline
     shovels['push-to-beehive'] = {
