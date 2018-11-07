@@ -67,7 +67,7 @@ def get_shovel_configs():
         '&certfile=/etc/waggle/cert.pem'
         '&keyfile=/etc/waggle/key.pem'
         '&verify=verify_peer'
-        '&heartbeat=60'
+        # '&heartbeat=60'
         '&connect_timeout=60000'
     ).format(username=username)
 

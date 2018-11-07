@@ -12,7 +12,7 @@
         ]},
         {queue, <<"to-beehive">>},
         {destinations, [
-          {broker, "amqps://beehive:23181?auth_mechanism=external&cacertfile=/etc/waggle/cacert.pem&certfile=/etc/waggle/cert.pem&keyfile=/etc/waggle/key.pem&verify=verify_peer"},
+          {broker, "amqps://beehive:23181?auth_mechanism=external&cacertfile=/etc/waggle/cacert.pem&certfile=/etc/waggle/cert.pem&keyfile=/etc/waggle/key.pem"},
           {declarations, []}
         ]},
         {publish_fields, [
@@ -25,7 +25,7 @@
       ]},
       {pull_from_beehive, [
         {sources, [
-          {brokers, ["amqps://beehive:23181?auth_mechanism=external&cacertfile=/etc/waggle/cacert.pem&certfile=/etc/waggle/cert.pem&keyfile=/etc/waggle/key.pem&verify=verify_peer"]},
+          {brokers, ["amqps://beehive:23181?auth_mechanism=external&cacertfile=/etc/waggle/cacert.pem&certfile=/etc/waggle/cert.pem&keyfile=/etc/waggle/key.pem"]},
           {declarations, []}
         ]},
         {queue, <<"to-node-0000%NODE_ID%">>},
