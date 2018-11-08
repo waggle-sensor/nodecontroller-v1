@@ -27,6 +27,7 @@ descriptions = sorted([
     ('boots', 'shows number of times wagman has booted'),
     ('ver', 'shows hardware and firmware version info'),
     ('blf', 'show / set bootloader phase boot flag'),
+    ('sdinfo', 'show sd card info'),
 ])
 
 commands = {name for name, _ in descriptions}
