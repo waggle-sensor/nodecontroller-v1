@@ -40,7 +40,7 @@ def check_beehive_DNS():
 
 
 def check_beehive_ping():
-    rc = os.system('curl http://beehive/api/ > /dev/null 2>&1')
+    rc = os.system('curl -s --max-time 10 --connect-timeout 10 http://beehive/api/1/connect?nodeid=$(hostname)_bootid=$(cat /proc/sys/kernel/random/boot_id | sed "s/-//g")')
     return rc == 0
 
 
