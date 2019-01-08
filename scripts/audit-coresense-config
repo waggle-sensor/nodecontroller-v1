@@ -1,0 +1,6 @@
+#!/bin/bash
+
+shasum \
+    /etc/systemd/system/waggle-plugin-coresense.service \
+    /usr/lib/waggle/plugin_manager/plugins/coresense_[34]/* \
+    /wagglerw/waggle/sensor_table.conf
