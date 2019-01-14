@@ -28,10 +28,17 @@ release_pins() {
     done
 }
 
+cleanup() {
+    release_pins
+    systemctl start waggle-heartbeat.service
+}
+
+systemctl stop waggle-heartbeat.service
+
 export_pins
 release_pins
 sleep 1
 
-trap release_pins EXIT INT TERM
+trap cleanup EXIT INT TERM
 set_pins
 sleep 10
