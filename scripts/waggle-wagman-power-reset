@@ -4,6 +4,7 @@ pins="74 75"
 
 export_pins() {
     for p in $pins; do
+        echo exporting pin $p
         echo $p > /sys/class/gpio/export
         echo out > /sys/class/gpio/gpio$p/direction
     done
@@ -11,12 +12,14 @@ export_pins() {
 
 set_pins() {
     for p in $pins; do
+        echo setting pin $p
         echo 0 > /sys/class/gpio/gpio$p/value
     done
 }
 
 release_pins() {
     for p in $pins; do
+        echo releasing pin $p
         echo 1 > /sys/class/gpio/gpio$p/value
     done
 }

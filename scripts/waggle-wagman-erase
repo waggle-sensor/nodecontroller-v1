@@ -1,0 +1,38 @@
+#!/bin/bash
+
+pins="76 77"
+
+export_pins() {
+    for p in $pins; do
+        echo exporting pin $p
+        echo $p > /sys/class/gpio/export
+        echo out > /sys/class/gpio/gpio$p/direction
+    done
+}
+
+set_pins() {
+    for p in $pins; do
+        echo setting pin $p
+        echo 0 > /sys/class/gpio/gpio$p/value
+    done
+}
+
+release_pins() {
+    for p in $pins; do
+        echo releasing pin $p
+        echo 1 > /sys/class/gpio/gpio$p/value
+    done
+}
+
+export_pins
+sleep 1
+
+# ensure pins are released on exit
+trap release_pins EXIT
+
+# reset requires pins are released before setting again
+release_pins
+sleep 1
+
+set_pins
+sleep 10
