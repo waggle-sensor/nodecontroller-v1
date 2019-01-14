@@ -28,10 +28,15 @@ release_pins() {
     done
 }
 
+cleanup() {
+    release_pins
+}
+
 export_pins
+
+trap cleanup EXIT INT TERM
 release_pins
 sleep 1
 
-trap release_pins EXIT INT TERM
 set_pins
 sleep 10
