@@ -5,4 +5,3 @@ rm -f /var/lock/*attwwan
 rm -f /dev/attwwan
 sleep 15
 ln -s $(ls /dev/attwwan[0-9] | sort | head -1) /dev/attwwan
-sleep 15
