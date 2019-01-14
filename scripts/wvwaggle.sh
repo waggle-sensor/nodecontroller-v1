@@ -3,6 +3,6 @@
 #Let us give the modem time to settle.
 rm /var/lock/*attwwan
 rm /dev/attwwan
-sleep 5
+sleep 15
 ln -s $(ls /dev/attwwan[0-9] | sort | head -1) /dev/attwwan
 sleep 15
