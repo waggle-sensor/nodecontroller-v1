@@ -1,3 +1,0 @@
-#!/bin/bash
-
-ssh -i /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_edge_processor -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o ConnectTimeout=3 edgeprocessor $@

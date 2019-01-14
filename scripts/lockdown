@@ -1,7 +1,0 @@
-#!/bin/bash
-
-echo "Disabling assembler privileges..."
-rm -f /etc/sudoers.d/waggle-assembler-api
-
-echo "Disabling password logins for 'waggle' lser..."
-sed -i 's/^waggle:..*$/waggle:%%NP%%/' /etc/shadow

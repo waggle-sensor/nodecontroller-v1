@@ -184,8 +184,8 @@ def get_certificates():
         write_file(token_path, node_info['token'])
 
     # os.remove(registration_key)
-    logger.info('Switching to operation mode')
-    subprocess.call('waggle-switch-to-operation-mode')
+    logger.info('Switching to safe operation mode')
+    subprocess.call('waggle-safe-mode')
 
 
 def main():
