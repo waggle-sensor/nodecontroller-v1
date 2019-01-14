@@ -1,34 +1,28 @@
 #!/bin/bash
-set -e
 
-# Documentation
-# ODROID-C1+
-# Connect PIN 27 to the SRE board to allow NC to reboot the Wagman.
-# Pin: 27 GPIO: 76
-# GND: 9 and 39
-# The NC needs to be powered by the Wagman.
-# Source: http://odroid.com/dokuwiki/doku.php?id=en:c1_gpio_default#
+pins="74 75"
 
-TIME_LOW=1.0
-TIME_HIGH=1.0
-GPIO_EXPORT=76
-PIN=27
+export_pins() {
+    for p in $pins; do
+        echo $p > /sys/class/gpio/export
+        echo out > /sys/class/gpio/gpio$p/direction
+    done
+}
 
-if [ ! -d /sys/class/gpio/gpio${GPIO_EXPORT} ] ; then
-  set -x
-  echo ${GPIO_EXPORT} > /sys/class/gpio/export
-  set +x
-fi
+set_pins() {
+    for p in $pins; do
+        echo 0 > /sys/class/gpio/gpio$p/value
+    done
+}
 
-set -x
-echo "out" > /sys/class/gpio/gpio${GPIO_EXPORT}/direction
-set +x
+release_pins() {
+    for p in $pins; do
+        echo 1 > /sys/class/gpio/gpio$p/value
+    done
+}
 
-echo 0  > /sys/class/gpio/gpio${GPIO_EXPORT}/value
-sleep ${TIME_LOW}
-echo 1 > /sys/class/gpio/gpio${GPIO_EXPORT}/value
-sleep ${TIME_HIGH}
-echo 0  > /sys/class/gpio/gpio${GPIO_EXPORT}/value
-sleep ${TIME_LOW}
-
-
+export_pins
+trap release_pins EXIT
+release_pins
+set_pins
+sleep 10
