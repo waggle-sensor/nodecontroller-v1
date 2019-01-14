@@ -5,7 +5,11 @@ pins="74 75"
 export_pins() {
     for p in $pins; do
         echo exporting pin $p
-        echo $p > /sys/class/gpio/export
+
+        if [ ! -d /sys/class/gpio/gpio$p ]; then
+            echo $p > /sys/class/gpio/export
+        fi
+
         echo out > /sys/class/gpio/gpio$p/direction
     done
 }
@@ -28,6 +32,6 @@ export_pins
 release_pins
 sleep 1
 
-trap release_pins EXIT
+trap release_pins EXIT INT TERM
 set_pins
 sleep 10
