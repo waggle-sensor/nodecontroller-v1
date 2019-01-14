@@ -3,6 +3,7 @@ Description=ATT WWAN Client
 After=waggle-core.target
 
 [Service]
+ExecStartPre=/bin/bash -c 'rm -f /var/lock/*attwwan'
 ExecStart=/usr/bin/wvdial
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
