@@ -25,14 +25,9 @@ release_pins() {
 }
 
 export_pins
-sleep 1
-
-# ensure pins are released on exit
-trap release_pins EXIT
-
-# reset requires pins are released before setting again
 release_pins
 sleep 1
 
+trap release_pins EXIT
 set_pins
 sleep 10
