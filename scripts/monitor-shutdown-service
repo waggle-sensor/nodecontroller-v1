@@ -61,7 +61,7 @@ class Wagman():
         self.ep_stopper = ep_stopper
 
     def check_for_shutdown(self):
-        output = subprocess.check_output(['journalctl', '-u', 'waggle-wagman-driver', '--since', '-30s']).decode()
+        output = subprocess.check_output(['journalctl', '-b', '-u', 'waggle-wagman-driver', '--since', '-30s']).decode()
 
         shutdown = []
 
