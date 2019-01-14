@@ -7,7 +7,7 @@ ExecStart=/usr/bin/wvdial
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
 Restart=always
-RestartSec=10
+RestartSec=30
 
 [Install]
 WantedBy=waggle-core.target
