@@ -93,10 +93,10 @@ chmod +x /usr/bin/wvwaggle.sh
 
 rm -f /usr/local/bin/interface.py
 
-ln -sf ${current_dir}/scripts/waggle-wagman-eeprom-reset /usr/bin/waggle-wagman-eeprom-reset
-ln -sf ${current_dir}/scripts/waggle-wagman-erase /usr/bin/waggle-wagman-erase
-ln -sf ${current_dir}/scripts/waggle-wagman-power-reset /usr/bin/waggle-wagman-power-reset
-ln -sf ${current_dir}/scripts/waggle-wagman-soft-reset /usr/bin/waggle-wagman-soft-reset
+# add symlink to /usr/bin for all waggle-* scripts
+for p in $(find ${current_dir}/scripts -name 'waggle-*'); do
+    ln -sf $p /usr/bin/$(basename $p)
+done
 
 cd ${current_dir}/wagman
 ./configure
