@@ -90,7 +90,7 @@ EOT
 cp -r /usr/lib/waggle/nodecontroller/etc/rabbitmq /etc
 
 # Updating path to nc scripts in /root/.bashrc
-echo "PATH=$PATH:/usr/lib/waggle/nodecontroller/scripts/" >> /root/.bashrc
+echo "PATH=$PATH:/usr/lib/waggle/nodecontroller/scripts:/usr/lib/waggle/core/scripts" >> /root/.bashrc
 echo "alias disks='blkid | sort -r'" >> /root/.bashrc
 
 
