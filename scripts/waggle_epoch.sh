@@ -6,9 +6,8 @@ log() {
 
 wagman_get_epoch() {
     log "Getting Wagman epoch"
-    wagman_date=$(wagman-client date)
 
-    if [ $? -ne 0 ]; then
+    if ! wagman_date=$(wagman-client date); then
         log "Wagman request failed. Returning epoch as 0."
         echo 0
         return
