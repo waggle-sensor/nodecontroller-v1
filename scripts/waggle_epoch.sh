@@ -7,6 +7,13 @@ log() {
 wagman_get_epoch() {
     log "Getting Wagman epoch"
     wagman_date=$(wagman-client date)
+
+    if [ $? -ne 0]; then
+        log "Wagman request failed. Returning epoch as 0."
+        echo 0
+        return
+    fi
+
     log "Wagman date is $wagman_date"
     wagman_formatted_date=$(printf '%04d/%02d/%02d %02d:%02d:%02d\n' $wagman_date)
     date -d"$wagman_formatted_date" +'%s' || echo 0
