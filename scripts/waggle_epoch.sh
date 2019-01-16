@@ -5,20 +5,21 @@ log() {
 }
 
 wagman_get_epoch() {
-    log "getting wagman epoch"
+    log "Getting Wagman epoch"
     wagman_date=$(wagman-client date)
-    log "wagman date is $wagman_date"
-    date -d"$(printf '%04d/%02d/%02d %02d:%02d:%02d\n' $wagman_date)" +'%s' || echo 0
+    log "Wagman date is $wagman_date"
+    wagman_formatted_date=$(printf '%04d/%02d/%02d %02d:%02d:%02d\n' $wagman_date)
+    date -d"$wagman_formatted_date" +'%s' || echo 0
 }
 
 get_beehive_epoch() {
-    log "getting beehive epoch"
+    log "Getting Beehive epoch"
     nodeid=$(hostname)
     bootid=$(sed 's/-//g' /proc/sys/kernel/random/boot_id)
     beehive_url=http://beehive/epoch?nodeid="$nodeid"_bootid="$bootid"
-    log "beehive request $beehive_url"
+    log "Beehive request $beehive_url"
     beehive_date=$(curl -s -I "$beehive_url" | grep -i 'Date:' | cut -d' ' -f 2-)
-    log "beehive date is $beehive_date"
+    log "Beehive date is $beehive_date"
     date --date "$beehive_date" +%s
 }
 
@@ -32,7 +33,7 @@ try_set_time() {
     if [ $(($(date +%s) - $GOT_BH_TIME)) -gt 82800 ]; then
         date=$(get_beehive_epoch)
         GOT_BH_TIME=${date}
-        log "Got date ${date} from Beehive."
+        log "Beehive epoch is ${date}"
 
         if [ $? -ne 0 ]; then
             log "Warning: could not get the epoch from Beehive."
