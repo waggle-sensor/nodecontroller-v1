@@ -30,18 +30,13 @@ get_beehive_epoch() {
 }
 
 try_set_time() {
-    local wagman_date=0
     unset date
 
-    # get epoch from server
-    local exit_code=0
-
     if [ $(($(date +%s) - $GOT_BH_TIME)) -gt 82800 ]; then
-        date=$(get_beehive_epoch)
-        GOT_BH_TIME=${date}
-        log "Beehive epoch is ${date}"
-
-        if [ $? -ne 0 ]; then
+        if date=$(get_beehive_epoch); then
+            GOT_BH_TIME=${date}
+            log "Beehive epoch is ${date}"
+        else
             log "Warning: could not get the epoch from Beehive."
             unset date
         fi
@@ -53,16 +48,11 @@ try_set_time() {
         CHECK_INTERVAL='24h'
         log "Setting the system epoch to ${date}..."
 
-        date -s@${date}
-        exit_code=$?
-
-        if [ ${exit_code} -ne 0 ] ; then
+        if ! date -s@${date}; then
             log "Error: failed to set the Node Controller system date/time."
             GOT_BH_TIME=0
-            return ${exit_code}
+            return 1
         fi
-
-
 
         if [ $(($(date +%s) - $SET_WAGMAN_TIME)) -gt 82800 ]; then
             # Update the WagMan date
@@ -71,19 +61,16 @@ try_set_time() {
             SET_WAGMAN_TIME=$(date +%s)
         fi
 
-
         if [ $(($(date +%s) - $SET_EP_TIME)) -gt 82800 ]; then
             # Update the Edge Processor date
             log "Setting the Edge Processor date/time..."
             ssh ep /usr/lib/waggle/edge_processor/scripts/sync_date.sh $(date +%s)
             SET_EP_TIME=$(date +%s)
+
              # Sync the system time with the hardware clock
-            ssh ep hwclock -w
-            exit_code=$?
-            if [ ${exit_code} -ne 0 ] ; then
+            if ! ssh ep hwclock -w; then
                 SET_EP_TIME=0
                 log "Error: failed to set the Edge Processor system date/time."
-    #             return ${exit_code}
             fi
         fi
 
@@ -108,8 +95,6 @@ try_set_time() {
     # Sync the system time with the hardware clock
     log "Syncing the Node Controller hardware clock with the system date/time..."
     hwclock -w
-
-    return ${exit_code}
 }
 
 main() {
@@ -117,25 +102,19 @@ set +e
 
 log "entering main time check loop..."
 while true ; do
-    local retry=1
+    log "Attempting to set the time..."
 
-    while [ ${retry} -eq 1 ] ; do
-        log "attempting to set the time..."
-        try_set_time check_interval
-        if [ $? -eq 0 ] ; then
-            log "Successfully updated dates/times."
-            retry=0
-        else
-            # did not set time, will try again.
-            log "failed to set time. retrying in 60 seconds..."
-            sleep 60
-        fi
+    while ! try_set_time check_interval; do
+        log "Failed to set time. Retrying in 60 seconds..."
+        sleep 60
     done
 
+    log "Successfully set the time."
     log "Waiting for next date/time update cycle..."${CHECK_INTERVAL}
     log "NC time set at-"${GOT_BH_TIME}
     log "EP time set at-"${SET_WAGMAN_TIME}
     log "Wagman time set at-"${GOT_BH_TIME}
+
     sleep ${CHECK_INTERVAL}
 done
 }
