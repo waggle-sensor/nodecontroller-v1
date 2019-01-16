@@ -1,16 +1,20 @@
 #!/bin/bash
 
 wagman_get_epoch() {
-    echo 'getting wagman epoch'
-    date -d"$(printf '%04d/%02d/%02d %02d:%02d:%02d\n' $(wagman-client date))" +'%s' || echo 0
+    echo "getting wagman epoch"
+    wagman_date=$(wagman-client date)
+    echo "wagman date is $wagman_date"
+    date -d"$(printf '%04d/%02d/%02d %02d:%02d:%02d\n' $wagman_date)" +'%s' || echo 0
 }
 
 get_beehive_epoch() {
-    echo 'getting beehive epoch'
+    echo "getting beehive epoch"
     nodeid=$(hostname)
     bootid=$(sed 's/-//g' /proc/sys/kernel/random/boot_id)
     beehive_url=http://beehive/epoch?nodeid="$nodeid"_bootid="$bootid"
+    echo "request $beehive_url"
     beehive_date=$(curl -s -I "$beehive_url" | grep -i 'Date:' | cut -d' ' -f 2-)
+    echo "beehive date is $beehive_date"
     date --date "$beehive_date" +%s
 }
 
