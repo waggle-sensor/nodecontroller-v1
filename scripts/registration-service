@@ -185,7 +185,7 @@ def get_certificates():
 
     # os.remove(registration_key)
     logger.info('Switching to safe operation mode')
-    subprocess.call('waggle-safe-mode')
+    subprocess.call('waggle-mode-burnin')
 
 
 def main():
