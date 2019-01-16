@@ -1,19 +1,20 @@
 #!/bin/bash
 
 wagman_get_epoch() {
+    echo 'getting wagman epoch'
     date -d"$(printf '%04d/%02d/%02d %02d:%02d:%02d\n' $(wagman-client date))" +'%s' || echo 0
 }
 
 get_beehive_epoch() {
-    # TODO Compare to old endpoint. This *only* uses nginx server and doesn't require
-    # yet another cron job to run and update an epoch file.
-    echo "Getting the epoch from Beehive..."
-    date --date "$(curl -s -I http://beehive/epoch | grep -i 'Date:' | cut -d' ' -f 2-)" +%s
+    echo 'getting beehive epoch'
+    nodeid=$(hostname)
+    bootid=$(sed 's/-//g' /proc/sys/kernel/random/boot_id)
+    beehive_url=http://beehive/epoch?nodeid="$nodeid"_bootid="$bootid"
+    beehive_date=$(curl -s -I "$beehive_url" | grep -i 'Date:' | cut -d' ' -f 2-)
+    date --date "$beehive_date" +%s
 }
 
-try_set_time()
-{
-    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+try_set_time() {
     local wagman_date=0
     unset date
 
@@ -21,16 +22,11 @@ try_set_time()
     local exit_code=0
 
     if [ $(($(date +%s) - $GOT_BH_TIME)) -gt 82800 ]; then
+        date=$(get_beehive_epoch)
+        GOT_BH_TIME=${date}
+        echo "Got date ${date} from Beehive."
 
-        echo "Getting the epoch from Beehive..."
-        local curl_out=$(curl -s --max-time 10 --connect-timeout 10 http://beehive/api/1/epoch?nodeid=$(hostname)_bootid=$(cat /proc/sys/kernel/random/boot_id | sed "s/-//g"))
-        exit_code=$?
-        if [ ${exit_code} -eq 0 ] ; then
-            date_json=$(echo $curl_out | tr '\n' ' ')
-            date=$(python -c "import json; print(json.loads('${date_json}')['epoch'])") || unset date
-            GOT_BH_TIME=${date}
-            echo "Got date '${date} from Beehive."
-        else
+        if [ $? -ne 0 ]; then
             echo "Warning: could not get the epoch from Beehive."
             unset date
         fi
@@ -106,26 +102,27 @@ main() {
 set +e
 
 echo "entering main time check loop..."
-while [ 1 ] ; do
-local retry=1
-while [ ${retry} -eq 1 ] ; do
-echo "attempting to set the time..."
-try_set_time check_interval
-if [ $? -eq 0 ] ; then
-echo "Successfully updated dates/times."
-retry=0
-else
-# did not set time, will try again.
-echo "failed to set time. retrying in 60 seconds..."
-sleep 60
-fi
-done
+while true ; do
+    local retry=1
 
-echo "Waiting for next date/time update cycle..."${CHECK_INTERVAL}
-echo "NC time set at-"${GOT_BH_TIME}
-echo "EP time set at-"${SET_WAGMAN_TIME}
-echo "Wagman time set at-"${GOT_BH_TIME}
-sleep ${CHECK_INTERVAL}
+    while [ ${retry} -eq 1 ] ; do
+        echo "attempting to set the time..."
+        try_set_time check_interval
+        if [ $? -eq 0 ] ; then
+            echo "Successfully updated dates/times."
+            retry=0
+        else
+            # did not set time, will try again.
+            echo "failed to set time. retrying in 60 seconds..."
+            sleep 60
+        fi
+    done
+
+    echo "Waiting for next date/time update cycle..."${CHECK_INTERVAL}
+    echo "NC time set at-"${GOT_BH_TIME}
+    echo "EP time set at-"${SET_WAGMAN_TIME}
+    echo "Wagman time set at-"${GOT_BH_TIME}
+    sleep ${CHECK_INTERVAL}
 done
 }
 
