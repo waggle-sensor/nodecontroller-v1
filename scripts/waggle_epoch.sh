@@ -1,14 +1,14 @@
 #!/bin/bash
 
 wagman_get_epoch() {
-date -d"$(printf '%d/%d/%d %d:%d:%d\n' $(wagman-client date))" +'%s' || echo 0
+    date -d"$(printf '%04d/%02d/%02d %02d:%02d:%02d\n' $(wagman-client date))" +'%s' || echo 0
 }
 
 get_beehive_epoch() {
-# TODO Compare to old endpoint. This *only* uses nginx server and doesn't require
-# yet another cron job to run and update an epoch file.
-echo "Getting the epoch from Beehive..."
-date --date "$(curl -s -I http://beehive | grep 'Date:' | cut -d' ' -f 2-)" +%s
+    # TODO Compare to old endpoint. This *only* uses nginx server and doesn't require
+    # yet another cron job to run and update an epoch file.
+    echo "Getting the epoch from Beehive..."
+    date --date "$(curl -s -I http://beehive | grep 'Date:' | cut -d' ' -f 2-)" +%s
 }
 
 try_set_time()
