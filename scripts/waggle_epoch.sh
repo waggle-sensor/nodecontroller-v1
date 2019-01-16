@@ -97,10 +97,11 @@ try_set_time() {
     hwclock -w
 }
 
-main() {
-set +e
+CHECK_INTERVAL='24h'
+GOT_BH_TIME=0
+SET_WAGMAN_TIME=0
+SET_EP_TIME=0
 
-log "entering main time check loop..."
 while true ; do
     log "Attempting to set the time..."
 
@@ -117,12 +118,3 @@ while true ; do
 
     sleep ${CHECK_INTERVAL}
 done
-}
-
-CHECK_INTERVAL='24h'
-
-GOT_BH_TIME=0
-SET_WAGMAN_TIME=0
-SET_EP_TIME=0
-
-main
