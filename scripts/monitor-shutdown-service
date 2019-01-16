@@ -43,11 +43,11 @@ class EdgeProcessorShutdownThread():
         self.nc_stopper.wait_for_ep = True
 
         logging.info("Wagman is cycling the Edge Processor power in one minute; shutdown in 30 seconds")
-        os.system('timeout 15 /usr/lib/waggle/nodecontroller/scripts/eplogin shutdown -h -k +1')
+        os.system('timeout 15 ssh ep shutdown -h -k +1')
         time.sleep(30)
 
         logging.info("Edge Processor shutting down now")
-        os.system('timeout 15 /usr/lib/waggle/nodecontroller/scripts/eplogin shutdown -h now')
+        os.system('timeout 15 ssh ep shutdown -h now')
         self.nc_stopper.wait_for_ep = False
         time.sleep(30)
 

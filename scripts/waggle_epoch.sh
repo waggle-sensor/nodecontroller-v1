@@ -65,10 +65,10 @@ try_set_time()
         if [ $(($(date +%s) - $SET_EP_TIME)) -gt 82800 ]; then
             # Update the Edge Processor date
             echo "Setting the Edge Processor date/time..."
-            ${script_dir}/eplogin /usr/lib/waggle/edge_processor/scripts/sync_date.sh $(date +%s)
+            ssh ep /usr/lib/waggle/edge_processor/scripts/sync_date.sh $(date +%s)
             SET_EP_TIME=$(date +%s)
              # Sync the system time with the hardware clock
-            ${script_dir}/eplogin hwclock -w
+            ssh ep hwclock -w
             exit_code=$?
             if [ ${exit_code} -ne 0 ] ; then
                 SET_EP_TIME=0
@@ -86,7 +86,7 @@ try_set_time()
         echo "System epoch: ${system_date}"
         wagman_build_date=$(wagman-client ver | sed -n -e 's/time //p') || wagman_build_date=0
         echo "Wagman build epoch: ${wagman_build_date}"
-        guest_node_date=$(${script_dir}/eplogin date +%s) || guest_node_date=0
+        guest_node_date=$(ssh ep date +%s) || guest_node_date=0
         echo "Guest Node epoch: ${guest_node_date}"
         dates=($system_date $wagman_date $wagman_build_date $guest_node_date)
         IFS=$'\n'
