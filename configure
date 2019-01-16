@@ -25,6 +25,10 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+# copy etc tree into node
+cp -a etc/. /etc/
+
+# do system configuration, including templating of copied etc tree
 if [ $CONFIGURE_SYSTEM -eq 1 ]; then
   if [ ${SERVER_HOST}x == "x" ] ; then
     echo "Error: must specify --server-host=<SERVER_HOST> when using the --system option"
@@ -34,16 +38,6 @@ if [ $CONFIGURE_SYSTEM -eq 1 ]; then
     ./scripts/configure-system.sh --server-host=${SERVER_HOST}
   fi
 fi
-
-#set waggle parameters
-mkdir -p /etc/waggle/
-
-if [ ! -e /etc/waggle/node_controller_host ] ; then
-  echo "10.31.81.10" > /etc/waggle/node_controller_host
-fi
-
-# copy etc tree into node
-cp -a etc/. /etc/
 
 systemctl enable \
   waggle-epoch.service \
@@ -61,8 +55,6 @@ systemctl enable \
 cp scripts/wvwaggle.sh /usr/bin/
 chmod +x /usr/bin/wvwaggle.sh
 
-rm -f /usr/local/bin/interface.py
-
 for p in $(pwd)/scripts/waggle-*; do
     ln -sf $p /usr/bin/$(basename $p)
 done
@@ -70,13 +62,6 @@ done
 (
 cd wagman
 ./configure
-)
-
-(
-cd scripts
-chmod 700 *
-chmod 744 *-service
-chmod 755 alphasense-info coresense-info coresense-ids modem-info modem_info.py
 )
 
 echo "done"
