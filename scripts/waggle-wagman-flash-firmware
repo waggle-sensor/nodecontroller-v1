@@ -8,4 +8,7 @@ if [ -z "$firmware" ] || [ -z "$port" ]; then
 	exit 1
 fi
 
-bossac -i -d --port=$(basename $port) -U true -e -w -v -b $firmware -R
+resolved_port=$(readlink -f "$port")
+
+stty -f "$resolved_port" 1200
+bossac -i -d --port=$(basename $resolved_port) -U true -e -w -v -b $firmware -R
