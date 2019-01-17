@@ -15,3 +15,6 @@ stty -F "$resolved_port" 1200
 
 # upload firmware binary
 bossac -i -d --port=$(basename $resolved_port) -U true -e -w -v -b $firmware -R
+
+# restore to standard wagman baudrate
+stty -F "$resolved_port" 57600
