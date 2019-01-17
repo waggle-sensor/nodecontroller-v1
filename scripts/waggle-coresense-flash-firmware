@@ -24,3 +24,14 @@ sleep 1
 
 # upload firmware binary
 bossac -i -d --port=$(basename $resolved_port) -U true -e -w -v -b $firmware -R
+
+sleep 1
+
+# ensure baud rate set back to standard
+python3 -c '
+import serial
+import sys
+
+with serial.Serial(sys.argv[1], 115200) as ser:
+    pass
+' $resolved_port
