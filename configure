@@ -50,7 +50,8 @@ systemctl enable \
   waggle-status.timer \
   waggle-node-message-router.service \
   waggle-stage-messages-nc.service \
-  waggle-stage-messages-ep.service
+  waggle-stage-messages-ep.service \
+  waggle-cleanup-system.timer
 
 cp scripts/wvwaggle.sh /usr/bin/
 chmod +x /usr/bin/wvwaggle.sh
