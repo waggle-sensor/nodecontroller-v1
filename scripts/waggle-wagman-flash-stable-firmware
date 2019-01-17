@@ -1,3 +1,15 @@
 #!/bin/bash
 
 waggle-wagman-flash-firmware /usr/lib/waggle/wagman/v4/new/firmware/bin/firmware-4.0.0.bin /dev/waggle_sysmon
+
+for i in seq 10; do
+    sleep 1
+
+    if [ -e /dev/waggle_sysmon ]; then
+        echo "done"
+        exit 0
+    fi
+done
+
+echo "device taking too long to appear. manually resetting."
+waggle-wagman-power-reset
