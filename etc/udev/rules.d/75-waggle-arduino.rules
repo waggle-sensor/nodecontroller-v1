@@ -1,10 +1,10 @@
-ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0037", TAG+="systemd", SYMLINK+="waggle_sysmon_flash"
-ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="8037", TAG+="systemd", SYMLINK+="waggle_sysmon", RUN+="/bin/sh -c 'mkdir -p /wagglerw/waggle/; echo v1 > /wagglerw/waggle/wagman_version'"
+ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0037", TAG+="systemd", SYMLINK+="waggle_sysmon_flash", ENV{ID_MM_DEVICE_IGNORE}="1"
+ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="8037", TAG+="systemd", SYMLINK+="waggle_sysmon", RUN+="/bin/sh -c 'mkdir -p /wagglerw/waggle/; echo v1 > /wagglerw/waggle/wagman_version'", ENV{ID_MM_DEVICE_IGNORE}="1"
 
-ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="003f", TAG+="systemd", SYMLINK+="waggle_sysmon", RUN+="/bin/sh -c 'mkdir -p /wagglerw/waggle/; echo v2 > /wagglerw/waggle/wagman_version'"
+ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="003f", TAG+="systemd", SYMLINK+="waggle_sysmon", RUN+="/bin/sh -c 'mkdir -p /wagglerw/waggle/; echo v2 > /wagglerw/waggle/wagman_version'", ENV{ID_MM_DEVICE_IGNORE}="1"
 
-ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="6124", TAG+="systemd", SYMLINK+="waggle_coresense_flash"
-ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="003e", TAG+="systemd", SYMLINK+="waggle_coresense"
+ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="6124", TAG+="systemd", SYMLINK+="waggle_coresense_flash", ENV{ID_MM_DEVICE_IGNORE}="1"
+ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="003e", TAG+="systemd", SYMLINK+="waggle_coresense", ENV{ID_MM_DEVICE_IGNORE}="1"
 
 ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="ffee", TAG+="systemd", SYMLINK+="alphasense"
 ACTION=="add", SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="1546", ATTRS{idProduct}=="01a7", TAG+="systemd", SYMLINK+="gps_module"
