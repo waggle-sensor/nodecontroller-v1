@@ -1,0 +1,11 @@
+#!/bin/bash
+
+firmware=$1
+port=$2
+
+if [ -z "$firmware" ] || [ -z "$port" ]; then
+	echo "usage: $0 firmware port"
+	exit 1
+fi
+
+bossac -i -d --port=$(basename $port) -U true -e -w -v -b $firmware -R
