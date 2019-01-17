@@ -1,0 +1,3 @@
+#!/bin/bash
+
+waggle-wagman-flash-firmware /usr/lib/waggle/wagman/v4/new/firmware/bin/firmware-4.0.0.bin /dev/waggle_sysmon
