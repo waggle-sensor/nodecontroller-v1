@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "cleaning up rabbitmq logs"
+rabbitmqctl rotate_logs && rm /var/log/rabbitmq/*.log.*
+
+echo "cleaning up journal logs"
+journalctl --vacuum-size=100M
