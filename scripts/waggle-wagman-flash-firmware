@@ -10,11 +10,15 @@ fi
 
 resolved_port=$(readlink -f "$port")
 
-# pulse serial port at 1200 to put in flash mode
-stty -F "$resolved_port" 1200
+# pulse serial port at 1200 to put in flash mode. i found the dtr = false
+# used by the arduino-cli's method for pulsing the serial line.
+python3 -c '
+import serial
+import sys
+
+with serial.Serial(sys.argv[1], 1200) as ser:
+    ser.dtr = False
+' $resolved_port
 
 # upload firmware binary
 bossac -i -d --port=$(basename $resolved_port) -U true -e -w -v -b $firmware -R
-
-# restore to standard wagman baudrate
-stty -F "$resolved_port" 57600
