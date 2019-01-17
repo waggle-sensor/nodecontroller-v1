@@ -150,6 +150,16 @@ def request_node_info(node_id):
     }
 
 
+def get_hostname():
+    r = subprocess.check_output('hostname').decode().strip()
+
+    if 'SD' in r:
+        return 'SD'
+    if 'MMC' in r:
+        return 'eMMC'
+    return ''
+
+
 def get_certificates():
     logger.info('Getting credentials from %s.', cert_server)
 
@@ -185,7 +195,11 @@ def get_certificates():
 
     # os.remove(registration_key)
     logger.info('Switching to safe operation mode')
-    subprocess.call('waggle-mode-burnin')
+
+    if get_hostname() == 'SD':
+        subprocess.call('waggle-mode-burnin')
+    else:
+        subprocess.call('waggle-mode-burnin-core')
 
 
 def main():
