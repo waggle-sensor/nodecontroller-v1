@@ -1,0 +1,10 @@
+#!/bin/bash
+
+wagman-client eereset
+wagman-client reset
+
+wagman client bs 1 sd
+wagman client bs 0 sd
+
+wagman client stop 1 90
+wagman client stop 0 120
