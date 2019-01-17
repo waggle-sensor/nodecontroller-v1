@@ -1,5 +1,0 @@
-[Unit]
-Description=Automatically cleanup system files
-
-[Service]
-ExecStart=/usr/lib/waggle/nodecontroller/scripts/waggle-cleanup-system

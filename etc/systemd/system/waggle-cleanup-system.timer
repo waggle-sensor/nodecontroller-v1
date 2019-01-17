@@ -1,9 +1,0 @@
-[Unit]
-Description=Automatically cleanup system files nightly.
-After=waggle-core.target
-
-[Timer]
-OnCalendar=*-*-* 2:00:00
-
-[Install]
-WantedBy=timers.target waggle-core.target
