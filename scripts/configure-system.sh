@@ -21,7 +21,8 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # this will make sure that an empty eMMC card will get the waggle image
 # and try to recover uSD to make the uSD 3 partitions
-echo "recover me" > /root/do_recovery
+mkdir -p /wagglerw
+echo "recover me" > /wagglerw/do_recovery
 
 # this will trigger a self test on the first full boot
 touch /home/waggle/start_test
@@ -85,7 +86,7 @@ Host ep ep1
     Port 22
     IdentityFile /usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_edge_processor
 EOT
- 
+
 # Setup RabbitMQ config files.
 cp -r /usr/lib/waggle/nodecontroller/etc/rabbitmq /etc
 
