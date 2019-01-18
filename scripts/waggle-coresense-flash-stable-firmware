@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd /usr/lib/waggle/sensors
+git show 94c30e90568c6cd7f0c8b42423df03ca29488834:v4/integrated/firmware/bin/firmware.ino.bin > /tmp/coresense-firmware.bin
+waggle-coresense-flash-firmware /tmp/coresense-firmware.bin /dev/waggle_coresense
