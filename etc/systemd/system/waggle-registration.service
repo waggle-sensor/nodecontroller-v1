@@ -4,6 +4,7 @@ After=waggle-core.target waggle-init.service network.target
 Before=waggle-platform.target
 
 [Service]
+EnvironmentFile=/etc/waggle/environment
 WorkingDirectory=/usr/lib/waggle/nodecontroller/scripts
 ExecStart=/usr/lib/waggle/nodecontroller/scripts/registration-service --force
 

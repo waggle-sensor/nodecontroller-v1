@@ -197,9 +197,9 @@ def get_certificates():
     logger.info('Switching to safe operation mode')
 
     if get_hostname() == 'SD':
-        subprocess.call('/usr/lib/waggle/core/scripts/waggle-mode-burnin')
+        subprocess.call('waggle-mode-burnin')
     else:
-        subprocess.call('/usr/lib/waggle/core/scripts/waggle-mode-burnin-core')
+        subprocess.call('waggle-mode-burnin-core')
 
 
 def main():
