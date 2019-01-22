@@ -1,0 +1,5 @@
+SUBSYSTEM!="video4linux", ACTION!="add", GOTO="add_rules_end"
+SUBSYSTEM=="video4linux", KERNEL=="video[0-9]*", ATTRS{idVendor}=="05a3", ATTRS{idProduct}=="8830", SYMLINK+="waggle_cam_top", RUN+="/bin/sh -c 'echo %n > /wagglerw/waggle/waggle_cam_top_idx'"
+SUBSYSTEM=="video4linux", KERNEL=="video[0-9]*", ATTRS{idVendor}=="05a3", ATTRS{idProduct}=="9830", SYMLINK+="waggle_cam_top", RUN+="/bin/sh -c 'echo %n > /wagglerw/waggle/waggle_cam_top_idx'"
+SUBSYSTEM=="video4linux", KERNEL=="video[0-9]*", ATTRS{idVendor}=="05a3", ATTRS{idProduct}=="9520", SYMLINK+="waggle_cam_bottom", RUN+="/bin/sh -c 'echo %n > /wagglerw/waggle/waggle_cam_bottom_idx'"
+LABEL="add_rules_end"
