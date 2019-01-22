@@ -1,0 +1,4 @@
+SUBSYSTEM!="sound", ACTION!="add", GOTO="add_rules_end"
+SUBSYSTEM=="sound", KERNEL=="controlC[0-9]*", ATTRS{idVendor}=="0d8c", ATTRS{idProduct}=="013c", SYMLINK+="waggle_microphone"
+SUBSYSTEM=="sound", KERNEL=="controlC[0-9]*", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0808", SYMLINK+="waggle_microphone"
+LABEL="add_rules_end"
