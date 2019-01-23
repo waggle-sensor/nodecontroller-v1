@@ -1,0 +1,22 @@
+#!/bin/bash
+
+scan_lsusb() {
+    awk -v prefix="$1" '
+function show(s) { print prefix s }
+/2341:8037/ { show("wagman_v1") }
+/2341:003f/ { show("wagman_v2") }
+/2341:003e/ { show("coresense") }
+/1bc7:0021/ { show("modem") }
+/0d8c:013c/ || /8086:0808/ { show("microphone") }
+/05a3:8830/ || /05a3:9830/ { show("camera_top") }
+/05a3:9520/ { show("camera_bottom") }
+'
+}
+
+lsusb | scan_lsusb 'nc/'
+
+if ssh ep true; then
+    echo 'nc/ep'
+fi
+
+ssh ep lsusb | scan_lsusb 'nc/ep/'
