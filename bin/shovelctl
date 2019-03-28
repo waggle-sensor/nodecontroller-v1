@@ -122,7 +122,8 @@ def get_shovel_configs():
 
     try:
         # TODO eventually change to just sub_id 1
-        ep_sub_id = get_ep_sub_id()
+        # ep_sub_id = get_ep_sub_id()
+        ep_sub_id = '0000000000000001'
 
         shovels['forward-to-ep'] = {
             'src-uri': node_uri,
