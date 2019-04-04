@@ -1,0 +1,10 @@
+[Unit]
+Description=Check on wifi every 5 minutes.
+After=waggle-core.target
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target waggle-core.target

@@ -1,0 +1,5 @@
+[Unit]
+Description=Check on wifi and restart on disconnect.
+
+[Service]
+ExecStart=/bin/bash -c 'if nmcli dev | grep "wifi.*disconnected"; then echo restart wifi && systemctl restart NetworkManager.service; fi'
