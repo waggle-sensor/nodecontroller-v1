@@ -6,8 +6,8 @@ waggle_topic=/node_controller/introduction
 
 This repo contains software and tools specific to the node controller, covering functionality such as:
 
-* Managing data connections. (AMQPS)
-* Managing management connections. (Reverse SSH)
+* Managing data connections. (AMQPS / RabbitMQ Shovels)
+* Managing management connections. (Reverse SSH Tunnel)
 * Wagman interaction.
 
 ## Setup
