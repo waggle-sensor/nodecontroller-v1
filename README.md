@@ -17,7 +17,7 @@ First, we assume that the [core](https://github.com/waggle-sensor/core) repo has
 The node controller dependencies and services can then be installed and configured by running:
 
 ```sh
-git clone https://github.com/waggle-sensor/core /usr/lib/waggle/nodecontroller
+git clone https://github.com/waggle-sensor/nodecontroller /usr/lib/waggle/nodecontroller
 cd /usr/lib/waggle/nodecontroller
 ./configure --system --server-host=$YOUR_BEEHIVE_IP
 ```
