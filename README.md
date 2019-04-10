@@ -10,6 +10,9 @@ This repo contains software and tools specific to the node controller, covering 
 * Managing management connections. (Reverse SSH Tunnel)
 * Wagman interaction.
 
+Note that this software was originally targetting the ODROID C1+, so some components may require
+significant tweaks before running them on other devices.
+
 ## Setup
 
 First, we assume that the [core](https://github.com/waggle-sensor/core) repo has already been set up on a device.
