@@ -22,4 +22,5 @@ cd /usr/lib/waggle/nodecontroller
 ./configure --system --server-host=$YOUR_BEEHIVE_IP
 ```
 
-where $YOUR_BEEHIVE_IP is the IP address of your beehive server.
+Leaving out the `--system` and `--server-host` flags will only install dependencies and services, but will not
+setup data or management connectivity.
