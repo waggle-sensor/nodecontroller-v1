@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import time
+import subprocess
+from datetime import datetime, timezone
+
+devfile = Path('/dev/waggle_sysmon')
+logfile = Path('/wagglerw/wagman.log')
+
+
+def log(*args):
+    now = datetime.now(tz=timezone.utc)
+    print(now, *args, flush=True)
+
+
+def log_to_file(*args):
+    now = datetime.now(tz=timezone.utc)
+    with logfile.open('a') as file:
+        print(now, *args, file=file)
+
+
+def reset_wagman():
+    log('resetting wagman')
+    log_to_file('resetting wagman')
+
+    # reset script in v2 nodes
+    try:
+        r = subprocess.check_output(['/usr/bin/waggle-wagman-power-reset'])
+        time.sleep(10)
+        log_to_file('reset wagman ok')
+        return r
+    except FileNotFoundError:
+        pass
+
+    # reset script in v1 nodes
+    try:
+        r = subprocess.check_output(
+            ['/usr/lib/waggle/nodecontroller/scripts/reset-wagman'])
+        time.sleep(10)
+        log_to_file('reset wagman ok')
+        return r
+    except FileNotFoundError:
+        pass
+
+    log('reset wagman failed')
+
+
+def reset_driver():
+    log('reset driver')
+    log_to_file('resetting driver')
+
+    try:
+        r = subprocess.check_output(
+            ['systemctl', 'restart', 'waggle-wagman-driver'])
+        time.sleep(10)
+        log_to_file('reset driver ok')
+        return r
+    except subprocess.CalledProcessError:
+        pass
+
+    log('reset driver failed')
+
+
+def wagman_device_exists():
+    return devfile.exists()
+
+
+def wagman_communication_ok():
+    output = subprocess.check_output([
+        'journalctl',
+        '-q',
+        '-u', 'waggle-wagman-driver',
+        '--since', '-15m',
+        '-o', 'cat',
+    ]).decode()
+
+    return 'log:' in output or 'wagman:' in output
+
+
+def get_boot_id():
+    return Path('/proc/sys/kernel/random/boot_id').read_text().strip()
+
+
+def main():
+    boot_id = get_boot_id()
+    log('starting', boot_id)
+    log_to_file('starting', boot_id)
+
+    while True:
+        time.sleep(60)
+
+        log('checking wagman')
+
+        if not wagman_device_exists():
+            reset_wagman()
+            time.sleep(300)
+            continue
+
+        if not wagman_communication_ok():
+            reset_driver()
+            time.sleep(90)
+
+            if wagman_communication_ok():
+                continue
+
+            reset_wagman()
+            time.sleep(300)
+            continue
+
+
+if __name__ == '__main__':
+    main()
