@@ -5,97 +5,41 @@
 #  license.  For more details on the Waggle project, visit:
 #           http://www.wa8.gl
 # ANL:waggle-license
-import logging
-import os
-import re
+from pathlib import Path
 import socket
-import subprocess
-import sched
+import time
 
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-
-# Run a command and capture it's output
-def run_command(command):
-    return subprocess.check_output(command).decode()
-
-
+# using /run as some older nodes don't mount /tmp as tmpfs
+# /run seems to be more consistently used this way
 def reset_deadman_trigger():
-    logging.info('resetting deadman trigger')
-    with open('/tmp/alive', 'w'):
-        pass
+    print('reset deadman trigger', flush=True)
+    Path('/run/waggle_deadman_trigger').touch()
 
 
-def check_USB_modem():
-    output = run_command(['lsusb'])
-    return re.search(r'Wireless|Realtek', output) is not None
+def reset_deadman_trigger_for_duration(duration):
+    start = time.monotonic()
+
+    while time.monotonic() - start < duration:
+        reset_deadman_trigger()
+        time.sleep(15)
 
 
-def check_network_interface():
-    logging.info('check network interface')
-    output = run_command(['ip', 'addr'])
-    return re.search(r'inet.*scope global.*(en|ppp|eth[1-9])', output) is not None
+def has_ssh_banner(addr):
+    with socket.create_connection(addr, timeout=60.0) as s:
+        return s.recv(1024).startswith(b'SSH')
 
 
-def check_beehive_DNS():
-    logging.info('check dns')
+def has_connectivity():
     try:
-        socket.gethostbyname('beehive')
-        return True
+        return has_ssh_banner(('beehive', 20022))
     except Exception:
         return False
 
 
-def check_beehive_ping():
-    logging.info('ping beehive')
-    rc = os.system('curl -s --max-time 10 --connect-timeout 10 http://beehive/api/1/connect?nodeid=$(hostname)_bootid=$(cat /proc/sys/kernel/random/boot_id | sed "s/-//g")')
-    return rc == 0
-
-
-def check_local_sshd():
-    logging.info('check local ssh')
-    command = ['/usr/lib/waggle/nodecontroller/scripts/eplogin', '/usr/lib/waggle/edge_processor/nclogin', 'date > /dev/null 2>&1']
-    rc = os.system(' '.join(command))
-    return rc == 0
-
-
-def main():
-    results = {}
-    scheduler = sched.scheduler()
-
-    def update_local_results():
-        logging.info('updating local results')
-        # TODO Is this really needed? If there's a network interface, that should be enough.
-        # results['USB Modem'] = check_USB_modem()
-        results['Network Interface'] = check_network_interface()
-        scheduler.enter(30, 1, update_local_results)
-
-    def update_beehive_results():
-        logging.info('updating beehive results')
-        # results['Beehive DNS'] = check_beehive_DNS()
-        results['Beehive Ping'] = check_beehive_ping()
-        scheduler.enter(3600, 1, update_beehive_results)
-
-    def update_deadman_trigger():
-        logging.info('checking results')
-
-        for name, status in results.items():
-            logging.info('check - %s - %s', name, 'pass' if status else 'fail')
-
-        if all(results.values()):
-            logging.info('connectivity - pass')
-            reset_deadman_trigger()
-        else:
-            logging.info('connectivity - fail')
-
-        scheduler.enter(30, 0, update_deadman_trigger)
-
-    scheduler.enter(0, 1, update_local_results)
-    scheduler.enter(0, 1, update_beehive_results)
-    scheduler.enter(0, 0, update_deadman_trigger)
-    scheduler.run()
-
-
-if __name__ == '__main__':
-    main()
+while True:
+    while not has_connectivity():
+        print('waiting for connection', flush=True)
+        time.sleep(900)
+    print('connection ok', flush=True)
+    reset_deadman_trigger_for_duration(3600)
