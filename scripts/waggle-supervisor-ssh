@@ -3,34 +3,47 @@ from pathlib import Path
 import subprocess
 import time
 
+
 def ssh_connection_ok():
     try:
-        subprocess.check_output([
-            'ssh',
-            '-i', '/etc/waggle/key.pem',
-            '-o', 'StrictHostKeyChecking=no',
-            '-o', 'UserKnownHostsFile=/dev/null',
-            'beehive',
-            '-p', '20022',
-            'date',
-        ], timeout=60).decode()
-        return True
+        return 'ESTABLISHED' in subprocess.check_output(['lsof', '-i', 'TCP@beehive:20022']).decode()
     except Exception:
         return False
 
 
+def reset_reverse_tunnel():
+    try:
+        subprocess.check_output(
+            ['systemctl', 'restart', 'waggle-reverse-tunnel.service'])
+    except Exception:
+        pass
+
+
 def reset_deadman_trigger():
-    print('update deadman trigger', flush=True)
     Path('/run/waggle_deadman_trigger').touch()
 
 
-while True:
-    while not ssh_connection_ok():
-        print('waiting for connection', flush=True)
-        time.sleep(900)
+last_connection_time = time.monotonic()
+reset_timeout = time.monotonic()
 
-    start = time.monotonic()
-    
-    while time.monotonic() - start < 3600:
+while True:
+    if ssh_connection_ok():
+        print('connection ok', flush=True)
+        last_connection_time = time.monotonic()
+        reset_timeout = time.monotonic()
+    else:
+        left = int(time.monotonic() - last_connection_time)
+        print('no connection for {}s'.format(left), flush=True)
+
+    # continue updating deadman trigger up to an hour after last connection
+    if time.monotonic() - last_connection_time < 3600:
+        print('update deadman trigger', flush=True)
         reset_deadman_trigger()
-        time.sleep(15)
+
+    # attempt to reset reverse ssh tunnel after 5min of no connectivity
+    if time.monotonic() - reset_timeout > 300:
+        print('reset reverse ssh tunnel', flush=True)
+        reset_reverse_tunnel()
+        reset_timeout = time.monotonic()
+
+    time.sleep(15)
