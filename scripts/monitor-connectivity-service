@@ -1,41 +1,58 @@
-#!/usr/bin/python3
-# ANL:waggle-license
-#  This file is part of the Waggle Platform.  Please see the file
-#  LICENSE.waggle.txt for the legal details of the copyright and software
-#  license.  For more details on the Waggle project, visit:
-#           http://www.wa8.gl
-# ANL:waggle-license
+#!/usr/bin/env python3
 from pathlib import Path
-import socket
-import time
 import subprocess
+import time
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 
-# using /run as some older nodes don't mount /tmp as tmpfs
-# /run seems to be more consistently used this way
-def reset_deadman_trigger():
-    print('reset deadman trigger', flush=True)
-    Path('/run/waggle_deadman_trigger').touch()
-
-
-def reset_deadman_trigger_for_duration(duration):
-    start = time.monotonic()
-
-    while time.monotonic() - start < duration:
-        reset_deadman_trigger()
-        time.sleep(15)
-
-
-def has_connectivity():
+def connection_ok():
     try:
         return 'ESTABLISHED' in subprocess.check_output(['lsof', '-i', 'TCP@beehive:20022']).decode()
     except Exception:
         return False
 
 
+connectivity_services = [
+    'waggle-wwan.service',
+    'waggle-reverse-tunnel.service',
+]
+
+
+def reset_connectivity_services():
+    for service in connectivity_services:
+        try:
+            subprocess.check_output(['systemctl', 'restart', service])
+        except Exception:
+            logging.exception('failed to restart service %s', service)
+
+
+def reset_deadman_trigger():
+    Path('/run/waggle_deadman_trigger').touch()
+
+
+last_connection_time = time.monotonic()
+reset_timeout = time.monotonic()
+
 while True:
-    while not has_connectivity():
-        print('waiting for connection', flush=True)
-        time.sleep(15)
-    print('connection ok', flush=True)
-    reset_deadman_trigger_for_duration(3600)
+    if connection_ok():
+        logging.info('connection ok')
+        last_connection_time = time.monotonic()
+        reset_timeout = time.monotonic()
+    else:
+        left = int(time.monotonic() - last_connection_time)
+        logging.warning('no connection for %ss', left)
+
+    # continue updating deadman trigger up to an hour after last connection
+    if time.monotonic() - last_connection_time < 3600:
+        logging.info('update deadman trigger')
+        reset_deadman_trigger()
+
+    # attempt to reset reverse ssh tunnel after 15min of no connectivity
+    if time.monotonic() - reset_timeout > 900:
+        logging.warning('reset connectivity services')
+        reset_connectivity_services()
+        reset_timeout = time.monotonic()
+
+    time.sleep(15)
