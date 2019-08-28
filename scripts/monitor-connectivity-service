@@ -8,6 +8,7 @@
 from pathlib import Path
 import socket
 import time
+import subprocess
 
 
 # using /run as some older nodes don't mount /tmp as tmpfs
@@ -25,14 +26,9 @@ def reset_deadman_trigger_for_duration(duration):
         time.sleep(15)
 
 
-def has_ssh_banner(addr):
-    with socket.create_connection(addr, timeout=60.0) as s:
-        return s.recv(1024).startswith(b'SSH')
-
-
 def has_connectivity():
     try:
-        return has_ssh_banner(('beehive', 20022))
+        return 'ESTABLISHED' in subprocess.check_output(['lsof', '-i', 'TCP@beehive:20022']).decode()
     except Exception:
         return False
 
