@@ -2,16 +2,19 @@
 from glob import glob
 import subprocess
 import time
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 last_connection_time = time.monotonic()
 
 while True:
     if len(glob('/sys/class/net/ppp*')) > 0:
-        print('connection ok', flush=True)
+        logging.info('connection ok')
         last_connection_time = time.monotonic()
-    
+
     if time.monotonic() - last_connection_time > 300:
-        print('resetting connection', flush=True)
+        logging.warning('resetting connection')
         subprocess.check_call(['systemctl', 'restart', 'waggle-wwan.service'])
         last_connection_time = time.monotonic()
 
