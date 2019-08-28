@@ -36,6 +36,6 @@ def has_connectivity():
 while True:
     while not has_connectivity():
         print('waiting for connection', flush=True)
-        time.sleep(900)
+        time.sleep(15)
     print('connection ok', flush=True)
     reset_deadman_trigger_for_duration(3600)
