@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 
 def connection_ok():
     try:
-        return 'ESTABLISHED' in subprocess.check_output(['lsof', '-i', 'TCP@beehive:20022']).decode()
+        return 'beehive:20022' in subprocess.check_output(['ss', '-tr', 'state', 'established']).decode()
     except Exception:
         return False
 
