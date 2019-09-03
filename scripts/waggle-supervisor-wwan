@@ -6,9 +6,16 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
+
+def update_systemd_watchdog():
+    subprocess.check_call(['systemd-notify', 'WATCHDOG=1'])
+
+
 last_connection_time = time.monotonic()
 
 while True:
+    update_systemd_watchdog()
+
     if len(glob('/sys/class/net/ppp*')) > 0:
         logging.info('connection ok')
         last_connection_time = time.monotonic()

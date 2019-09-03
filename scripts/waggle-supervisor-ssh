@@ -7,9 +7,14 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
+def update_systemd_watchdog():
+    subprocess.check_call(['systemd-notify', 'WATCHDOG=1'])
+
+
 def ssh_connection_ok():
     try:
-        return 'beehive:20022' in subprocess.check_output(['ss', '-tr', 'state', 'established']).decode()
+        return 'beehive:20022' in subprocess.check_output([
+            'ss', '-tr', 'state', 'established']).decode()
     except Exception:
         return False
 
@@ -30,6 +35,8 @@ last_connection_time = time.monotonic()
 reset_timeout = time.monotonic()
 
 while True:
+    update_systemd_watchdog()
+
     if ssh_connection_ok():
         logging.info('connection ok')
         last_connection_time = time.monotonic()

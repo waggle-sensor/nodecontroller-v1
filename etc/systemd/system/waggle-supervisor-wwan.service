@@ -1,0 +1,12 @@
+[Unit]
+Description=Modem supervisor
+After=waggle-core.target
+
+[Service]
+ExecStart=/usr/lib/waggle/nodecontroller/scripts/waggle-supervisor-wwan
+WatchdogSec=3min
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=waggle-core.target

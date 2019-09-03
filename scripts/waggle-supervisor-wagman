@@ -7,6 +7,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
+def update_systemd_watchdog():
+    subprocess.check_call(['systemd-notify', 'WATCHDOG=1'])
+
+
 def call_reset_script():
     try:
         return subprocess.check_call(['/usr/lib/waggle/nodecontroller/scripts/reset-wagman'])
@@ -35,6 +39,8 @@ def reset_wagman():
 last_device_time = time.monotonic()
 
 while True:
+    update_systemd_watchdog()
+
     if Path('/dev/waggle_sysmon').exists():
         logging.info('wagman ok')
         last_device_time = time.monotonic()

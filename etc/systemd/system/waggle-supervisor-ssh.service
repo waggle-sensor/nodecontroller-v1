@@ -1,0 +1,12 @@
+[Unit]
+Description=SSH connectivity supervisor
+After=waggle-core.target
+
+[Service]
+ExecStart=/usr/lib/waggle/nodecontroller/scripts/waggle-supervisor-ssh
+WatchdogSec=3min
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=waggle-core.target
