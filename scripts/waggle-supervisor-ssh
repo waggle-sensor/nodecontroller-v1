@@ -39,18 +39,14 @@ while True:
 
     if ssh_connection_ok():
         logging.info('connection ok')
+        reset_deadman_trigger()
         last_connection_time = time.monotonic()
         reset_timeout = time.monotonic()
     else:
-        left = int(time.monotonic() - last_connection_time)
-        logging.warning('no connection for %ss', left)
+        since = int(time.monotonic() - last_connection_time)
+        logging.warning('no connection for %ss', since)
 
-    # continue updating deadman trigger up to an hour after last connection
-    if time.monotonic() - last_connection_time < 3600:
-        logging.info('update deadman trigger')
-        reset_deadman_trigger()
-
-    # attempt to reset reverse ssh tunnel after 5min of no connectivity
+    # attempt to reset reverse ssh tunnel every 5min of no connectivity
     if time.monotonic() - reset_timeout > 300:
         logging.warning('reset reverse ssh tunnel')
         reset_reverse_tunnel()
