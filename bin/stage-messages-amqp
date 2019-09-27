@@ -130,7 +130,7 @@ def main():
         source_channel.basic_ack(delivery_tag=method.delivery_tag)
         logging.info('Validated message from %s on %s.', user_id, sub_id)
 
-    source_channel.basic_consume(message_handler, args.source_queue)
+    source_channel.basic_consume(args.source_queue, message_handler)
     source_channel.start_consuming()
 
 
