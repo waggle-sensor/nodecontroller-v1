@@ -72,12 +72,8 @@ try_set_time() {
             log "Setting the Edge Processor date/time..."
             ssh ep /usr/lib/waggle/edge_processor/scripts/sync_date.sh $(date +%s)
             SET_EP_TIME=$(date +%s)
-
              # Sync the system time with the hardware clock
-            if ! ssh ep hwclock -w; then
-                SET_EP_TIME=0
-                log "Error: failed to set the Edge Processor system date/time."
-            fi
+            ssh ep hwclock -w || true
         fi
 
     else
@@ -100,7 +96,8 @@ try_set_time() {
 
     # Sync the system time with the hardware clock
     log "Syncing the Node Controller hardware clock with the system date/time..."
-    hwclock -w
+    # no control over returncode right now
+    hwclock -w || true
 }
 
 CHECK_INTERVAL='24h'
