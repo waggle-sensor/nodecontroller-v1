@@ -2,6 +2,8 @@
 waggle_topic=/node_controller/introduction
 -->
 
+# _This repo is archived. See https://github.com/waggle-sensor/nodecontroller_
+
 # Node Stack - Node Controller Repo
 
 This repo contains software and tools specific to the node controller, covering functionality such as:
